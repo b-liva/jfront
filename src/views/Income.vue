@@ -35,7 +35,7 @@
                         <v-flex xs12 md4>
                           <v-text-field
                             label="مشتری"
-                            v-model="income_form.customer">
+                            v-model="income_form.customer.name">
                           </v-text-field>
                         </v-flex>
                         <v-flex xs6 md4>
@@ -71,7 +71,7 @@
                     </v-flex>
                     <v-flex xs12 md4>پیش نمایش
                       <div v-if="income_form.customer"><span
-                        class="preview-title">مشتری</span><span>{{income_form.customer}}</span></div>
+                        class="preview-title">مشتری</span><span>{{income_form.customer.name}}</span></div>
                       <div v-if="income_form.number"><span
                         class="preview-title">شماره</span><span>{{income_form.number}}</span></div>
                       <div v-if="income_form.amount"><span
@@ -95,6 +95,7 @@
           </v-dialog>
         </v-toolbar>
       </template>
+      <template v-slot:item.customer="{item}"><router-link :to="{name: 'Customer', params:{id: item.customer.id, name: item.customer.name}}">{{item.customer.name}}</router-link></template>
       <template v-slot:item.action="{ item }">
         <v-icon @click="editItem(item)" small class="mr-2">mdi-pencil</v-icon>
         <v-icon @click="deleteItem(item)" small class="mr-2">mdi-delete</v-icon>
@@ -113,7 +114,10 @@
         editedIndex: -1,
         defaultItems: {
           owner: '',
-          customer: '',
+          customer: {
+            id: '',
+            name: '',
+          },
           number: '',
           type: 1,
           amount: '',
@@ -123,7 +127,10 @@
         },
         income_form: {
           owner: '',
-          customer: '',
+          customer: {
+            id: '',
+            name: '',
+          },
           number: '',
           type: 1,
           amount: '',
@@ -148,10 +155,10 @@
           {text: 'اکشن', value:'action'},
         ],
         incomes: [
-          {customer: 'پارس تهران', number: 1235, amount: 3500000, date: "1398-12-12", type:1 ,type_title: 'حواله'},
-          {customer: 'خاور توس', number: 569802, amount: 325900000, date: "1398-12-13", type:1 ,type_title: 'حواله'},
-          {customer: 'پارس کمپرسور', number: 946254, amount: 565900000, date: "1398-10-25", dueDate: "1398-12-05", type:2 ,type_title: 'اصل چک'},
-          {customer: 'هوایار', number: 486254, amount: 67800000, date: "1398-11-15", dueDate: "1398-10-01", type:2 ,type_title: 'اصل چک'},
+          {customer: {id: 1, name: 'پارس تهران'}, number: 1235, amount: 3500000, date: "1398-12-12", type:1 ,type_title: 'حواله'},
+          {customer: {id: 2, name: 'پتروشیمی مارون'}, number: 569802, amount: 325900000, date: "1398-12-13", type:1 ,type_title: 'حواله'},
+          {customer: {id: 5, name: 'هوایار'}, number: 946254, amount: 565900000, date: "1398-10-25", dueDate: "1398-12-05", type:2 ,type_title: 'اصل چک'},
+          {customer: {id: 6, name: 'تهران بوستون'}, number: 486254, amount: 67800000, date: "1398-11-15", dueDate: "1398-10-01", type:2 ,type_title: 'اصل چک'},
         ]
       }
     },

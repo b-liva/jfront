@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Dashboard from "../views/Dashboard";
 import Income from "../views/Income";
+import Customer from "../views/Customer"
 
 Vue.use(VueRouter);
 
@@ -10,6 +11,7 @@ export default new VueRouter({
   base: process.env.BASE_URL,
   routes: [
     { path:'', name:'Dashboard', component: Dashboard },
-    { path: '/income', name: 'Income', component: Income }
+    { path: '/income', name: 'Income', component: Income },
+    { path: '/customer/:id', name: 'Customer', component: Customer },
   ]
 })

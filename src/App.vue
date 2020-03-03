@@ -8,19 +8,23 @@
 </template>
 
 <script>
-import Navbar from "./components/Navbar";
-export default {
-  name: 'App',
+  import Navbar from "./components/Navbar";
 
-  components: {
-    Navbar
-  },
+  export default {
+    name: 'App',
 
-  data: () => ({
-    //
-  }),
-  mounted() {
-    this.$vuetify.rtl = true;
-  },
-};
+    components: {
+      Navbar
+    },
+
+    data: () => ({
+      //
+    }),
+    mounted() {
+      this.$vuetify.rtl = true;
+    },
+  };
 </script>
+<style lang="scss">
+  @import 'assets/index';
+</style>

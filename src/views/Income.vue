@@ -14,7 +14,7 @@
       class="elevation-1"
       show-expand
       single-expand
-      @click:row="incomeClicked"
+      @item-expanded="incomeClicked"
     >
       <template v-slot:top>
         <v-toolbar>
@@ -110,66 +110,87 @@
       <template v-slot:item.action="{ item }">
         <v-icon @click="editItem(item)" small class="mr-2">mdi-pencil</v-icon>
         <v-icon @click="deleteItem(item)" small class="mr-2">mdi-delete</v-icon>
-        <v-dialog v-model="assignDialog" :retain-focus="false" width="800px">
+        <v-tooltip top>
           <template v-slot:activator="{on}">
             <v-icon
               @click="assignToMe(item)"
               small
               class="mr-2"
-              v-on="on">mdi-arrow-left-bold
+            v-on="on">mdi-arrow-left-bold
             </v-icon>
           </template>
-          <v-card>
-            <v-card-title>اختصاص واریزی</v-card-title>
-            <v-card-text>
-              <v-container>
-                <v-layout row wrap justify-space-around>
-                  <v-flex xs5 md3>
-                    <v-text-field
-                      v-model="assignForm.proforma"
-                      label="شماره پیش فاکتور">
-
-                    </v-text-field>
-                  </v-flex>
-                  <v-flex xs5 md3>
-                    <v-text-field label="مبلغ" v-model="assignForm.amount"></v-text-field>
-                  </v-flex>
-                  <v-flex xs12 md3 class="py-md-6">
-                    <PersianDatePicker
-                      v-model="assignForm.date"
-                      format="jYYYY-jMM-jDD"
-                      :auto-submit="true"/>
-                  </v-flex>
-                </v-layout>
-                <v-layout row wrap>
-                  <v-flex
-                    xs12
-                    md8>
-                    <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
-                  </v-flex>
-                  <v-flex xs12>
-                    <p>
-                      شما در حال اختصاص مبلغ <span class="red--text">{{assignForm.amount}}</span>
-                      از واریزی شماره <span class="red--text">{{assignForm.number}}</span>
-                      به پیش فاکتور شماره <span class="red--text">{{assignForm.proforma}}</span>
-                      مربوط به شرکت <span class="red--text">{{assignForm.customer.name}}</span> هستید.
-                    </p>
-                  </v-flex>
-                </v-layout>
-              </v-container>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="success" @click="submitAssignment">ثبت</v-btn>
-              <v-btn color="error" @click="cancelAssignment">انصراف</v-btn>
-              <v-icon @click="clear()">mdi-close-circle</v-icon>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+          <span>اختصاص واریزی به پیش فاکتور</span>
+        </v-tooltip>
       </template>
-      <template v-slot:expanded-item="">
-        {{relatedIncomeRows}}
+      <template v-slot:expanded-item="{headers}">
+        <td :colspan="headers.length">
+          <table class="expanded-table">
+            <thead>
+            <th v-for="head in incomeRowsHeaders" :key="head.value">{{head.text}}</th>
+            <th></th>
+            </thead>
+            <tbody>
+            <tr v-for="row in relatedIncomeRows" :key="row">
+              <td>{{incomeRows[row].amount}}</td>
+              <td>{{incomeRows[row].proforma}}</td>
+              <td>{{incomeRows[row].date}}</td>
+              <td>
+                <v-icon @click="editIncomeRow(incomeRows[row])" small class="mr-2">mdi-pencil</v-icon>
+                <v-icon @click="deleteIncomerow(incomeRows[row])" small class="mr-2">mdi-delete</v-icon>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </td>
       </template>
     </v-data-table>
+    <v-dialog v-model="assignDialog" width="800px">
+      <v-card>
+        <v-card-title>اختصاص واریزی</v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-layout row wrap justify-space-around>
+              <v-flex xs5 md3>
+                <v-text-field
+                  v-model="assignForm.proforma"
+                  label="شماره پیش فاکتور">
+
+                </v-text-field>
+              </v-flex>
+              <v-flex xs5 md3>
+                <v-text-field label="مبلغ" v-model="assignForm.amount"></v-text-field>
+              </v-flex>
+              <v-flex xs12 md3 class="py-md-6">
+                <PersianDatePicker
+                  v-model="assignForm.date"
+                  format="jYYYY-jMM-jDD"
+                  :auto-submit="true"/>
+              </v-flex>
+            </v-layout>
+            <v-layout row wrap>
+              <v-flex
+                xs12
+                md8>
+                <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
+              </v-flex>
+              <v-flex xs12>
+                <p>
+                  شما در حال اختصاص مبلغ <span class="red--text">{{assignForm.amount}}</span>
+                  از واریزی شماره <span class="red--text">{{toBeAssignedRowInfo.number}}</span>
+                  به پیش فاکتور شماره <span class="red--text">{{assignForm.proforma}}</span>
+                  مربوط به شرکت <span class="red--text">{{toBeAssignedRowInfo.customer.name}}</span> هستید.
+                </p>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="success" @click="submitAssignment">ثبت</v-btn>
+          <v-btn color="error" @click="cancelAssignment">انصراف</v-btn>
+          <v-icon @click="clear()">mdi-close-circle</v-icon>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -209,26 +230,32 @@
         },
         selectedIncome: null,
         defaultAssign: {
-          customer: {
-            id: '',
-            name: ''
-          },
-          number: '',
+          incomeId: '',
           date: '',
           amount: '',
           proforma: '',
           summary: ''
         },
         assignForm: {
-          customer: {
-            id: '',
-            name: ''
-          },
-          number: '',
+          incomeId: '',
           date: '',
           amount: '',
           proforma: '',
           summary: ''
+        },
+        toBeAssignedRowInfoDefaults: {
+          customer:{
+            id: '',
+            name: ''
+          },
+          number: ''
+        },
+        toBeAssignedRowInfo: {
+          customer:{
+            id: '',
+            name: ''
+          },
+          number: ''
         },
         types: [
           {id: 1, title: 'حواله'},
@@ -299,6 +326,7 @@
           {id: 4, incomeId: 2, amount: 1350000, date: "1398-12-10", proforma: 9835130, summary: 'some summary'},
           {id: 5, incomeId: 1, amount: 1500000, date: "1398-12-09", proforma: 9829870, summary: 'some summary'},
         ],
+        editedIncomeRowIndex: -1,
         expanded: [],
         relatedIncomeRows: [],
       }
@@ -337,34 +365,51 @@
       },
       assignToMe(item) {
         console.log(item.number, item.customer.name)
-        this.assignForm.customer = item.customer;
-        this.assignForm.number = item.number
         this.assignDialog = true;
+        this.toBeAssignedRowInfo.customer = item.customer;
+        this.toBeAssignedRowInfo.number = item.number
       },
       submitAssignment() {
         console.log('submitting assignment')
+        if (this.editedIncomeRowIndex > -1) {
+          Object.assign(this.incomeRows[this.editedIncomeRowIndex], this.assignForm)
+        } else {
+          this.incomeRows.push(this.assignForm);
+          this.assignForm.incomeId = 1
+        }
+        //Todo: should be implemented later.
+        // this.close()
         this.assignDialog = false
       },
       cancelAssignment() {
         console.log('cancelling assignment')
         this.assignDialog = false
       },
-      incomeClicked(value){
-        console.log(value.id)
-        if (this.expanded.includes(value)){
-          this.expanded.pop(value)
-        }else {
+      incomeClicked(value) {
+        console.log(value.item.id, this.expanded)
+        if (this.expanded.includes(value.item)) {
+          this.expanded.pop(value.item)
+        } else {
           this.expanded = []
-          this.expanded.push(value)
-          this.incomeRowByIncomeId(value.id)
+          this.expanded.push(value.item)
+          this.incomeRowByIncomeId(value.item.id)
         }
       },
-      incomeRowByIncomeId(incomeId){
+      incomeRowByIncomeId(incomeId) {
         this.relatedIncomeRows = this.incomeRows
-          // .map((row, i) => row.incomeId === incomeId ? i : -1)
-          .map((row) => row.incomeId === incomeId ? row.id : -1)
+          .map((row, i) => row.incomeId === incomeId ? i : -1)
           .filter(index => index !== -1);
-
+      },
+      editIncomeRow(rowItem) {
+        console.log(rowItem);
+        this.editedIncomeRowIndex = this.incomeRows.indexOf(rowItem)
+        this.assignForm = Object.assign({}, rowItem)
+        this.assignDialog = true;
+      },
+      deleteIncomerow(rowItem) {
+        const index = this.incomeRows.indexOf(rowItem);
+        confirm('از حذف این ردیف اطمینان دارید؟') && this.incomeRows.splice(index, 1)
+        this.incomeRowByIncomeId(rowItem.id)
       },
       incomeTypeTitleById(id) {
         let title = null;
@@ -388,5 +433,10 @@
   .preview-title {
     font-weight: bold;
     margin-left: 5px;
+  }
+
+  .expanded-table {
+    font-size: 12px;
+    font-weight: bold;
   }
 </style>

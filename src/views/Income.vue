@@ -8,18 +8,23 @@
       واریزی با موفقیت ثبت شد.
     </v-snackbar>
     <v-data-table
-    :headers="headers"
-    :items="incomes"
-    class="elevation-1">
+      :headers="headers"
+      :items="incomes"
+      :expanded="expanded"
+      class="elevation-1"
+      show-expand
+      single-expand
+      @click:row="incomeClicked"
+    >
       <template v-slot:top>
         <v-toolbar>
           <v-toolbar-title>واریزی</v-toolbar-title>
           <v-divider
-          vertical
-          inset
-          class="mx-4"></v-divider>
+            vertical
+            inset
+            class="mx-4"></v-divider>
           <v-spacer></v-spacer>
-          <v-dialog v-model="dialog" max-width="800px">
+          <v-dialog v-model="incomeDialog" max-width="800px">
             <template v-slot:activator="{ on }">
               <v-btn color="primary" dark v-on="on">واریز جدید</v-btn>
             </template>
@@ -51,7 +56,8 @@
                         <v-flex xs12>
                           <v-radio-group
                             v-model="income_form.type" row>
-                            <v-radio v-for="type in types" :key="type.id" :label="type.title" :value="type.id"></v-radio>
+                            <v-radio v-for="type in types" :key="type.id" :label="type.title"
+                                     :value="type.id"></v-radio>
                           </v-radio-group>
                         </v-flex>
                         <v-flex xs12 md6>
@@ -78,7 +84,8 @@
                         class="preview-title">مبلغ</span><span>{{income_form.amount}}</span></div>
                       <div v-if="income_form.type"><span class="preview-title">نوع واریز</span><span>{{incomeTypeTitleById(income_form.type)}}</span>
                       </div>
-                      <div v-if="income_form.date"><span class="preview-title">تاریخ</span><span>{{income_form.date}}</span>
+                      <div v-if="income_form.date"><span
+                        class="preview-title">تاریخ</span><span>{{income_form.date}}</span>
                       </div>
                       <div v-if="income_form.dueDate"><span class="preview-title">تاریخ وصل چک</span><span>{{income_form.dueDate}}</span>
                       </div>
@@ -88,17 +95,79 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn color="success" @click="submit">ثبت</v-btn>
-                <v-btn color="error" @click="cancel()">انصراف</v-btn>
-                <v-btn x-small class="warning" @click="clear()">clear</v-btn>
+                <v-btn color="error" @click="cancel">انصراف</v-btn>
+                <v-icon @click="clear()">mdi-close-circle</v-icon>
               </v-card-actions>
             </v-card>
           </v-dialog>
         </v-toolbar>
       </template>
-      <template v-slot:item.customer="{item}"><router-link :to="{name: 'Customer', params:{id: item.customer.id, name: item.customer.name}}">{{item.customer.name}}</router-link></template>
+      <template v-slot:item.customer="{item}">
+        <router-link :to="{name: 'Customer', params:{id: item.customer.id, name: item.customer.name}}">
+          {{item.customer.name}}
+        </router-link>
+      </template>
       <template v-slot:item.action="{ item }">
         <v-icon @click="editItem(item)" small class="mr-2">mdi-pencil</v-icon>
         <v-icon @click="deleteItem(item)" small class="mr-2">mdi-delete</v-icon>
+        <v-dialog v-model="assignDialog" :retain-focus="false" width="800px">
+          <template v-slot:activator="{on}">
+            <v-icon
+              @click="assignToMe(item)"
+              small
+              class="mr-2"
+              v-on="on">mdi-arrow-left-bold
+            </v-icon>
+          </template>
+          <v-card>
+            <v-card-title>اختصاص واریزی</v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-layout row wrap justify-space-around>
+                  <v-flex xs5 md3>
+                    <v-text-field
+                      v-model="assignForm.proforma"
+                      label="شماره پیش فاکتور">
+
+                    </v-text-field>
+                  </v-flex>
+                  <v-flex xs5 md3>
+                    <v-text-field label="مبلغ" v-model="assignForm.amount"></v-text-field>
+                  </v-flex>
+                  <v-flex xs12 md3 class="py-md-6">
+                    <PersianDatePicker
+                      v-model="assignForm.date"
+                      format="jYYYY-jMM-jDD"
+                      :auto-submit="true"/>
+                  </v-flex>
+                </v-layout>
+                <v-layout row wrap>
+                  <v-flex
+                    xs12
+                    md8>
+                    <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
+                  </v-flex>
+                  <v-flex xs12>
+                    <p>
+                      شما در حال اختصاص مبلغ <span class="red--text">{{assignForm.amount}}</span>
+                      از واریزی شماره <span class="red--text">{{assignForm.number}}</span>
+                      به پیش فاکتور شماره <span class="red--text">{{assignForm.proforma}}</span>
+                      مربوط به شرکت <span class="red--text">{{assignForm.customer.name}}</span> هستید.
+                    </p>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn color="success" @click="submitAssignment">ثبت</v-btn>
+              <v-btn color="error" @click="cancelAssignment">انصراف</v-btn>
+              <v-icon @click="clear()">mdi-close-circle</v-icon>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </template>
+      <template v-slot:expanded-item="">
+        {{relatedIncomeRows}}
       </template>
     </v-data-table>
   </div>
@@ -138,61 +207,164 @@
           dueDate: '',
           summary: ''
         },
+        selectedIncome: null,
+        defaultAssign: {
+          customer: {
+            id: '',
+            name: ''
+          },
+          number: '',
+          date: '',
+          amount: '',
+          proforma: '',
+          summary: ''
+        },
+        assignForm: {
+          customer: {
+            id: '',
+            name: ''
+          },
+          number: '',
+          date: '',
+          amount: '',
+          proforma: '',
+          summary: ''
+        },
         types: [
           {id: 1, title: 'حواله'},
           {id: 2, title: 'اصل چک'},
           {id: 3, title: 'کپی چک'},
         ],
-        dialog: false,
+        incomeDialog: false,
+        assignDialog: false,
         snackbar: false,
         // headers: ['مشتری', 'شماره', 'مبلغ', 'تاریخ', 'نوع'],
         headers: [
-          {text: 'مشتری', value:'customer'},
-          {text: 'شماره', value:'number'},
-          {text: 'مبلغ', value:'amount'},
-          {text: 'تایخ', value:'date'},
-          {text: 'نوع', value:'type_title'},
-          {text: 'اکشن', value:'action'},
+          {text: 'مشتری', value: 'customer'},
+          {text: 'شماره', value: 'number'},
+          {text: 'مبلغ', value: 'amount'},
+          {text: 'تایخ', value: 'date'},
+          {text: 'نوع', value: 'type_title'},
+          {text: 'اکشن', value: 'action'},
+        ],
+        incomeRowsHeaders: [
+          {value: 'amount', text: 'مبلغ'},
+          {value: 'proforma', text: 'پیش فاکتور'},
+          {value: 'date', text: 'تاریخ'},
         ],
         incomes: [
-          {customer: {id: 1, name: 'پارس تهران'}, number: 1235, amount: 3500000, date: "1398-12-12", type:1 ,type_title: 'حواله'},
-          {customer: {id: 2, name: 'پتروشیمی مارون'}, number: 569802, amount: 325900000, date: "1398-12-13", type:1 ,type_title: 'حواله'},
-          {customer: {id: 5, name: 'هوایار'}, number: 946254, amount: 565900000, date: "1398-10-25", dueDate: "1398-12-05", type:2 ,type_title: 'اصل چک'},
-          {customer: {id: 6, name: 'تهران بوستون'}, number: 486254, amount: 67800000, date: "1398-11-15", dueDate: "1398-10-01", type:2 ,type_title: 'اصل چک'},
-        ]
+          {
+            id: 1,
+            customer: {id: 1, name: 'پارس تهران'},
+            number: 1235,
+            amount: 3500000,
+            date: "1398-12-12",
+            type: 1,
+            type_title: 'حواله'
+          },
+          {
+            id: 2,
+            customer: {id: 2, name: 'پتروشیمی مارون'},
+            number: 569802,
+            amount: 325900000,
+            date: "1398-12-13",
+            type: 1,
+            type_title: 'حواله'
+          },
+          {
+            id: 3,
+            customer: {id: 5, name: 'هوایار'},
+            number: 946254,
+            amount: 565900000,
+            date: "1398-10-25",
+            dueDate: "1398-12-05",
+            type: 2,
+            type_title: 'اصل چک'
+          },
+          {
+            id: 4,
+            customer: {id: 6, name: 'تهران بوستون'},
+            number: 486254,
+            amount: 67800000,
+            date: "1398-11-15",
+            dueDate: "1398-10-01",
+            type: 2,
+            type_title: 'اصل چک'
+          },
+        ],
+        incomeRows: [
+          {id: 1, incomeId: 3, amount: 1250000, date: "1398-12-05", proforma: 9820580, summary: 'some summary'},
+          {id: 2, incomeId: 1, amount: 2250000, date: "1398-12-01", proforma: 9835280, summary: 'some summary'},
+          {id: 3, incomeId: 2, amount: 5250000, date: "1398-12-12", proforma: 9721240, summary: 'some summary'},
+          {id: 4, incomeId: 2, amount: 1350000, date: "1398-12-10", proforma: 9835130, summary: 'some summary'},
+          {id: 5, incomeId: 1, amount: 1500000, date: "1398-12-09", proforma: 9829870, summary: 'some summary'},
+        ],
+        expanded: [],
+        relatedIncomeRows: [],
       }
     },
     methods: {
-      clear(){
+      clear() {
         this.income_form = Object.assign({}, this.defaultItems);
         this.editedIndex = -1;
       },
       cancel() {
         this.clear()
-        this.dialog = false
+        this.incomeDialog = false
       },
       submit() {
-        if (this.editedIndex > -1){
+        if (this.editedIndex > -1) {
           Object.assign(this.incomes[this.editedIndex], this.income_form)
-        }else {
+        } else {
           this.incomes.push(this.income_form);
         }
         this.close()
       },
-      close(){
+      close() {
         this.snackbar = true;
-        this.dialog = false;
+        this.incomeDialog = false;
         this.clear()
       },
-      editItem(item){
+      editItem(item) {
         console.log(item)
         this.editedIndex = this.incomes.indexOf(item);
         this.income_form = Object.assign({}, item);
-        this.dialog = true;
+        this.incomeDialog = true;
       },
-      deleteItem(item){
+      deleteItem(item) {
         const index = this.incomes.indexOf(item);
         confirm('از حذف این ردیف اطمینان دارید؟') && this.incomes.splice(index, 1)
+      },
+      assignToMe(item) {
+        console.log(item.number, item.customer.name)
+        this.assignForm.customer = item.customer;
+        this.assignForm.number = item.number
+        this.assignDialog = true;
+      },
+      submitAssignment() {
+        console.log('submitting assignment')
+        this.assignDialog = false
+      },
+      cancelAssignment() {
+        console.log('cancelling assignment')
+        this.assignDialog = false
+      },
+      incomeClicked(value){
+        console.log(value.id)
+        if (this.expanded.includes(value)){
+          this.expanded.pop(value)
+        }else {
+          this.expanded = []
+          this.expanded.push(value)
+          this.incomeRowByIncomeId(value.id)
+        }
+      },
+      incomeRowByIncomeId(incomeId){
+        this.relatedIncomeRows = this.incomeRows
+          // .map((row, i) => row.incomeId === incomeId ? i : -1)
+          .map((row) => row.incomeId === incomeId ? row.id : -1)
+          .filter(index => index !== -1);
+
       },
       incomeTypeTitleById(id) {
         let title = null;

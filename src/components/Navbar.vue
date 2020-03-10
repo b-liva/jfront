@@ -39,7 +39,10 @@
         drawer: null,
         links: [
           {name:'dashboard', icone: '', text: 'داشبورد', route:'/'},
+          {name:'order', icone: '', text: 'سفارش', route:'/order'},
+          {name:'proforma', icone: '', text: 'پیش فاکتور', route:'/profoma'},
           {name:'income', icone: '', text: 'واریزی', route:'/income'},
+          {name:'income2', icone: '', text: 'واریزی2', route:'/income2'},
           {name:'customer', icone: '', text: 'مشتری', route:'/customer/10'},
         ]
       }

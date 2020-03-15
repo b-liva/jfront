@@ -28,7 +28,7 @@
             <template v-slot:activator="{ on }">
               <v-btn color="primary" dark v-on="on">واریز جدید</v-btn>
             </template>
-            <form>
+            <v-form>
               <v-card>
                 <v-card-title>
                   <span>ثبت واریزی</span>
@@ -38,9 +38,20 @@
                     <v-layout row wrap>
                       <v-flex xs12 md8>
                         <v-layout row wrap>
+                          <v-flex xs12 md12>
+                            <v-select
+                              v-model="select"
+                              :items="listOfItems"
+                              :error-messages="selectErrors"
+                              label="Item"
+                              required
+                              @change="$v.select.$touch()"
+                              @blur="$v.select.$touch()"
+                            ></v-select>
+                          </v-flex>
                           <v-flex xs12 md4>
                             <v-autocomplete
-                              v-model="income_form.customer"
+                              v-model="select"
                               :items="customers"
                               :loading="isLoading"
                               :search-input.sync="search"
@@ -50,10 +61,11 @@
                               hide-details
                               hide-selected
                               label="مشتری"
-                              :error-messages="customerErrors"
-                              @change="$v.income_form.customer.$touch()"
-                              @blur="$v.income_form.customer.$touch()"
+                              :error-message="selectErrors"
+                              @change="$v.select.$touch()"
+                              @blur="$v.select.$touch()"
                               class="custom-autocomplete">
+                              <template v-slot:message="message">{{message}}</template>
                             </v-autocomplete>
                           </v-flex>
                           <v-flex xs6 md4>
@@ -126,7 +138,7 @@
                   <v-icon @click="clear()">mdi-close-circle</v-icon>
                 </v-card-actions>
               </v-card>
-            </form>
+            </v-form>
           </v-dialog>
         </v-toolbar>
       </template>
@@ -231,15 +243,19 @@
   export default {
     mixins: [validationMixin],
     validations: {
+      select: { required },
       income_form: {
         number: {required},
         amount: {required},
         customer: {required},
+        date: {required},
       }
     },
     data() {
       return {
         name: "Income",
+        select: null,
+        listOfItems: [1,2,3,4,45],
         isLoading: false,
         valid: true,
         numberTest: '',
@@ -262,10 +278,7 @@
         },
         income_form: {
           owner: '',
-          customer: {
-            id: '',
-            name: '',
-          },
+          customer: null,
           number: '',
           type: 1,
           amount: '',
@@ -509,13 +522,35 @@
       customerErrors(){
         const errors = []
         if (!this.$v.income_form.customer.$dirty) return errors
-        !this.$v.income_form.customer && errors.push('Item is required')
+        !this.$v.income_form.customer && errors.push('مشتری اجباری است.')
         return errors
-      }
+      },
+      dateErrors(){
+        let error = null
+        if (!this.income_form.date){
+          error = 'تاریخ اجباری است.'
+        }
+        return error
+      },
+      selectErrors () {
+        const errors = []
+        if (!this.$v.select.$dirty) return errors
+        !this.$v.select.required && errors.push('Item is required')
+        return errors
+      },
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
     },
+    created() {
+      let today = new Date()
+      let dd = String(today.getDate()).padStart(2, '0');
+      let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = today.getFullYear();
+      this.income_form.date = yyyy + '-' + mm + '-' + dd
+      console.log(today);
+      console.log(this.income_form.date)
+    }
   }
 </script>
 

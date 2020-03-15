@@ -98,7 +98,8 @@
             <th></th>
             </thead>
             <tbody>
-            <tr v-for="row in relatedSpecRows" :key="row">
+            <tr v-for="row in relatedSpecRows" :key="row.id">
+              <td>{{spec[row].qty}}</td>
               <td>{{spec[row].kw}}</td>
               <td>{{spec[row].rpm}}</td>
               <td>{{spec[row].voltage}}</td>
@@ -112,40 +113,94 @@
         </td>
       </template>
     </v-data-table>
-    <v-dialog v-model="assignDialog" width="800px">
+    <v-dialog v-model="assignDialog" fullscreen hide-overlay>
       <v-card>
-        <v-card-title>افزودن ردیف</v-card-title>
+        <v-card-title>افزودن ردیف{{toBeAssignedRowInfo.id}}</v-card-title>
         <v-card-text>
           <v-container>
-            <v-layout row wrap justify-space-around>
-              <v-flex xs5 md3>
-                <v-text-field
-                  v-model="assignForm.qty"
-                  label="تعداد">
-
-                </v-text-field>
-              </v-flex>
-              <v-flex xs5 md3>
-                <v-text-field label="کیلووات" v-model="assignForm.kw"></v-text-field>
-              </v-flex>
-              <v-flex xs5 md3>
-                <v-text-field label="سرعت" v-model="assignForm.rpm"></v-text-field>
-              </v-flex>
-              <v-flex xs5 md3>
-                <v-text-field label="ولتاژ" v-model="assignForm.voltage"></v-text-field>
-              </v-flex>
-              <v-flex xs12 md3 class="py-md-6">
-                <PersianDatePicker
-                  v-model="assignForm.date"
-                  format="jYYYY-jMM-jDD"
-                  :auto-submit="true"/>
-              </v-flex>
-            </v-layout>
             <v-layout row wrap>
-              <v-flex
-                xs12
-                md8>
-                <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
+              <v-flex class="purple lighten-4" xs4 md3>
+                <v-layout row wrap justify-space-around>
+                  <v-flex xs5 md6>
+                    <v-text-field
+                      class="box"
+                      type="number"
+                      v-model="assignForm.qty"
+                      label="تعداد">
+                    </v-text-field>
+                    <v-text-field class="box" label="کیلووات" v-model="assignForm.kw"></v-text-field>
+                  </v-flex>
+                  <v-flex xs5 md6>
+                    <v-text-field class="box" label="سرعت" v-model="assignForm.rpm"></v-text-field>
+                    <v-text-field class="box" label="ولتاژ" v-model="assignForm.voltage"></v-text-field>
+                  </v-flex>
+                  <v-layout>
+                    <v-flex xs5 md3>
+                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IPID">
+                        <v-radio
+                          v-for="n in IPList"
+                          :key="n.id"
+                          :label="n.title"
+                          :value="n.id"
+                        ></v-radio>
+                      </v-radio-group>
+                    </v-flex>
+                    <v-flex xs5 md3>
+                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ICID">
+                        <v-radio
+                          v-for="n in ICList"
+                          :key="n.id"
+                          :label="n.title"
+                          :value="n.id"
+                        ></v-radio>
+                      </v-radio-group>
+                    </v-flex>
+                    <v-flex xs5 md3>
+                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IMID">
+                        <v-radio
+                          v-for="n in IMList"
+                          :key="n.id"
+                          :label="n.title"
+                          :value="n.id"
+                        ></v-radio>
+                      </v-radio-group>
+                    </v-flex>
+                  </v-layout>
+                  <v-flex xs12 md6 class="">
+                    <PersianDatePicker
+                      v-model="assignForm.date"
+                      format="jYYYY-jMM-jDD"
+                      :auto-submit="true"/>
+                  </v-flex>
+                  <v-flex
+                    xs12
+                    md12>
+                    <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
+                  </v-flex>
+                </v-layout>
+                <v-layout row wrap>
+                  <v-flex xs12>
+                    <v-icon
+                      @click="addSpecToList"
+                      small
+                      class="mr-2"
+                      v-on="on">mdi-arrow-left-bold
+                    </v-icon>
+                  </v-flex>
+                </v-layout>
+              </v-flex>
+              <v-flex xs8 md9 class="pink lighten-4"
+              >
+                <ul>
+                  <li v-for="row in relatedSpecRows" :key="row.id">
+                    <span>{{spec[row].qty}} دستگاه </span>
+                    <span>{{spec[row].kw}} کیلووات</span>
+                    <span>{{spec[row].rpm}} دور </span>
+                    <span>{{spec[row].voltage}} ولت</span>
+                    <v-icon @click="editSpec(spec[row])" small class="mr-2">mdi-pencil</v-icon>
+                    <v-icon @click="deleteSpec(spec[row])" small class="mr-2">mdi-delete</v-icon>
+                  </li>
+                </ul>
               </v-flex>
             </v-layout>
           </v-container>
@@ -190,34 +245,44 @@
         },
         selectedIncome: null,
         defaultAssign: {
+          orderId: '',
           qty: '',
           kw: '',
           rpm: '',
           voltage: '',
           date: '',
-          summary: ''
+          summary: '',
+          IPID: 1,
+          ICID: 1,
+          IMID: 1,
         },
         assignForm: {
+          orderId: '',
           qty: '',
           kw: '',
           rpm: '',
           voltage: '',
           date: '',
-          summary: ''
+          summary: '',
+          IPID: 1,
+          ICID: 1,
+          IMID: 1,
         },
         toBeAssignedRowInfoDefaults: {
-          customer:{
+          customer: {
             id: '',
             name: ''
           },
-          number: ''
+          number: '',
+          id: '',
         },
         toBeAssignedRowInfo: {
-          customer:{
+          customer: {
             id: '',
             name: ''
           },
-          number: ''
+          number: '',
+          id: '',
         },
         orderDialog: false,
         assignDialog: false,
@@ -230,6 +295,7 @@
           {text: 'اکشن', value: 'action'},
         ],
         specHeaders: [
+          {value: 'qty', text: 'دستگاه'},
           {value: 'kw', text: 'کیلووات'},
           {value: 'rpm', text: 'سرعت'},
           {value: 'voltage', text: 'ولتاژ'},
@@ -261,11 +327,25 @@
           },
         ],
         spec: [
-          {id: 1, incomeId: 3, qty: 2, kw: 1250, rpm: 1000, voltage: 380, date: "1398-12-05", summary: 'some summary'},
-          {id: 2, incomeId: 1, qty: 6, kw: 132, rpm: 3000, voltage: 380, date: "1398-12-01", summary: 'some summary'},
-          {id: 3, incomeId: 2, qty: 9, kw: 160, rpm: 1500, voltage: 380, date: "1398-12-12", summary: 'some summary'},
-          {id: 4, incomeId: 2, qty: 1, kw: 75, rpm: 1000, voltage: 690, date: "1398-12-10", summary: 'some summary'},
-          {id: 5, incomeId: 1, qty: 2, kw: 4800, rpm: 1500, voltage: 3300, date: "1398-12-09", summary: 'some summary'},
+          {id: 1, orderId: 3, qty: 2, kw: 1250, rpm: 1000, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-05", summary: 'some summary'},
+          {id: 2, orderId: 1, qty: 6, kw: 132, rpm: 3000, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-01", summary: 'some summary'},
+          {id: 3, orderId: 2, qty: 9, kw: 160, rpm: 1500, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-12", summary: 'some summary'},
+          {id: 4, orderId: 2, qty: 1, kw: 75, rpm: 1000, voltage: 690, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-10", summary: 'some summary'},
+          {id: 5, orderId: 4, qty: 2, kw: 4800, rpm: 1500, voltage: 3300, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-09", summary: 'some summary'},
+        ],
+        ICList: [
+          {id: 1, title: 'IC411'},
+          {id: 2, title: 'IC511'},
+          {id: 3, title: 'IC611'},
+          {id: 4, title: 'IC666'},
+        ],
+        IPList: [
+          {id: 1, title: 'IP55'},
+          {id: 2, title: 'IP66'},
+        ],
+        IMList: [
+          {id: 1, title: 'IMB3'},
+          {id: 2, title: 'IMB35'},
         ],
         editedSpecIndex: -1,
         expanded: [],
@@ -305,22 +385,40 @@
         confirm('از حذف این ردیف اطمینان دارید؟') && this.orders.splice(index, 1)
       },
       assignToMe(item) {
-        console.log(item.number, item.customer.name)
+        this.specByOrderId(item.id)
+        console.log(item.id, item.number, item.customer.name)
         this.assignDialog = true;
         this.toBeAssignedRowInfo.customer = item.customer;
-        this.toBeAssignedRowInfo.number = item.number
+        this.toBeAssignedRowInfo.number = item.number;
+        this.toBeAssignedRowInfo.id = item.id;
       },
-      submitAssignment() {
+      addSpecToList() {
         console.log('submitting assignment')
         if (this.editedSpecIndex > -1) {
           Object.assign(this.spec[this.editedSpecIndex], this.assignForm)
         } else {
+          this.assignForm.orderId = this.toBeAssignedRowInfo.id;
+          this.assignForm.id = this.spec.length + 1;
           this.spec.push(this.assignForm);
-          this.assignForm.incomeId = 1
+          // this.assignForm.orderId = '';
         }
         //Todo: should be implemented later.
-        // this.close()
-        this.assignDialog = false
+        this.specByOrderId(this.toBeAssignedRowInfo.id)
+        this.assignClose()
+        // this.assignDialog = false
+      },
+      submitAssignment(){
+        alert('sending data to the server.')
+        this.assignClose();
+        this.assignDialog = false;
+      },
+      assignClose() {
+        // this.assignDialog = false;
+        this.assignClear()
+      },
+      assignClear() {
+        this.assignForm = Object.assign({}, this.defaultAssign);
+        this.editedSpecIndex = -1;
       },
       cancelAssignment() {
         console.log('cancelling assignment')
@@ -336,21 +434,23 @@
           this.specByOrderId(value.item.id)
         }
       },
-      specByOrderId(incomeId) {
+      specByOrderId(orderId) {
         this.relatedSpecRows = this.spec
-          .map((row, i) => row.incomeId === incomeId ? i : -1)
+          .map((row, i) => row.orderId === orderId ? i : -1)
           .filter(index => index !== -1);
+        console.log(this.relatedSpecRows)
       },
       editSpec(rowItem) {
         console.log(rowItem);
         this.editedSpecIndex = this.spec.indexOf(rowItem)
         this.assignForm = Object.assign({}, rowItem)
+        this.toBeAssignedRowInfo.id = rowItem.orderId
         this.assignDialog = true;
       },
       deleteSpec(rowItem) {
         const index = this.spec.indexOf(rowItem);
         confirm('از حذف این ردیف اطمینان دارید؟') && this.spec.splice(index, 1)
-        this.specByOrderId(rowItem.id)
+        this.specByOrderId(rowItem.orderId)
       },
       incomeTypeTitleById(id) {
         let title = null;
@@ -370,6 +470,13 @@
   }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+  .v-input.box {
+    width: 50%;
+    height: 35px;
+    .v-label {
+      font-size: 12px;
+      color: red;
+    }
+  }
 </style>

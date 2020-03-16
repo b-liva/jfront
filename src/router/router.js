@@ -2,7 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Dashboard from "../views/Dashboard";
 import Order from '../views/Order';
-import Proforma from "../views/Proforma";
+import Proforma from "../views/proforma/Proforma";
 import Income from "../views/Income";
 import Income2 from "../views/Income2";
 import Customer from "../views/Customer"

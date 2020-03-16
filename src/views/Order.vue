@@ -89,6 +89,18 @@
           </template>
           <span>افزودن ردیف به درخواست</span>
         </v-tooltip>
+        <v-tooltip top>
+          <template v-slot:activator="{on}">
+            <v-icon @click="proformaListDialog = true" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
+          </template>
+          <span>مشاهده پیش فاکتور های مرتبط</span>
+        </v-tooltip>
+        <v-tooltip top>
+          <template v-slot:activator="{on}">
+            <v-icon @click="proformaFormDialog = true" v-on="on" small class="mr-2">mdi-playlist-plus</v-icon>
+          </template>
+          <span>افزودن پیش فاکتور جدید به درخواست</span>
+        </v-tooltip>
       </template>
       <template v-slot:expanded-item="{headers}">
         <td :colspan="headers.length">
@@ -212,11 +224,19 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="proformaListDialog">
+      <proforma-list :proformas="proformas"/>
+    </v-dialog>
+    <v-dialog v-model="proformaFormDialog">
+      <proforma-form/>
+    </v-dialog>
   </div>
 </template>
 
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
+  import ProformaList from "./proforma/ProformaList";
+  import ProformaForm from "./proforma/ProformaForm";
 
   export default {
     data() {
@@ -285,6 +305,8 @@
           id: '',
         },
         orderDialog: false,
+        proformaFormDialog: false,
+        proformaListDialog: false,
         assignDialog: false,
         snackbar: false,
         // headers: ['مشتری', 'شماره', 'مبلغ', 'تاریخ', 'نوع'],
@@ -327,11 +349,71 @@
           },
         ],
         spec: [
-          {id: 1, orderId: 3, qty: 2, kw: 1250, rpm: 1000, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-05", summary: 'some summary'},
-          {id: 2, orderId: 1, qty: 6, kw: 132, rpm: 3000, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-01", summary: 'some summary'},
-          {id: 3, orderId: 2, qty: 9, kw: 160, rpm: 1500, voltage: 380, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-12", summary: 'some summary'},
-          {id: 4, orderId: 2, qty: 1, kw: 75, rpm: 1000, voltage: 690, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-10", summary: 'some summary'},
-          {id: 5, orderId: 4, qty: 2, kw: 4800, rpm: 1500, voltage: 3300, IPID: 1, ICID: 1, IMID: 1, date: "1398-12-09", summary: 'some summary'},
+          {
+            id: 1,
+            orderId: 3,
+            qty: 2,
+            kw: 1250,
+            rpm: 1000,
+            voltage: 380,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-05",
+            summary: 'some summary'
+          },
+          {
+            id: 2,
+            orderId: 1,
+            qty: 6,
+            kw: 132,
+            rpm: 3000,
+            voltage: 380,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-01",
+            summary: 'some summary'
+          },
+          {
+            id: 3,
+            orderId: 2,
+            qty: 9,
+            kw: 160,
+            rpm: 1500,
+            voltage: 380,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-12",
+            summary: 'some summary'
+          },
+          {
+            id: 4,
+            orderId: 2,
+            qty: 1,
+            kw: 75,
+            rpm: 1000,
+            voltage: 690,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-10",
+            summary: 'some summary'
+          },
+          {
+            id: 5,
+            orderId: 4,
+            qty: 2,
+            kw: 4800,
+            rpm: 1500,
+            voltage: 3300,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-09",
+            summary: 'some summary'
+          },
         ],
         ICList: [
           {id: 1, title: 'IC411'},
@@ -350,6 +432,24 @@
         editedSpecIndex: -1,
         expanded: [],
         relatedSpecRows: [],
+        proformas: [
+          {
+            id: 1, number: 9820365, orderNumber: 983003, customer: {id: 5, name: 'دژآب'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+          },
+          {
+            id: 2, number: 9830562, orderNumber: 982503, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+          },
+          {
+            id: 3, number: 9820985, orderNumber: 983065, customer: {id: 2, name: 'هوایار'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+          },
+          {
+            id: 4, number: 9820678, orderNumber: 983543, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+          },
+        ]
       }
     },
     methods: {
@@ -407,7 +507,7 @@
         this.assignClose()
         // this.assignDialog = false
       },
-      submitAssignment(){
+      submitAssignment() {
         alert('sending data to the server.')
         this.assignClose();
         this.assignDialog = false;
@@ -465,7 +565,9 @@
     },
     computed: {},
     components: {
-      PersianDatePicker: VuePersianDatetimePicker
+      PersianDatePicker: VuePersianDatetimePicker,
+      ProformaList: ProformaList,
+      ProformaForm: ProformaForm,
     },
   }
 </script>
@@ -474,6 +576,7 @@
   .v-input.box {
     width: 50%;
     height: 35px;
+
     .v-label {
       font-size: 12px;
       color: red;

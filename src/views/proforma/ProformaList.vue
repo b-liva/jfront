@@ -41,15 +41,55 @@
             <th></th>
             </thead>
             <tbody>
+
             <tr v-for="row in item.pspecs" :key="row.id">
-              <td>{{row.qty}}</td>
+              <v-text-field
+                v-model="row.qty"
+                :disabled="!row.editingPSpec">
+              </v-text-field>
               <td>{{row.kw}}</td>
               <td>{{row.rpm}}</td>
               <td>{{row.voltage}}</td>
-              <td>{{row.price}}</td>
+              <td>
+                <v-text-field
+                  v-model="row.price"
+                  :disabled="!row.editingPSpec">
+
+                </v-text-field>
+              </td>
+              <td>
+                <template v-if="!row.editingPSpec">
+                  <v-icon small class="mr-2 green--text text--darken2" @click="editPspec(row)">mdi-pencil</v-icon>
+                  <v-icon small class="mr-2 red--text text--darken-2">mdi-delete</v-icon>
+                </template>
+                <template v-else>
+                  <v-icon small class="mr-2 green--text text--darken-2" @click="savingChanes(row)">mdi-check</v-icon>
+                  <v-icon small class="mr-2 red--text text--darken-3" @click="cancelChanges(row)">mdi-cancel</v-icon>
+                </template>
+
+              </td>
             </tr>
             </tbody>
           </table>
+          <v-data-table dense :headers="pSpecHeader" :items="item.pspecs">
+            <template v-slot:item.qty="{item}">
+              <v-text-field v-model="item.qty" :disabled="!item.editingPSpec"></v-text-field>
+            </template>
+            <template v-slot:item.price="{item}">
+              <v-text-field :disabled="!item.editingPSpec" v-model="item.price"></v-text-field>
+            </template>
+            <template v-slot:item.action="{item}">
+              <template v-if="!item.editingPSpec">
+                <v-icon small class="mr-2 green--text text--darken2" @click="editPspec(item)">mdi-pencil</v-icon>
+                <v-icon small class="mr-2 red--text text--darken-2">mdi-delete</v-icon>
+              </template>
+              <template v-else>
+                <v-icon small class="mr-2 green--text text--darken-2" @click="savingChanes(item)">mdi-check</v-icon>
+                <v-icon small class="mr-2 red--text text--darken-3" @click="cancelChanges(item)">mdi-cancel</v-icon>
+              </template>
+            </template>
+
+          </v-data-table>
         </td>
       </template>
     </v-data-table>
@@ -62,19 +102,21 @@
 
 <script>
   import ProformaForm from "./ProformaForm";
+
   export default {
-    data(){
+    data() {
       return {
         name: "ProformaList",
         expanded: false,
         snackbar: false,
+        editingPSpec: false,
         proformaFormDialog: false,
         headers: [
           {value: 'number', text: 'شماره پیش فاکتور'},
           {value: 'orderNumber', text: 'شماره درخواست'},
           {value: 'customer', text: 'مشتری'},
-          {value:'date', text: 'تاریخ'},
-          {value:'action', text: ''},
+          {value: 'date', text: 'تاریخ'},
+          {value: 'action', text: ''},
         ],
         pSpecHeader: [
           {value: 'qty', text: 'تعداد'},
@@ -82,6 +124,7 @@
           {value: 'rpm', text: 'دور'},
           {value: 'voltage', text: 'ولتاز'},
           {value: 'price', text: 'قیمت'},
+          {value: 'action', text: ''},
         ]
       }
     },
@@ -92,11 +135,24 @@
       proformaClicked() {
         console.log('proforma clicked.')
       },
-      editItem(item){
+      editItem(item) {
         console.log('editing Item: ', item);
       },
-      deleteItem(item){
+      deleteItem(item) {
         console.log('deleting Item: ', item);
+      },
+      editPspec: function (item) {
+        item.editingPSpec = true;
+        console.log('editing Item: ', item);
+
+      },
+      savingChanes: function (row) {
+        row.editingPSpec = false;
+        console.log('saving', row)
+      },
+      cancelChanges: function (row) {
+        row.editingPSpec = false;
+        console.log('canceling', row)
       },
     },
     components: {

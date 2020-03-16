@@ -435,19 +435,19 @@
         proformas: [
           {
             id: 1, number: 9820365, orderNumber: 983003, customer: {id: 5, name: 'دژآب'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
             id: 2, number: 9830562, orderNumber: 982503, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
             id: 3, number: 9820985, orderNumber: 983065, customer: {id: 2, name: 'هوایار'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+            pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
             id: 4, number: 9820678, orderNumber: 983543, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000}]
+            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
         ]
       }

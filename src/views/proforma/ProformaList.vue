@@ -35,43 +35,7 @@
       </template>
       <template v-slot:expanded-item="{headers, item}">
         <td :colspan="headers.length">
-          <table class="expanded-table">
-            <thead>
-            <th v-for="head in pSpecHeader" :key="head.value">{{head.text}}</th>
-            <th></th>
-            </thead>
-            <tbody>
-
-            <tr v-for="row in item.pspecs" :key="row.id">
-              <v-text-field
-                v-model="row.qty"
-                :disabled="!row.editingPSpec">
-              </v-text-field>
-              <td>{{row.kw}}</td>
-              <td>{{row.rpm}}</td>
-              <td>{{row.voltage}}</td>
-              <td>
-                <v-text-field
-                  v-model="row.price"
-                  :disabled="!row.editingPSpec">
-
-                </v-text-field>
-              </td>
-              <td>
-                <template v-if="!row.editingPSpec">
-                  <v-icon small class="mr-2 green--text text--darken2" @click="editPspec(row)">mdi-pencil</v-icon>
-                  <v-icon small class="mr-2 red--text text--darken-2">mdi-delete</v-icon>
-                </template>
-                <template v-else>
-                  <v-icon small class="mr-2 green--text text--darken-2" @click="savingChanes(row)">mdi-check</v-icon>
-                  <v-icon small class="mr-2 red--text text--darken-3" @click="cancelChanges(row)">mdi-cancel</v-icon>
-                </template>
-
-              </td>
-            </tr>
-            </tbody>
-          </table>
-          <v-data-table dense :headers="pSpecHeader" :items="item.pspecs">
+          <v-data-table dark dense class="elevation-24" :headers="pSpecHeader" :items="item.pspecs">
             <template v-slot:item.qty="{item}">
               <v-text-field v-model="item.qty" :disabled="!item.editingPSpec"></v-text-field>
             </template>

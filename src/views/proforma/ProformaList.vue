@@ -11,7 +11,6 @@
       :headers="headers"
       :items="proformas"
       :expand="expanded"
-      class="elevation-1"
       show-expand
       single-expand
       @item-expanded="proformaClicked">
@@ -32,27 +31,53 @@
       <template v-slot:item.action="{item}">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
         <v-icon small class="mr-2" @click="deleteItem(item)">mdi-delete</v-icon>
+        <v-icon small class="mr-2 red--text text--darken-3">mdi-file-pdf</v-icon>
       </template>
       <template v-slot:expanded-item="{headers, item}">
         <td :colspan="headers.length">
-          <v-data-table dark dense class="elevation-24" :headers="pSpecHeader" :items="item.pspecs">
-            <template v-slot:item.qty="{item}">
-              <v-text-field v-model="item.qty" :disabled="!item.editingPSpec"></v-text-field>
+          <v-data-table dense class="elevation-24" :headers="pSpecHeader" :items="item.pspecs">
+            <template v-slot:item.qty="props">
+              <v-edit-dialog
+                :return-value.sync="props.item.qty"
+                save-text="ذخیره"
+                cancelText="بیخیال"
+                large
+                eager
+                persistent
+                @save="save"
+                @cancel="cancel"
+                @open="open"
+                @close="close">
+                <div>{{props.item.qty}} دستگاه</div>
+                <template v-slot:input>
+                  <v-text-field
+                    v-model="props.item.qty"
+                    label="Edit"
+                    single-line>
+                  </v-text-field>
+                </template>
+              </v-edit-dialog>
             </template>
-            <template v-slot:item.price="{item}">
-              <v-text-field :disabled="!item.editingPSpec" v-model="item.price"></v-text-field>
+            <template v-slot:item.price="props">
+              <v-edit-dialog
+                :return-value.sync="props.item.price"
+                save-text="ذخیره"
+                cancel-text="انصراف"
+                large
+                persistent
+                @save="save"
+                @cancel="cancel"
+                @open="open"
+                @close="close">{{props.item.price}}
+                <template v-slot:input>
+                  <v-text-field
+                    v-model="props.item.price"
+                    label="Edit"
+                    single-line>
+                  </v-text-field>
+                </template>
+              </v-edit-dialog>
             </template>
-            <template v-slot:item.action="{item}">
-              <template v-if="!item.editingPSpec">
-                <v-icon small class="mr-2 green--text text--darken2" @click="editPspec(item)">mdi-pencil</v-icon>
-                <v-icon small class="mr-2 red--text text--darken-2">mdi-delete</v-icon>
-              </template>
-              <template v-else>
-                <v-icon small class="mr-2 green--text text--darken-2" @click="savingChanes(item)">mdi-check</v-icon>
-                <v-icon small class="mr-2 red--text text--darken-3" @click="cancelChanges(item)">mdi-cancel</v-icon>
-              </template>
-            </template>
-
           </v-data-table>
         </td>
       </template>
@@ -86,9 +111,8 @@
           {value: 'qty', text: 'تعداد'},
           {value: 'kw', text: 'کیلووات'},
           {value: 'rpm', text: 'دور'},
-          {value: 'voltage', text: 'ولتاز'},
+          {value: 'voltage', text: 'ولتاژ'},
           {value: 'price', text: 'قیمت'},
-          {value: 'action', text: ''},
         ]
       }
     },
@@ -117,6 +141,18 @@
       cancelChanges: function (row) {
         row.editingPSpec = false;
         console.log('canceling', row)
+      },
+      save() {
+        console.log('implementing soon.')
+      },
+      cancel() {
+        console.log('implementing soon.')
+      },
+      open() {
+        console.log('implementing soon.')
+      },
+      close() {
+        console.log('implementing soon.')
       },
     },
     components: {

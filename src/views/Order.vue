@@ -91,13 +91,13 @@
         </v-tooltip>
         <v-tooltip top>
           <template v-slot:activator="{on}">
-            <v-icon @click="proformaListDialog = true" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
+            <v-icon @click="listRelatedProformas(item)" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
           </template>
           <span>مشاهده پیش فاکتور های مرتبط</span>
         </v-tooltip>
         <v-tooltip top>
           <template v-slot:activator="{on}">
-            <v-icon @click="proformaFormDialog = true" v-on="on" small class="mr-2">mdi-playlist-plus</v-icon>
+            <v-icon @click="addProforma(item)" v-on="on" small class="mr-2">mdi-playlist-plus</v-icon>
           </template>
           <span>افزودن پیش فاکتور جدید به درخواست</span>
         </v-tooltip>
@@ -225,10 +225,10 @@
       </v-card>
     </v-dialog>
     <v-dialog v-model="proformaListDialog">
-      <proforma-list :proformas="proformas"/>
+      <proforma-list :proformas="relatedProformas"/>
     </v-dialog>
     <v-dialog v-model="proformaFormDialog">
-      <proforma-form/>
+      <proforma-form :order="proformaOrder" :specs="orderSpecs"/>
     </v-dialog>
   </div>
 </template>
@@ -434,22 +434,29 @@
         relatedSpecRows: [],
         proformas: [
           {
-            id: 1, number: 9820365, orderNumber: 983003, customer: {id: 5, name: 'دژآب'}, date: "1398-12-26",
+            id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
             pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
-            id: 2, number: 9830562, orderNumber: 982503, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
+            id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
             pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
-            id: 3, number: 9820985, orderNumber: 983065, customer: {id: 2, name: 'هوایار'}, date: "1398-12-26",
+            id: 3, number: 9820985, orderNumber: 982254, customer: {id: 2, name: 'هوایار'}, date: "1398-12-26",
             pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
           {
-            id: 4, number: 9820678, orderNumber: 983543, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
+            id: 4, number: 9820678, orderNumber: 983500, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
             pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
           },
-        ]
+          {
+            id: 5, number: 9820678, orderNumber: 983500, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 4500000, editingPSpec: false}]
+          },
+        ],
+        relatedProformas: [],
+        proformaOrder: null,
+        orderSpecs: null,
       }
     },
     methods: {
@@ -561,6 +568,16 @@
           }
         })
         return title;
+      },
+      listRelatedProformas(order){
+        console.log('listing related order for: ', order);
+        this.relatedProformas = this.proformas.map((row, i) => row.orderNumber === order.number ? this.proformas[i] : -1).filter(index => index !== -1)
+        this.proformaListDialog = true;
+      },
+      addProforma(order){
+        console.log('adding proforma to order: ', order)
+        this.proformaFormDialog = true;
+        this.proformaOrder = order;
       }
     },
     computed: {},

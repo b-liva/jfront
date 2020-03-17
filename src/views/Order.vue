@@ -102,7 +102,7 @@
           <span>افزودن پیش فاکتور جدید به درخواست</span>
         </v-tooltip>
       </template>
-      <template v-slot:expanded-item="{headers}">
+      <template v-slot:expanded-item="{headers, item}">
         <td :colspan="headers.length">
           <table class="expanded-table">
             <thead>
@@ -110,14 +110,14 @@
             <th></th>
             </thead>
             <tbody>
-            <tr v-for="row in relatedSpecRows" :key="row.id">
-              <td>{{spec[row].qty}}</td>
-              <td>{{spec[row].kw}}</td>
-              <td>{{spec[row].rpm}}</td>
-              <td>{{spec[row].voltage}}</td>
+            <tr v-for="spec in item.specs" :key="spec.id">
+              <td>{{spec.qty}}</td>
+              <td>{{spec.kw}}</td>
+              <td>{{spec.rpm}}</td>
+              <td>{{spec.voltage}}</td>
               <td>
-                <v-icon @click="editSpec(spec[row])" small class="mr-2">mdi-pencil</v-icon>
-                <v-icon @click="deleteSpec(spec[row])" small class="mr-2">mdi-delete</v-icon>
+                <v-icon @click="editSpec(spec)" small class="mr-2">mdi-pencil</v-icon>
+                <v-icon @click="deleteSpec(spec)" small class="mr-2">mdi-delete</v-icon>
               </td>
             </tr>
             </tbody>
@@ -127,7 +127,7 @@
     </v-data-table>
     <v-dialog v-model="assignDialog" fullscreen hide-overlay>
       <v-card>
-        <v-card-title>افزودن ردیف{{toBeAssignedRowInfo.id}}</v-card-title>
+        <v-card-title>افزودن ردیف{{orderEditIndex}}{{editedSpecIndex}}</v-card-title>
         <v-card-text>
           <v-container>
             <v-layout row wrap>
@@ -203,6 +203,15 @@
               </v-flex>
               <v-flex xs8 md9 class="pink lighten-4"
               >
+                <v-data-table
+                  v-if="orderEditIndex !== -1"
+                  :headers="specHeaders"
+                  :items="orders[orderEditIndex].specs">
+                  <template v-slot:item.action="{item}">
+                    <v-icon @click="editSpec(item)" small class="mr-2">mdi-pencil</v-icon>
+                    <v-icon @click="deleteSpec(item)" small class="mr-2">mdi-delete</v-icon>
+                  </template>
+                </v-data-table>
                 <ul>
                   <li v-for="row in relatedSpecRows" :key="row.id">
                     <span>{{spec[row].qty}} دستگاه </span>
@@ -321,99 +330,91 @@
           {value: 'kw', text: 'کیلووات'},
           {value: 'rpm', text: 'سرعت'},
           {value: 'voltage', text: 'ولتاژ'},
+          {value: 'action', text: ''},
         ],
         orders: [
           {
-            id: 1,
-            customer: {id: 1, name: 'پارس تهران'},
-            number: 981235,
-            date: "1398-12-12",
+            id: 1, customer: {id: 1, name: 'پارس تهران'}, number: 981235, date: "1398-12-12", specs: [
+              {
+                id: 2,
+                orderId: 1,
+                qty: 6,
+                kw: 132,
+                rpm: 3000,
+                voltage: 380,
+                IPID: 1,
+                ICID: 1,
+                IMID: 1,
+                date: "1398-12-01",
+                summary: 'some summary'
+              },
+            ],
           },
           {
-            id: 2,
-            customer: {id: 2, name: 'پتروشیمی مارون'},
-            number: 983500,
-            date: "1398-12-13",
+            id: 2, customer: {id: 2, name: 'پتروشیمی مارون'}, number: 983500, date: "1398-12-13", specs: [
+              {
+                id: 3,
+                orderId: 2,
+                qty: 9,
+                kw: 160,
+                rpm: 1500,
+                voltage: 380,
+                IPID: 1,
+                ICID: 1,
+                IMID: 1,
+                date: "1398-12-12",
+                summary: 'some summary'
+              },
+              {
+                id: 4,
+                orderId: 2,
+                qty: 1,
+                kw: 75,
+                rpm: 1000,
+                voltage: 690,
+                IPID: 1,
+                ICID: 1,
+                IMID: 1,
+                date: "1398-12-10",
+                summary: 'some summary'
+              },
+            ],
           },
           {
-            id: 3,
-            customer: {id: 5, name: 'هوایار'},
-            number: 982254,
-            date: "1398-10-25",
+            id: 3, customer: {id: 5, name: 'هوایار'}, number: 982254, date: "1398-10-25", specs: [
+              {
+                id: 1,
+                orderId: 3,
+                qty: 2,
+                kw: 1250,
+                rpm: 1000,
+                voltage: 380,
+                IPID: 1,
+                ICID: 1,
+                IMID: 1,
+                date: "1398-12-05",
+                summary: 'some summary'
+              },
+            ],
           },
           {
-            id: 4,
-            customer: {id: 6, name: 'تهران بوستون'},
-            number: 980204,
-            date: "1398-11-15",
+            id: 4, customer: {id: 6, name: 'تهران بوستون'}, number: 980204, date: "1398-11-15", specs: [
+              {
+                id: 5,
+                orderId: 4,
+                qty: 2,
+                kw: 4800,
+                rpm: 1500,
+                voltage: 3300,
+                IPID: 1,
+                ICID: 1,
+                IMID: 1,
+                date: "1398-12-09",
+                summary: 'some summary'
+              },
+            ],
           },
-        ],
-        spec: [
-          {
-            id: 1,
-            orderId: 3,
-            qty: 2,
-            kw: 1250,
-            rpm: 1000,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-05",
-            summary: 'some summary'
-          },
-          {
-            id: 2,
-            orderId: 1,
-            qty: 6,
-            kw: 132,
-            rpm: 3000,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-01",
-            summary: 'some summary'
-          },
-          {
-            id: 3,
-            orderId: 2,
-            qty: 9,
-            kw: 160,
-            rpm: 1500,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-12",
-            summary: 'some summary'
-          },
-          {
-            id: 4,
-            orderId: 2,
-            qty: 1,
-            kw: 75,
-            rpm: 1000,
-            voltage: 690,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-10",
-            summary: 'some summary'
-          },
-          {
-            id: 5,
-            orderId: 4,
-            qty: 2,
-            kw: 4800,
-            rpm: 1500,
-            voltage: 3300,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-09",
-            summary: 'some summary'
-          },
+
         ],
         ICList: [
           {id: 1, title: 'IC411'},
@@ -430,28 +431,64 @@
           {id: 2, title: 'IMB35'},
         ],
         editedSpecIndex: -1,
+        orderEditIndex: -1,
         expanded: [],
         relatedSpecRows: [],
         proformas: [
           {
             id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
+            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
           },
           {
             id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
+            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
           },
           {
             id: 3, number: 9820985, orderNumber: 982254, customer: {id: 2, name: 'هوایار'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
+            pspecs: [{qty: 2, kw: 450, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
           },
           {
             id: 4, number: 9820678, orderNumber: 983500, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}]
+            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
           },
           {
             id: 5, number: 9820678, orderNumber: 983500, customer: {id: 3, name: 'مارون'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {qty: 3, kw: 160, rpm: 1500, voltage: 380, price: 4500000, editingPSpec: false}]
+            pspecs: [{qty: 2, kw: 75, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 4500000,
+              editingPSpec: false
+            }]
           },
         ],
         relatedProformas: [],
@@ -491,26 +528,27 @@
         const index = this.orders.indexOf(item);
         confirm('از حذف این ردیف اطمینان دارید؟') && this.orders.splice(index, 1)
       },
-      assignToMe(item) {
-        this.specByOrderId(item.id)
-        console.log(item.id, item.number, item.customer.name)
+      assignToMe(order) {
+        console.log(order)
         this.assignDialog = true;
-        this.toBeAssignedRowInfo.customer = item.customer;
-        this.toBeAssignedRowInfo.number = item.number;
-        this.toBeAssignedRowInfo.id = item.id;
+        this.editedSpecIndex = -1;
+        this.orderEditIndex = this.orders.indexOf(order)
+        this.assignForm.customer = order.customer;
+        this.assignForm.number = order.number;
+        this.assignForm.id = order.id;
       },
       addSpecToList() {
-        console.log('submitting assignment')
+        console.log('submitting assignment', this.assignForm)
+        console.log(this.editedSpecIndex, this.editedSpecIndex > -1);
         if (this.editedSpecIndex > -1) {
-          Object.assign(this.spec[this.editedSpecIndex], this.assignForm)
+          Object.assign(this.orders[this.orderEditIndex].specs[this.editedSpecIndex], this.assignForm)
         } else {
-          this.assignForm.orderId = this.toBeAssignedRowInfo.id;
-          this.assignForm.id = this.spec.length + 1;
-          this.spec.push(this.assignForm);
+          this.assignForm.orderId = this.orders[this.orderEditIndex].id
+          this.assignForm.id = this.orders[this.orderEditIndex].specs.length + 1;
+          this.orders[this.orderEditIndex].specs.push(this.assignForm);
           // this.assignForm.orderId = '';
         }
         //Todo: should be implemented later.
-        this.specByOrderId(this.toBeAssignedRowInfo.id)
         this.assignClose()
         // this.assignDialog = false
       },
@@ -526,6 +564,7 @@
       assignClear() {
         this.assignForm = Object.assign({}, this.defaultAssign);
         this.editedSpecIndex = -1;
+        // this.orderEditIndex = -1;
       },
       cancelAssignment() {
         console.log('cancelling assignment')
@@ -538,26 +577,24 @@
         } else {
           this.expanded = []
           this.expanded.push(value.item)
-          this.specByOrderId(value.item.id)
         }
       },
-      specByOrderId(orderId) {
-        this.relatedSpecRows = this.spec
-          .map((row, i) => row.orderId === orderId ? i : -1)
-          .filter(index => index !== -1);
-        console.log(this.relatedSpecRows)
-      },
-      editSpec(rowItem) {
-        console.log(rowItem);
-        this.editedSpecIndex = this.spec.indexOf(rowItem)
-        this.assignForm = Object.assign({}, rowItem)
-        this.toBeAssignedRowInfo.id = rowItem.orderId
+      editSpec(spec) {
+        console.log(spec);
+        let order = this.orders.map((row, i) => row.id === spec.orderId ? this.orders[i] : -1).filter(index => index !== -1)[0]
+        this.orderEditIndex = this.orders.indexOf(order)
+        this.editedSpecIndex = order.specs.indexOf(spec)
+        console.log(order, this.orderEditIndex, spec, this.editedSpecIndex)
+        this.assignForm = Object.assign({}, spec)
+        // this.toBeAssignedRowInfo.id = rowItem.orderId
         this.assignDialog = true;
       },
-      deleteSpec(rowItem) {
-        const index = this.spec.indexOf(rowItem);
-        confirm('از حذف این ردیف اطمینان دارید؟') && this.spec.splice(index, 1)
-        this.specByOrderId(rowItem.orderId)
+      deleteSpec(spec) {
+        let order = this.orders.map((row, i) => row.id === spec.orderId ? this.orders[i] : -1).filter(index => index !== -1)[0]
+        this.orderEditIndex = this.orders.indexOf(order)
+        const index = this.orders[this.orderEditIndex].specs.indexOf(spec);
+        confirm('از حذف این ردیف اطمینان دارید؟') && this.orders[this.orderEditIndex].specs.splice(index, 1)
+        this.editedSpecIndex = -1;
       },
       incomeTypeTitleById(id) {
         let title = null;
@@ -569,12 +606,12 @@
         })
         return title;
       },
-      listRelatedProformas(order){
+      listRelatedProformas(order) {
         console.log('listing related order for: ', order);
         this.relatedProformas = this.proformas.map((row, i) => row.orderNumber === order.number ? this.proformas[i] : -1).filter(index => index !== -1)
         this.proformaListDialog = true;
       },
-      addProforma(order){
+      addProforma(order) {
         console.log('adding proforma to order: ', order)
         this.proformaFormDialog = true;
         this.proformaOrder = order;

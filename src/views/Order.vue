@@ -234,10 +234,10 @@
       </v-card>
     </v-dialog>
     <v-dialog v-model="proformaListDialog">
-      <proforma-list :proformas="relatedProformas"/>
+      <proforma-list :proformas="relatedProformas" :order="relatedOrder"/>
     </v-dialog>
     <v-dialog v-model="proformaFormDialog">
-      <proforma-form :order="proformaOrder" :specs="orderSpecs"/>
+      <proforma-form :order="proformaOrder"/>
     </v-dialog>
   </div>
 </template>
@@ -492,6 +492,7 @@
           },
         ],
         relatedProformas: [],
+        relatedOrder: null,
         proformaOrder: null,
         orderSpecs: null,
       }
@@ -608,6 +609,7 @@
       },
       listRelatedProformas(order) {
         console.log('listing related order for: ', order);
+        this.relatedOrder = order;
         this.relatedProformas = this.proformas.map((row, i) => row.orderNumber === order.number ? this.proformas[i] : -1).filter(index => index !== -1)
         this.proformaListDialog = true;
       },

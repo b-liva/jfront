@@ -83,7 +83,7 @@
       </template>
     </v-data-table>
     <v-dialog v-model="proformaFormDialog">
-      <proforma-form/>
+      <proforma-form :order="order"/>
     </v-dialog>
 
   </div>
@@ -118,6 +118,7 @@
     },
     props: [
       "proformas",
+      "order"
     ],
     methods: {
       proformaClicked() {

@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <v-card>
       <v-card-title>ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری: {{order.customer.name}}
       </v-card-title>
@@ -48,8 +49,8 @@
 
       </v-card-text>
       <v-card-actions>
-        <v-btn>ثبت</v-btn>
-        <v-btn>انصراف</v-btn>
+        <v-btn @click="submit">ثبت</v-btn>
+        <v-btn @click="cancel">انصراف</v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -71,12 +72,13 @@
         ]
       }
     },
-    props: ['order'],
+    props: ['order', 'proformaFormDialog'],
     created() {
+      console.log('created')
       this.order.specs.map((spec) => {
         spec.price = 0;
         spec.staged = false;
-      })
+      });
     },
     methods: {
       addToPorformaSpecs(spec) {
@@ -96,6 +98,16 @@
             row.staged = true
           }
         })
+      },
+      submit(){
+        alert('sending to server')
+        this.close()
+      },
+      cancel(){
+        this.close()
+      },
+      close(){
+        this.$emit('close-event')
       }
     }
   }

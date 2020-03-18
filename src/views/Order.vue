@@ -236,8 +236,8 @@
     <v-dialog v-model="proformaListDialog">
       <proforma-list :proformas="relatedProformas" :order="relatedOrder"/>
     </v-dialog>
-    <v-dialog v-model="proformaFormDialog">
-      <proforma-form :order="proformaOrder"/>
+    <v-dialog persistent v-model="proformaFormDialog">
+      <proforma-form v-if="proformaFormDialog" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
   </div>
 </template>

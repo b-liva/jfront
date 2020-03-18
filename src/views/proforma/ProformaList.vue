@@ -22,7 +22,7 @@
             inset
             class="mx-4"></v-divider>
           <v-spacer></v-spacer>
-          <v-btn dark color="primary" @click="proformaFormDialog = true">پیش فاکتور جدید</v-btn>
+          <v-btn dark color="primary" @click="addProforma">پیش فاکتور جدید</v-btn>
         </v-toolbar>
       </template>
       <template v-slot:item.customer="{item}">
@@ -83,7 +83,7 @@
       </template>
     </v-data-table>
     <v-dialog v-model="proformaFormDialog">
-      <proforma-form :order="order"/>
+      <proforma-form v-if="proformaFormDialog" :order="order" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
 
   </div>
@@ -142,6 +142,9 @@
       cancelChanges: function (row) {
         row.editingPSpec = false;
         console.log('canceling', row)
+      },
+      addProforma(){
+        this.proformaFormDialog = true
       },
       save() {
         console.log('implementing soon.')

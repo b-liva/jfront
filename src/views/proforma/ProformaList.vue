@@ -25,9 +25,6 @@
           <v-btn dark color="primary" @click="addProforma">پیش فاکتور جدید</v-btn>
         </v-toolbar>
       </template>
-      <template v-slot:item.customer="{item}">
-        {{item.customer.name}}
-      </template>
       <template v-slot:item.action="{item}">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
         <v-icon small class="mr-2" @click="deleteItem(item)">mdi-delete</v-icon>
@@ -100,10 +97,10 @@
         snackbar: false,
         editingPSpec: false,
         proformaFormDialog: false,
+        proformas: '',
         headers: [
           {value: 'number', text: 'شماره پیش فاکتور'},
           {value: 'orderNumber', text: 'شماره درخواست'},
-          {value: 'customer', text: 'مشتری'},
           {value: 'date', text: 'تاریخ'},
           {value: 'action', text: ''},
         ],
@@ -117,10 +114,36 @@
       }
     },
     props: [
-      "proformas",
       "order"
     ],
     methods: {
+      getRelatedProformas(){
+        console.log('getting proformas for: ', this.order);
+        return [
+          {
+            id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
+          },
+          {
+            id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
+            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {
+              qty: 3,
+              kw: 160,
+              rpm: 1500,
+              voltage: 380,
+              price: 25000000,
+              editingPSpec: false
+            }]
+          },
+        ]
+      },
       proformaClicked() {
         console.log('proforma clicked.')
       },
@@ -161,6 +184,9 @@
     },
     components: {
       ProformaForm: ProformaForm,
+    },
+    created() {
+      this.proformas = this.getRelatedProformas();
     }
   }
 </script>

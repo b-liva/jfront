@@ -77,7 +77,7 @@
 <script>
   // import db from '@/firebase/init'
   import * as d3 from "d3";
-  import Card from "../components/customer/Card";
+  import CustomerCard from "../components/customer/CustomerCard";
   import BarChart from "../components/charts/BarChart";
   import LineChart from "../components/charts/LineChart";
 
@@ -118,7 +118,7 @@
       }
     },
     components: {
-      CustomerCard: Card,
+      CustomerCard: CustomerCard,
       BarChart,
       LineChart
     },

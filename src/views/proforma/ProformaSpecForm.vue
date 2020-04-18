@@ -60,7 +60,7 @@
   export default {
     data() {
       return {
-        name: "ProformaForm",
+        name: "ProformaSpecForm",
         proformaSpecs: [],
         headers: [
           {value: 'qty', text: 'تعداد', align: 'center', class: 'qty-header'},

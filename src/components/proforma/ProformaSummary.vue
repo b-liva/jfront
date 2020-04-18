@@ -13,6 +13,11 @@
                 show-expand
                 single-expand
                 @item-expanded="proformaExpanded">
+                <template v-slot:item.proformaNumber="{item}">
+                  <router-link :to="{name: 'Proforma', params: {id: item.id, number: item.proformaNumber}}">
+                    {{item.proformaNumber}}
+                  </router-link>
+                </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
                     <v-data-table
@@ -45,16 +50,15 @@
         specProformasDialog: false,
         proformasHeader: [
           {value: "proformaNumber", text: "پیش فاکتور"},
-          {value: "number", text: "شماره"},
           {value: "customerName", text: "مشتری"},
           {value: "date", text: "تاریخ"},
           {value: "expert", text: "کارشناس"},
         ],
         proformas: [
-          {id: 1, proformaNumber: 980025, number: 990041, customerName: "شرکت زرین ذرت شاهرود", date: "1399-01-23", expert: "ظریف"},
-          {id: 2, proformaNumber: 980026, number: 990042, customerName: "آرمان گسترنوین کنارک", date: "1399-01-23", expert: "علوی"},
-          {id: 3, proformaNumber: 980027, number: 990043, customerName: "صنایع بسته بندی فرآورده های شیری پگاه", date: "1399-01-23", expert: "علوی"},
-          {id: 4, proformaNumber: 980060, number: 990045, customerName: "پویاموتور سپاهان", date: "1399-01-23", expert: "ظریف"},
+          {id: 1, proformaNumber: 980025, customerName: "شرکت زرین ذرت شاهرود", date: "1399-01-23", expert: "ظریف"},
+          {id: 2, proformaNumber: 980026, customerName: "آرمان گسترنوین کنارک", date: "1399-01-23", expert: "علوی"},
+          {id: 3, proformaNumber: 980027, customerName: "صنایع بسته بندی فرآورده های شیری پگاه", date: "1399-01-23", expert: "علوی"},
+          {id: 4, proformaNumber: 980060, customerName: "پویاموتور سپاهان", date: "1399-01-23", expert: "ظریف"},
         ],
         specHeaders: [
           {value: "qty", text: "تعداد"},
@@ -91,11 +95,12 @@
       findProformas(spec){
         console.log(spec)
         this.specProformasDialog = true;
-      }
+      },
     },
     components: {
       SpecProformas
-    }
+    },
+
   }
 </script>
 

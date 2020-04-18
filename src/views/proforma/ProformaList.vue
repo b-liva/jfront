@@ -80,14 +80,14 @@
       </template>
     </v-data-table>
     <v-dialog v-model="proformaFormDialog">
-      <proforma-form v-if="proformaFormDialog" :order="order" v-on:close-event="proformaFormDialog = false"/>
+      <proforma-spec-form v-if="proformaFormDialog" :order="order" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
 
   </div>
 </template>
 
 <script>
-  import ProformaForm from "./ProformaForm";
+  import ProformaSpecForm from "./ProformaSpecForm";
 
   export default {
     data() {
@@ -183,7 +183,7 @@
       },
     },
     components: {
-      ProformaForm: ProformaForm,
+      ProformaSpecForm: ProformaSpecForm,
     },
     created() {
       this.proformas = this.getRelatedProformas();

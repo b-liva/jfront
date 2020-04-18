@@ -242,7 +242,7 @@
       <proforma-list :proformas="relatedProformas" :order="relatedOrder"/>
     </v-dialog>
     <v-dialog persistent v-model="proformaFormDialog">
-      <proforma-form v-if="proformaFormDialog" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
+      <proforma-spec-form v-if="proformaFormDialog" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
   </div>
 </template>
@@ -250,7 +250,7 @@
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import ProformaList from "./proforma/ProformaList";
-  import ProformaForm from "./proforma/ProformaForm";
+  import ProformaSpecForm from "./proforma/ProformaSpecForm";
 
   export default {
     data() {
@@ -627,7 +627,7 @@
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
       ProformaList: ProformaList,
-      ProformaForm: ProformaForm,
+      ProformaSpecForm: ProformaSpecForm,
     },
   }
 </script>

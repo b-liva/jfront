@@ -41,7 +41,7 @@
           {name:'dashboard', icone: '', text: 'داشبورد', route:'/'},
           {name:'customer', icone: '', text: 'مشتری', route:'/customers'},
           {name:'order', icone: '', text: 'سفارش', route:'/orders'},
-          {name:'income', icone: '', text: 'واریزی', route:'/income'},
+          {name:'income', icone: '', text: 'واریزی', route:'/incomes'},
         ]
       }
     },

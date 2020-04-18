@@ -10,6 +10,9 @@
           show-expand
           single-expand
           @item-expanded="incomeExpanded">
+          <template v-slot:item.incomeNumber="{item}">
+            <router-link :to="{name: 'Income', params: {id: item.id, number: item.incomeNumber}}">{{item.incomeNumber}}</router-link>
+          </template>
           <template v-slot:expanded-item="{headers}">
             <td :colspan="headers.length">
               <v-data-table

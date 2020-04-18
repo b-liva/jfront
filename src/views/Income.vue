@@ -147,6 +147,11 @@
           {{item.customer.name}}
         </router-link>
       </template>
+      <template v-slot:item.number="{item}">
+        <router-link :to="{name: 'Income', params: {id: item.id, number: item.number}}">
+          {{item.number}}
+        </router-link>
+      </template>
       <template v-slot:item.action="{ item }">
         <v-icon @click="editItem(item)" small class="mr-2">mdi-pencil</v-icon>
         <v-icon @click="deleteItem(item)" small class="mr-2">mdi-delete</v-icon>

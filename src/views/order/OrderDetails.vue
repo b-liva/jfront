@@ -15,8 +15,8 @@
         <v-col cols="10" md="8">
           <v-icon @click="editOrder(order.id)" small class="mr-2">mdi-pencil</v-icon>
           <v-icon @click="deleteOrder(order.id)" small class="mr-2">mdi-delete</v-icon>
-          <v-icon @click="findRelatedProformas" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
-          <v-icon @click="findRelatedIncomes" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
+          <v-icon @click="findRelatedProformas" small class="mr-2">mdi-format-list-bulleted</v-icon>
+          <v-icon @click="findRelatedIncomes" small class="mr-2">mdi-format-list-bulleted</v-icon>
           <v-data-table
             dense
             :items="specs"
@@ -38,6 +38,9 @@
     <v-dialog v-model="incomeListDialog" max-width="900">
       <income-summary/>
     </v-dialog>
+    <v-dialog v-model="orderSpecDialog">
+      <order-spec-form :spec-id="specId"/>
+    </v-dialog>
   </div>
 </template>
 
@@ -45,12 +48,14 @@
   import OrderForm from "../../components/order/OrderForm";
   import ProformaList from "../proforma/ProformaList";
   import IncomeSummary from "../../components/income/IncomeSummary";
+  import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
 
   export default {
     data(){
       return {
         name: "OrderDetails",
         order: null,
+        specId: '',
         specHeaders: [
           {value: "qty", text: "تعداد"},
           {value: "kw", text: "کیلووات"},
@@ -59,12 +64,48 @@
           {value: "action", text: ""},
         ],
         specs: [
-          {id: 25, qty: 5, kw: 132, rpm: 1500, voltage: 380},
-          {id: 36, qty: 4, kw: 75, rpm: 3000, voltage: 380},
-          {id: 15, qty: 6, kw: 155, rpm: 1500, voltage: 380},
-          {id: 65, qty: 2, kw: 160, rpm: 1000, voltage: 380},
+          {
+            id: 2,
+            orderId: 1,
+            qty: 6,
+            kw: 132,
+            rpm: 3000,
+            voltage: 380,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-01",
+            summary: 'some summary'
+          },
+          {
+            id: 3,
+            orderId: 2,
+            qty: 9,
+            kw: 160,
+            rpm: 1500,
+            voltage: 380,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-12",
+            summary: 'some summary'
+          },
+          {
+            id: 4,
+            orderId: 2,
+            qty: 1,
+            kw: 75,
+            rpm: 1000,
+            voltage: 690,
+            IPID: 1,
+            ICID: 1,
+            IMID: 1,
+            date: "1398-12-10",
+            summary: 'some summary'
+          },
         ],
         orderDialog: false,
+        orderSpecDialog: false,
         proformaListDialog: false,
         incomeListDialog: false,
         relatedProformas: [
@@ -117,9 +158,12 @@
       },
       editSpec(item){
         console.log(item)
+        this.specId = item;
+        this.orderSpecDialog = true;
       },
       deleteSpec(item){
-        console.log(item)
+        //Send delete request to the server and rerun the return the specs again to show.
+        console.log('deleting', item)
       },
       findRelatedProformas(){
       //  find related proformas
@@ -135,7 +179,8 @@
     components: {
       OrderForm,
       ProformaList,
-      IncomeSummary
+      IncomeSummary,
+      OrderSpecForm
     }
   }
 </script>

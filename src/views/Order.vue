@@ -586,11 +586,10 @@
         }
       },
       editSpec(spec) {
-        console.log(spec);
         let order = this.orders.map((row, i) => row.id === spec.orderId ? this.orders[i] : -1).filter(index => index !== -1)[0]
         this.orderEditIndex = this.orders.indexOf(order)
         this.editedSpecIndex = order.specs.indexOf(spec)
-        console.log(order, this.orderEditIndex, spec, this.editedSpecIndex)
+
         this.assignForm = Object.assign({}, spec)
         // this.toBeAssignedRowInfo.id = rowItem.orderId
         this.assignDialog = true;

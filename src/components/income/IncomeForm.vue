@@ -3,34 +3,35 @@
     <v-card>
       <v-card-title>اختصاص واریزی</v-card-title>
       <v-card-text>
-        <v-container>
-          <v-row row wrap justify-space-around>
-            <v-col cols="5" md="3">
-              <v-text-field
-                required
-                v-model="incomeForm.number"
-                label="شماره پیش فاکتور">
-
-              </v-text-field>
-            </v-col>
-            <v-col cols="5" md="3">
-              <v-text-field label="مبلغ" v-model="incomeForm.amount"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="3" class="py-md-6">
-              <PersianDatePicker
-                v-model="incomeForm.date"
-                format="jYYYY-jMM-jDD"
-                :auto-submit="true"/>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col
-              cols="12"
-              md="8">
-              <v-textarea label="توضیحات" v-model="incomeForm.summary" auto-grow></v-textarea>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-form>
+          <v-autocomplete
+            v-model="incomeForm.customer"
+            :items="customers"
+            item-text="name"
+            label="مشتری">
+          </v-autocomplete>
+          <v-text-field v-model="incomeForm.number" label="شماره"></v-text-field>
+          <v-text-field v-model="incomeForm.amount" label="مبلغ"></v-text-field>
+          <v-radio-group v-model="incomeForm.type">
+            <v-radio v-for="type in types" :key="type.id" :label="type.title" :value="type.id">
+            </v-radio>
+          </v-radio-group>
+          <PersianDatePicker
+            v-model="incomeForm.date"
+            format="jYYYY-jMM-jDD"
+            display-format="dddd jDD jMMMM jYYYY"
+            label="دریافت"
+            :auto-submit="true"/>
+          <PersianDatePicker
+            v-if="incomeForm.type === 2"
+            v-model="incomeForm.dueDate"
+            format="jYYYY-jMM-jDD"
+            display-format="dddd jDD jMMMM jYYYY"
+            label="سررسید"
+            :auto-submit="true"/>
+          <v-textarea v-model="incomeForm.summary">
+          </v-textarea>
+        </v-form>
       </v-card-text>
       <v-card-actions>
         <v-btn color="success" @click="submitIncome">ثبت</v-btn>
@@ -42,36 +43,60 @@
 </template>
 
 <script>
+  import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
+
   export default {
-    data(){
+    data() {
       return {
         name: "IncomeForm",
-        incomeForm: ''
+        incomeForm: '',
+        types: [
+          {id: 1, title: "حواله"},
+          {id: 2, title: "چک"},
+        ],
+        customers: [
+          {id: 1, name: "هوایار"},
+          {id: 2, name: "پتروشیمی مارون"},
+          {id: 3, name: "تهران بوستون"},
+          {id: 4, name: "سازش"},
+        ],
       }
     },
     methods: {
-      submitIncome(){
+      submitIncome() {
         console.log('method.');
       },
-      cancelIncome(){
+      cancelIncome() {
         console.log('method.');
       },
-      getRelatedIncome(){
-        return  {
+      getRelatedIncome() {
+        return {
           id: this.incomeId,
+          customer: {
+            id: 2,
+            name: "پتروشیمی مارون"
+          },
           number: 95616,
           date: "1398-01-20",
+          dueDate: "1398-04-20",
           amount: 654200000,
-          summary: "something goes here."
+          summary: "توضیحات در مورد این واریزی",
+          type: 2
         };
       }
     },
     props: [
       'incomeId'
     ],
+    beforeCreate() {
+      console.log('before create: ', this.incomeForm, this.types)
+    },
     created() {
       this.incomeForm = this.getRelatedIncome();
-    }
+    },
+    components: {
+      PersianDatePicker: VuePersianDatetimePicker
+    },
   }
 </script>
 

@@ -28,83 +28,128 @@
             <template v-slot:activator="{ on }">
               <v-btn color="primary" dark v-on="on">واریز جدید</v-btn>
             </template>
-            <v-card>
-              <v-card-title>
-                <span>ثبت واریزی</span>
-              </v-card-title>
-              <v-card-text>
-                <v-container>
-                  <v-layout row wrap>
-                    <v-flex xs12 md8>
-                      <v-layout row wrap>
-                        <v-flex xs12 md4>
-                          <v-text-field
-                            label="مشتری"
-                            v-model="income_form.customer.name">
-                          </v-text-field>
-                        </v-flex>
-                        <v-flex xs6 md4>
-                          <v-text-field
-                            label="شماره"
-                            hint="شماره رسید اسناد مشتری"
-                            v-model="income_form.number"
-                          ></v-text-field>
-                        </v-flex>
-                        <v-flex xs6 md4>
-                          <v-text-field label="مبلغ" v-model="income_form.amount"></v-text-field>
-                        </v-flex>
-                        <v-flex xs12>
-                          <v-radio-group
-                            v-model="income_form.type" row>
-                            <v-radio v-for="type in types" :key="type.id" :label="type.title"
-                                     :value="type.id"></v-radio>
-                          </v-radio-group>
-                        </v-flex>
-                        <v-flex xs12 md6>
-                          <PersianDatePicker
-                            v-model="income_form.date"
-                            format="jYYYY-jMM-jDD"
-                            :auto-submit="true"/>
-                        </v-flex>
-                        <v-flex xs12 md6>
-                          <persian-date-picker
-                            v-if="income_form.type===2 || income_form.type===3"
-                            v-model="income_form.dueDate"
-                            :auto-submit="true"
-                            format="jYYYY-jMM-jDD"/>
-                        </v-flex>
-                      </v-layout>
-                    </v-flex>
-                    <v-flex xs12 md4>پیش نمایش
-                      <div v-if="income_form.customer"><span
-                        class="preview-title">مشتری</span><span>{{income_form.customer.name}}</span></div>
-                      <div v-if="income_form.number"><span
-                        class="preview-title">شماره</span><span>{{income_form.number}}</span></div>
-                      <div v-if="income_form.amount"><span
-                        class="preview-title">مبلغ</span><span>{{income_form.amount}}</span></div>
-                      <div v-if="income_form.type"><span class="preview-title">نوع واریز</span><span>{{incomeTypeTitleById(income_form.type)}}</span>
-                      </div>
-                      <div v-if="income_form.date"><span
-                        class="preview-title">تاریخ</span><span>{{income_form.date}}</span>
-                      </div>
-                      <div v-if="income_form.dueDate"><span class="preview-title">تاریخ وصل چک</span><span>{{income_form.dueDate}}</span>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn color="success" @click="submit">ثبت</v-btn>
-                <v-btn color="error" @click="cancel">انصراف</v-btn>
-                <v-icon @click="clear()">mdi-close-circle</v-icon>
-              </v-card-actions>
-            </v-card>
+            <v-form>
+              <v-card>
+                <v-card-title>
+                  <span>ثبت واریزی</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container>
+                    <v-layout row wrap>
+                      <v-flex xs12 md8>
+                        <v-layout row wrap>
+                          <v-flex xs12 md12>
+                            <v-select
+                              v-model="select"
+                              :items="listOfItems"
+                              :error-messages="selectErrors"
+                              label="Item"
+                              required
+                              @change="$v.select.$touch()"
+                              @blur="$v.select.$touch()"
+                            ></v-select>
+                          </v-flex>
+                          <v-flex xs12 md4>
+                            <v-autocomplete
+                              v-model="select"
+                              :items="customers"
+                              :loading="isLoading"
+                              :search-input.sync="search"
+                              item-text="name"
+                              return-object
+                              clearable
+                              hide-details
+                              hide-selected
+                              label="مشتری"
+                              :error-message="selectErrors"
+                              @change="$v.select.$touch()"
+                              @blur="$v.select.$touch()"
+                              class="custom-autocomplete">
+                              <template v-slot:message="message">{{message}}</template>
+                            </v-autocomplete>
+                          </v-flex>
+                          <v-flex xs6 md4>
+                            <v-text-field
+                              label="شماره"
+                              hint="شماره رسید اسناد مشتری"
+                              v-model="income_form.number"
+                              type="number"
+                              :error-messages="numberErrors"
+                              @input="$v.income_form.number.$touch()"
+                              @blur="$v.income_form.number.$touch()"
+                            ></v-text-field>
+                          </v-flex>
+                          <v-flex xs6 md4>
+                            <v-text-field
+                              label="مبلغ"
+                              v-model="income_form.amount"
+                              :error-messages="amountErrors"
+                              @input="$v.income_form.amount.$touch()"
+                              @blur="$v.income_form.amount.$touch()"
+                              type="number"></v-text-field>
+                          </v-flex>
+                          <v-flex xs12>
+                            <v-radio-group
+                              v-model="income_form.type" row>
+                              <v-radio v-for="type in types" :key="type.id" :label="type.title"
+                                       :value="type.id"></v-radio>
+                            </v-radio-group>
+                          </v-flex>
+                          <v-flex xs12 md6>
+                            <PersianDatePicker
+                              v-model="income_form.date"
+                              format="jYYYY-jMM-jDD"
+                              display-format="dddd jDD jMMMM jYYYY"
+                              label="دریافت"
+                              :auto-submit="true"/>
+                          </v-flex>
+                          <v-flex xs12 md6>
+                            <persian-date-picker
+                              v-if="income_form.type===2 || income_form.type===3"
+                              v-model="income_form.dueDate"
+                              display-format="dddd jDD jMMMM jYYYY"
+                              label="وصول چک"
+                              :auto-submit="true"
+                              format="jYYYY-jMM-jDD"/>
+                          </v-flex>
+                        </v-layout>
+                      </v-flex>
+                      <v-flex xs12 md4>پیش نمایش
+                        <div v-if="income_form.customer"><span
+                          class="preview-title">مشتری</span><span>{{income_form.customer.name}}</span></div>
+                        <div v-if="income_form.number"><span
+                          class="preview-title">شماره</span><span>{{income_form.number}}</span></div>
+                        <div v-if="income_form.amount"><span
+                          class="preview-title">مبلغ</span><span>{{income_form.amount}}</span></div>
+                        <div v-if="income_form.type"><span class="preview-title">نوع واریز</span><span>{{incomeTypeTitleById(income_form.type)}}</span>
+                        </div>
+                        <div v-if="income_form.date"><span
+                          class="preview-title">تاریخ</span><span>{{income_form.date}}</span>
+                        </div>
+                        <div v-if="income_form.dueDate"><span class="preview-title">تاریخ وصل چک</span><span>{{income_form.dueDate}}</span>
+                        </div>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn color="success" @click="submit">ثبت</v-btn>
+                  <v-btn color="error" @click="cancel">انصراف</v-btn>
+                  <v-icon @click="clear()">mdi-close-circle</v-icon>
+                </v-card-actions>
+              </v-card>
+            </v-form>
           </v-dialog>
         </v-toolbar>
       </template>
       <template v-slot:item.customer="{item}">
         <router-link :to="{name: 'Customer', params:{id: item.customer.id, name: item.customer.name}}">
           {{item.customer.name}}
+        </router-link>
+      </template>
+      <template v-slot:item.number="{item}">
+        <router-link :to="{name: 'Income', params: {id: item.id, number: item.number}}">
+          {{item.number}}
         </router-link>
       </template>
       <template v-slot:item.action="{ item }">
@@ -116,7 +161,7 @@
               @click="assignToMe(item)"
               small
               class="mr-2"
-            v-on="on">mdi-arrow-left-bold
+              v-on="on">mdi-arrow-left-bold
             </v-icon>
           </template>
           <span>اختصاص واریزی به پیش فاکتور</span>
@@ -152,6 +197,7 @@
             <v-layout row wrap justify-space-around>
               <v-flex xs5 md3>
                 <v-text-field
+                  required
                   v-model="assignForm.proforma"
                   label="شماره پیش فاکتور">
 
@@ -195,12 +241,32 @@
 </template>
 
 <script>
+  import {validationMixin} from 'vuelidate'
+  import {required} from 'vuelidate/lib/validators'
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
 
   export default {
+    mixins: [validationMixin],
+    validations: {
+      select: { required },
+      income_form: {
+        number: {required},
+        amount: {required},
+        customer: {required},
+        date: {required},
+      }
+    },
     data() {
       return {
         name: "Income",
+        select: null,
+        listOfItems: [1,2,3,4,45],
+        isLoading: false,
+        valid: true,
+        numberTest: '',
+        requiredRules: [
+          v => !!v || 'فیلد اجباری',
+        ],
         editedIndex: -1,
         defaultItems: {
           owner: '',
@@ -217,10 +283,7 @@
         },
         income_form: {
           owner: '',
-          customer: {
-            id: '',
-            name: '',
-          },
+          customer: null,
           number: '',
           type: 1,
           amount: '',
@@ -244,14 +307,14 @@
           summary: ''
         },
         toBeAssignedRowInfoDefaults: {
-          customer:{
+          customer: {
             id: '',
             name: ''
           },
           number: ''
         },
         toBeAssignedRowInfo: {
-          customer:{
+          customer: {
             id: '',
             name: ''
           },
@@ -329,11 +392,28 @@
         editedIncomeRowIndex: -1,
         expanded: [],
         relatedIncomeRows: [],
+        customers: [
+          {id: 1, name: 'پارس تهران...'},
+          {id: 2, name: 'سازش'},
+          {id: 3, name: 'مارون'},
+          {id: 4, name: 'خاور توس'},
+          {id: 5, name: 'هوایار'},
+        ],
       }
     },
     methods: {
+      validate() {
+        this.$refs.form.validate();
+      },
+      reset() {
+        this.$refs.form.reset();
+      },
+      resetValidation() {
+        this.$refs.form.resetValidation();
+      },
       clear() {
         this.income_form = Object.assign({}, this.defaultItems);
+        this.resetValidation();
         this.editedIndex = -1;
       },
       cancel() {
@@ -341,12 +421,20 @@
         this.incomeDialog = false
       },
       submit() {
-        if (this.editedIndex > -1) {
-          Object.assign(this.incomes[this.editedIndex], this.income_form)
-        } else {
-          this.incomes.push(this.income_form);
+        // this.validate(); // for vue only??
+        this.$v.$touch()
+        if (this.$v.$invalid){
+          console.log('error')
+        }else {
+          alert('form is: ' + this.valid)
+          if (this.editedIndex > -1) {
+            Object.assign(this.incomes[this.editedIndex], this.income_form)
+          } else {
+            this.incomes.push(this.income_form);
+          }
+          this.close()
         }
-        this.close()
+
       },
       close() {
         this.snackbar = true;
@@ -422,10 +510,52 @@
         return title;
       }
     },
-    computed: {},
-    components: {
-      PersianDatePicker: VuePersianDatetimePicker
+    computed: {
+      numberErrors() {
+        const errors = []
+        if (!this.$v.income_form.number.$dirty) return errors
+        !this.$v.income_form.number.maxLength && errors.push('شماره واریزی اجباری است')
+        !this.$v.income_form.number.required && errors.push('Name is required.')
+        return errors
+      },
+      amountErrors(){
+        const errors = []
+        if (!this.$v.income_form.amount.$dirty) return errors
+        !this.$v.income_form.amount.required && errors.push('مبلغ اجباری است')
+        return errors
+      },
+      customerErrors(){
+        const errors = []
+        if (!this.$v.income_form.customer.$dirty) return errors
+        !this.$v.income_form.customer && errors.push('مشتری اجباری است.')
+        return errors
+      },
+      dateErrors(){
+        let error = null
+        if (!this.income_form.date){
+          error = 'تاریخ اجباری است.'
+        }
+        return error
+      },
+      selectErrors () {
+        const errors = []
+        if (!this.$v.select.$dirty) return errors
+        !this.$v.select.required && errors.push('Item is required')
+        return errors
+      },
     },
+    components: {
+      PersianDatePicker: VuePersianDatetimePicker,
+    },
+    created() {
+      let today = new Date()
+      let dd = String(today.getDate()).padStart(2, '0');
+      let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = today.getFullYear();
+      this.income_form.date = yyyy + '-' + mm + '-' + dd
+      console.log(today);
+      console.log(this.income_form.date)
+    }
   }
 </script>
 

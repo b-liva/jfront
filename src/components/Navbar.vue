@@ -39,8 +39,9 @@
         drawer: null,
         links: [
           {name:'dashboard', icone: '', text: 'داشبورد', route:'/'},
-          {name:'income', icone: '', text: 'واریزی', route:'/income'},
-          {name:'customer', icone: '', text: 'مشتری', route:'/customer/10'},
+          {name:'customer', icone: '', text: 'مشتری', route:'/customers'},
+          {name:'order', icone: '', text: 'سفارش', route:'/orders'},
+          {name:'income', icone: '', text: 'واریزی', route:'/incomes'},
         ]
       }
     },

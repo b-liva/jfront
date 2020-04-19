@@ -13,6 +13,11 @@
               show-expand
               single-expand
               @item-expanded="orderExpanded">
+                <template v-slot:item.number="{item}">
+                  <router-link :to="{name: 'Order', params: {id: item.id, number: item.number}}">
+                    {{item.number}}
+                  </router-link>
+                </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
                     <v-data-table

@@ -2,11 +2,25 @@
   <div>
     <v-container>
       <v-row>
-        <v-col>
+        <v-col cols="4">
           <v-card>
             <v-card-title>پیش فاکتور شماره {{proforma.number}}</v-card-title>
             <v-card-text>
               {{proforma.date}}
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="4">
+          <v-card>
+            <v-card-title>
+              سود
+            </v-card-title>
+            <v-card-text>
+              <div>فروش: {{proforma.totalPrice}}</div>
+              <div>تمام شده: {{proforma.totalExpense}}</div>
+              <div>
+                سود: {{proforma.totalPrice - proforma.totalExpense}} (20%)
+              </div>
             </v-card-text>
           </v-card>
         </v-col>
@@ -16,10 +30,18 @@
           <v-icon @click="editProforma(proforma.id)" small class="mr-2">mdi-pencil</v-icon>
           <v-icon @click="deleteProforma(proforma.id)" small class="mr-2">mdi-delete</v-icon>
           <v-icon @click="findRelatedIncomes" small class="mr-2">mdi-format-list-bulleted</v-icon>
+        </v-col>
+        <v-col cols="12">
           <v-data-table
             dense
             :items="pSpecs"
             :headers="pSpecHeaders">
+            <template v-slot:item.profit="{item}">
+              {{profit(item.price, item.expense)}}
+            </template>
+            <template v-slot:item.profitPercent="{item}">
+              {{profitPercent(item.price, item.expense)}}
+            </template>
             <template v-slot:item.action="{item}">
               <v-icon small class="mr-2" @click="editSpec(item.id)">mdi-pencil</v-icon>
               <v-icon small class="mr-2" @click="deleteSpec(item.id)">mdi-delete</v-icon>
@@ -55,13 +77,16 @@
           {value: 'im', text: 'IM'},
           {value: 'ip', text: 'IP'},
           {value: 'ic', text: 'IC'},
-          {value: 'price', text: 'قیمت'},
+          {value: 'price', text: 'فروش'},
+          {value: 'expense', text: 'تمام شده'},
+          {value: 'profit', text: 'سود'},
+          {value: 'profitPercent', text: 'درصد'},
           {value: 'action', text: ''},
         ],
         pSpecs: [
-          {qty: 3, kw: 132, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 152500000},
-          {qty: 5, kw: 90, rpm: 3000, voltage: 380, im: "IMB3", ip: "IP55", ic: '611', price: 5652500000},
-          {qty: 3, kw: 450, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 45500000},
+          {qty: 3, kw: 132, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 152500000, expense: 125600000},
+          {qty: 5, kw: 90, rpm: 3000, voltage: 380, im: "IMB3", ip: "IP55", ic: '611', price: 5652500000, expense: 655600000},
+          {qty: 3, kw: 450, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 45500000, expense: 15600000},
         ]
       }
     },
@@ -74,7 +99,9 @@
           customer: {
             id: 5,
             name: "پتروشیمی مارون"
-          }
+          },
+          totalPrice: 1321510000,
+          totalExpense: 651000000
         }
       },
       editProforma(){
@@ -92,6 +119,15 @@
       deleteSpec(){
         console.log('method')
       },
+      profit(sale, expense){
+        return sale - expense
+      },
+      profitPercent(sale, expense){
+        let profitPercentage = 100 * (sale - expense) / expense;
+        profitPercentage = profitPercentage.toFixed(2);
+        console.log(profitPercentage);
+        return profitPercentage;
+      }
     },
     created() {
       this.getProformaDetails();

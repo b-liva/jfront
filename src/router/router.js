@@ -9,6 +9,7 @@ import Customers from "../views/customer/customers";
 import OrderDetails from "../views/order/OrderDetails";
 import ProformaDetail from "../views/proforma/ProformaDetail";
 import IncomeDetails from "../views/income/IncomeDetails";
+import PermitDetails from "../views/permit/PermitDetails";
 
 Vue.use(VueRouter);
 
@@ -23,6 +24,7 @@ export default new VueRouter({
     { path: '/incomes', name: 'Incomes', component: Income },
     { path: '/income/:id', name: "Income", component: IncomeDetails},
     { path: '/income2', name: 'Income2', component: Income2 },
+    { path: '/permit/:id', name: "Permit", component: PermitDetails},
     { path: '/customers', name: 'Customers', component: Customers },
     { path: '/customer/:id', name: 'Customer', component: Customer },
   ]

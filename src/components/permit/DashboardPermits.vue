@@ -13,6 +13,11 @@
                 show-expand
                 single-expand
                 @item-expanded="permitExpanded">
+                <template v-slot:item.permitNumber="{item}">
+                  <router-link :to="{name: 'Permit', params: {id: item.id, number: item.permitNumber}}">
+                    {{item.permitNumber}}
+                  </router-link>
+                </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
                     <v-data-table

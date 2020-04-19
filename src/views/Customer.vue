@@ -8,7 +8,7 @@
         <v-flex xs12 md9>
           <v-layout justify-space-around>
             <v-flex v-for="item in cardDetails" :key="item.title" xs6 md2>
-              <CustomerCard :value="item.value" :title="item.title"/>
+              <base-card :value="item.value" :title="item.title"/>
             </v-flex>
           </v-layout>
         </v-flex>
@@ -77,7 +77,7 @@
 <script>
   // import db from '@/firebase/init'
   import * as d3 from "d3";
-  import CustomerCard from "../components/customer/CustomerCard";
+  import BaseCard from "../components/cards/BaseCard";
   import BarChart from "../components/charts/BarChart";
   import LineChart from "../components/charts/LineChart";
 
@@ -118,7 +118,7 @@
       }
     },
     components: {
-      CustomerCard: CustomerCard,
+      BaseCard,
       BarChart,
       LineChart
     },

@@ -11,18 +11,7 @@
           </v-card>
         </v-col>
         <v-col cols="4">
-          <v-card>
-            <v-card-title>
-              سود
-            </v-card-title>
-            <v-card-text>
-              <div>فروش: {{proforma.totalPrice}}</div>
-              <div>تمام شده: {{proforma.totalExpense}}</div>
-              <div>
-                سود: {{proforma.totalPrice - proforma.totalExpense}} (20%)
-              </div>
-            </v-card-text>
-          </v-card>
+          <profit-card :sale="proforma.totalPrice" :expense="proforma.totalExpense"/>
         </v-col>
       </v-row>
       <v-row justify="center">
@@ -60,8 +49,10 @@
 </template>
 
 <script>
+  import {financialFunctions} from "../../mixins/financialFunctions";
   import ProformaForm from "../../components/proforma/ProformaForm";
   import IncomeSummary from "../../components/income/IncomeSummary";
+  import ProfitCard from "../../components/cards/ProfitCard";
 
   export default {
     data(){
@@ -119,22 +110,17 @@
       deleteSpec(){
         console.log('method')
       },
-      profit(sale, expense){
-        return sale - expense
-      },
-      profitPercent(sale, expense){
-        let profitPercentage = 100 * (sale - expense) / expense;
-        profitPercentage = profitPercentage.toFixed(2);
-        console.log(profitPercentage);
-        return profitPercentage;
-      }
     },
+    mixins: [
+      financialFunctions,
+    ],
     created() {
       this.getProformaDetails();
     },
     components: {
       ProformaForm,
-      IncomeSummary
+      IncomeSummary,
+      ProfitCard
     }
   }
 </script>

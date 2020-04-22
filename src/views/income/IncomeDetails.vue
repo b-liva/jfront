@@ -2,6 +2,9 @@
   <div>
     <v-container>
       <v-row>
+        <v-col cols="6" md="4">
+          <customer-card :customer-id="income.customer.id"/>
+        </v-col>
         <v-col>
           <v-card>
             <v-card-title>واریزی شماره {{income.number}}</v-card-title>
@@ -29,7 +32,7 @@
           </v-data-table>
         </v-col>
       </v-row>
-      <v-dialog v-model="incomeformDialog" max-width="800px">
+      <v-dialog v-model="incomeFormDialog" max-width="800px">
         <income-form :income-id="income.id"/>
       </v-dialog>
       <v-dialog v-model="incomeAssignmentFormDialog" max-width="800px">
@@ -42,6 +45,7 @@
 <script>
   import IncomeForm from "../../components/income/IncomeForm";
   import IncomeAssignmentForm from "../../components/income/assignment/IncomeAssignmentForm";
+  import CustomerCard from "../../components/customer/CustomerCard";
 
   export default {
     data(){
@@ -49,7 +53,7 @@
         name: "IncomeDetails",
         income: '',
         incomeAssignment: '',
-        incomeformDialog: false,
+        incomeFormDialog: false,
         incomeAssignmentFormDialog: false,
         incomeAssignmentHeader: [
           {value: "number", text: "شماره"},
@@ -67,6 +71,10 @@
       this.income = {
         id: this.$route.params.id,
         number: this.$route.params.number,
+        customer: {
+          id: 1,
+          name: "هوایار"
+        },
         data: "1399-01-17",
         amount: 98520000,
       }
@@ -74,7 +82,7 @@
     methods: {
       editIncome(){
         console.log('method.')
-        this.incomeformDialog = true;
+        this.incomeFormDialog = true;
       },
       deleteIncome(){
         console.log('method.')
@@ -90,7 +98,8 @@
     },
     components: {
       IncomeForm,
-      IncomeAssignmentForm
+      IncomeAssignmentForm,
+      CustomerCard
     }
   }
 </script>

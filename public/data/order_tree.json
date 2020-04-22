@@ -1,0 +1,38 @@
+{
+ "name": "O-980520",
+ "type": "Order",
+ "children": [
+  {
+   "name": "PF-9810279",
+   "value": 0
+  },
+  {
+   "name": "PF-9810280",
+   "children": [
+    {
+     "name": "Perm-225",
+     "children": [
+      {"name": "Out-456",
+       "children": [
+        {"name": "Inv-6485", "value":  1651}
+       ]},
+      {"name": "Out-698", "value": 3416}
+     ]
+    }
+   ]
+  },
+  {
+   "name": "PF-981032",
+   "children": [
+    {
+     "name": "Perm-66",
+     "children": [
+      {"name": "Out-464", "value": 721},
+      {"name": "Out-467", "value": 2220}
+     ]
+    },
+    {"name": "Perm-15", "value": 1759}
+   ]
+  }
+ ]
+}

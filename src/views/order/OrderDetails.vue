@@ -2,13 +2,23 @@
   <div>
     <v-container>
       <v-row>
-        <v-col>
-          <v-card>
-            <v-card-title>درخواست شماره {{order.number}}</v-card-title>
-            <v-card-text>
-              {{order.customer.name}} - {{order.date}}
-            </v-card-text>
-          </v-card>
+        <v-col cols="6" md="4">
+          <customer-card :customer-id="order.customer.id"/>
+        </v-col>
+        <v-col cols="6" md="4">
+          <v-container>
+            <v-row>
+              <v-col>
+                <v-card>
+                  <v-card-title>درخواست شماره {{order.number}}</v-card-title>
+                  <v-card-text>
+                    {{order.customer.name}} - {{order.date}}
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
+
         </v-col>
       </v-row>
       <v-row justify="center">
@@ -28,6 +38,14 @@
           </v-data-table>
         </v-col>
       </v-row>
+      <v-row justify="center">
+        <v-col
+        cols="12" md="8">
+          <div  @click="orderTreeDialog = true">
+            <order-tree :order-id="order.id"/>
+          </div>
+        </v-col>
+      </v-row>
     </v-container>
     <v-dialog v-model="orderDialog" max-width="800px">
       <order-form :order="order" @close="orderDialog = false"/>
@@ -41,6 +59,9 @@
     <v-dialog v-model="orderSpecDialog">
       <order-spec-form :spec-id="specId"/>
     </v-dialog>
+    <v-dialog v-model="orderTreeDialog" max-width="900px">
+      <order-tree :order-id="order.id"/>
+    </v-dialog>
   </div>
 </template>
 
@@ -49,6 +70,8 @@
   import ProformaList from "../proforma/ProformaList";
   import IncomeSummary from "../../components/income/IncomeSummary";
   import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
+  import OrderTree from "../../components/charts/timeline/OrderTree";
+  import CustomerCard from "../../components/customer/CustomerCard";
 
   export default {
     data(){
@@ -108,6 +131,7 @@
         orderSpecDialog: false,
         proformaListDialog: false,
         incomeListDialog: false,
+        orderTreeDialog: false,
         relatedProformas: [
           {
             id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
@@ -180,7 +204,9 @@
       OrderForm,
       ProformaList,
       IncomeSummary,
-      OrderSpecForm
+      OrderSpecForm,
+      OrderTree,
+      CustomerCard
     }
   }
 </script>

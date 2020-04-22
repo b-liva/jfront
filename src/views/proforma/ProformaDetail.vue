@@ -11,7 +11,7 @@
           </v-card>
         </v-col>
         <v-col cols="4">
-          <profit-card :sale="proforma.totalPrice" :expense="proforma.totalExpense"/>
+          <profit-card :sale="proforma.totalPrice" :cost="proforma.totalCost"/>
         </v-col>
       </v-row>
       <v-row justify="center">
@@ -19,6 +19,7 @@
           <v-icon @click="editProforma(proforma.id)" small class="mr-2">mdi-pencil</v-icon>
           <v-icon @click="deleteProforma(proforma.id)" small class="mr-2">mdi-delete</v-icon>
           <v-icon @click="findRelatedIncomes" small class="mr-2">mdi-format-list-bulleted</v-icon>
+          <v-icon @click="setCost" small class="mr-2">mdi-stairs</v-icon>
         </v-col>
         <v-col cols="12">
           <v-data-table
@@ -26,10 +27,10 @@
             :items="pSpecs"
             :headers="pSpecHeaders">
             <template v-slot:item.profit="{item}">
-              {{profit(item.price, item.expense)}}
+              {{profit(item.price, item.cost)}}
             </template>
             <template v-slot:item.profitPercent="{item}">
-              {{profitPercent(item.price, item.expense)}}
+              {{profitPercent(item.price, item.cost)}}
             </template>
             <template v-slot:item.action="{item}">
               <v-icon small class="mr-2" @click="editSpec(item.id)">mdi-pencil</v-icon>
@@ -44,6 +45,9 @@
       <v-dialog v-model="incomeListDialog" max-width="900px">
         <income-summary/>
       </v-dialog>
+      <v-dialog v-model="setCostDialog" max-width="900px">
+        <set-cost-form/>
+      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -53,6 +57,7 @@
   import ProformaForm from "../../components/proforma/ProformaForm";
   import IncomeSummary from "../../components/income/IncomeSummary";
   import ProfitCard from "../../components/cards/ProfitCard";
+  import SetCostForm from "../../components/SetCostForm";
 
   export default {
     data(){
@@ -61,6 +66,7 @@
         proforma: '',
         proformaEditDialog: false,
         incomeListDialog: false,
+        setCostDialog: false,
         pSpecHeaders: [
           {value: 'qty', text: 'تعداد'},
           {value: 'kw', text: 'پیش فاکتور'},
@@ -69,15 +75,15 @@
           {value: 'ip', text: 'IP'},
           {value: 'ic', text: 'IC'},
           {value: 'price', text: 'فروش'},
-          {value: 'expense', text: 'تمام شده'},
+          {value: 'cost', text: 'تمام شده'},
           {value: 'profit', text: 'سود'},
           {value: 'profitPercent', text: 'درصد'},
           {value: 'action', text: ''},
         ],
         pSpecs: [
-          {qty: 3, kw: 132, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 152500000, expense: 125600000},
-          {qty: 5, kw: 90, rpm: 3000, voltage: 380, im: "IMB3", ip: "IP55", ic: '611', price: 5652500000, expense: 655600000},
-          {qty: 3, kw: 450, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 45500000, expense: 15600000},
+          {qty: 3, kw: 132, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 152500000, cost: 122000000},
+          {qty: 5, kw: 90, rpm: 3000, voltage: 380, im: "IMB3", ip: "IP55", ic: '611', price: 5652500000, cost: 3956750000},
+          {qty: 3, kw: 450, rpm: 1500, voltage: 380, im: "IMB3", ip: "IP55", ic: '411', price: 45500000, cost: 40950000},
         ]
       }
     },
@@ -92,7 +98,7 @@
             name: "پتروشیمی مارون"
           },
           totalPrice: 1321510000,
-          totalExpense: 651000000
+          totalCost: 1149139130
         }
       },
       editProforma(){
@@ -110,6 +116,9 @@
       deleteSpec(){
         console.log('method')
       },
+      setCost(){
+        this.setCostDialog = true;
+      }
     },
     mixins: [
       financialFunctions,
@@ -120,7 +129,8 @@
     components: {
       ProformaForm,
       IncomeSummary,
-      ProfitCard
+      ProfitCard,
+      SetCostForm
     }
   }
 </script>

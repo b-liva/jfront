@@ -1,25 +1,31 @@
 <template>
   <div>
     <v-container>
+      <v-card>
       <v-row>
         <v-col>
-          <v-card>
+
             <v-card-title>
               <span>سود و زیان</span>
             </v-card-title>
             <v-card-text>
               <div><span class="label">فروش:</span> {{sale}}</div>
-              <div><span class="label">تمام شده:</span> {{expense}}</div>
+              <div><span class="label">تمام شده:</span> {{cost}}</div>
               <div>
                 <span class="label">سود:</span>
-                <span>{{profit(sale, expense)}}</span>
-                <span>({{profitPercent(sale, expense)}}%)</span>
+                <span>{{profit(sale, cost)}}</span>
+                <span>({{profitPercent(sale, cost)}}%)</span>
               </div>
             </v-card-text>
-          </v-card>
+
+        </v-col>
+        <v-col>
+          <v-btn x-small class="my-2" @click="setCost(0)">بدترین</v-btn>
+          <v-btn x-small class="my-2" @click="setCost(1)">متوسط</v-btn>
+          <v-btn x-small class="my-2" @click="setCost(2)">بهترین</v-btn>
         </v-col>
       </v-row>
-
+      </v-card>
     </v-container>
   </div>
 </template>
@@ -31,14 +37,24 @@
     data(){
       return {
         name: "ProfitCard",
+        costDefault: '',
       }
     },
     mixins: [
       financialFunctions
     ],
+    created() {
+      this.costDefault = this.cost;
+    },
+    methods: {
+      setCost(costLevel){
+        const cf = [1, 0.9, 0.8];
+        this.cost = cf[costLevel] * this.costDefault;
+      }
+    },
     props: [
       "sale",
-      "expense"
+      "cost"
     ]
   }
 </script>

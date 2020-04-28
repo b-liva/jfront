@@ -1,31 +1,51 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title>واریزی</v-card-title>
-      <v-card-text>
-        <v-data-table
-          :headers="incomeHeaders"
-          :items="incomes"
-          :expanded="incomeRowExpanded"
-          show-expand
-          single-expand
-          @item-expanded="incomeExpanded">
-          <template v-slot:item.incomeNumber="{item}">
-            <router-link :to="{name: 'Income', params: {id: item.id, number: item.incomeNumber}}">{{item.incomeNumber}}</router-link>
-          </template>
-          <template v-slot:expanded-item="{headers}">
-            <td :colspan="headers.length">
+    <v-container>
+      <v-row>
+        <v-col cols="12" md="10">
+          <v-card>
+            <v-card-title>واریزی</v-card-title>
+            <v-card-text>
               <v-data-table
-                dense
-                :headers="assignmentHeaders"
-                :items="assignments"
-                @click:row="showPermitIncomes">
+                :headers="incomeHeaders"
+                :items="getIncomes()"
+                :expanded="incomeRowExpanded"
+                :loading="$apollo.queries.allIncomes.loading"
+                show-expand
+                single-expand
+                @item-expanded="incomeExpanded">
+                <template v-slot:item.number="{item}">
+                  <router-link :to="{name: 'Income', params: {id: item.id, number: item.number}}">{{item.number}}</router-link>
+                </template>
+                <template v-slot:item.customer="{item}">
+                  {{item.customer.name}}
+                </template>
+                <template v-slot:item.type="{item}">
+                  {{item.type.title}}
+                </template>
+                <template v-slot:expanded-item="{headers}">
+                  <td :colspan="headers.length">
+                    <v-data-table
+                      dense
+                      :headers="assignmentHeaders"
+                      :items="getAssignments()"
+                      :loading="$apollo.queries.income.loading"
+                      @click:row="showPermitIncomes">
+                      <template v-slot:item.proforma="{item}">
+                        {{checkMe(item.proforma)}}
+                      </template>
+                      <template v-slot:item.perm="{item}">
+                        {{checkMe(item.perm)}}
+                      </template>
+                    </v-data-table>
+                  </td>
+                </template>
               </v-data-table>
-            </td>
-          </template>
-        </v-data-table>
-      </v-card-text>
-    </v-card>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-dialog v-model="permitIncomeDialog" width="800px">
       <permit-incomes :permit="permitId"/>
     </v-dialog>
@@ -33,29 +53,32 @@
 </template>
 
 <script>
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import PermitIncomes from "./PermitIncomes";
+  import {allIncomes, income} from "../../grahpql/queries/income/income";
 
   export default {
     data(){
       return {
         name: "IncomeSummary",
+        selectedIncomeId: null,
         incomeRowExpanded: [],
         incomeHeaders: [
-          {value: "incomeNumber", text: "شماره واریزی"},
-          {value: "customerName", text: "مشتری"},
-          {value: "incomeType", text: "نوع پرداخت"},
+          {value: "number", text: "شماره واریزی"},
+          {value: "customer", text: "مشتری"},
+          {value: "type", text: "نوع پرداخت"},
           {value: "amount", text: "مبلغ"},
           {value: "date", text: "تاریخ"},
         ],
         incomes: [
-          {id: 1, incomeNumber: 651, date: "1399-01-23", customerName: "شرکت زرین ذرت شاهرود", amount: 165100000, incomeType: "حواله"},
-          {id: 2, incomeNumber: 18491, date: "1399-01-23", customerName: "آرمان گسترنوین کنارک", amount: 255100000, incomeType: "چک"},
-          {id: 3, incomeNumber: 1698, date: "1399-01-23", customerName: "صنایع بسته بندی فرآورده های شیری پگاه", amount: 365100000, incomeType: "حواله"},
-          {id: 4, incomeNumber: 981215, date: "1399-01-23", customerName: "پویاموتور سپاهان", amount: 468500000, incomeType: "حواله"},
+          {id: 1, number: 651, date: "1399-01-23", customer: "شرکت زرین ذرت شاهرود", amount: 165100000, type: "حواله"},
+          {id: 2, number: 18491, date: "1399-01-23", customer: "آرمان گسترنوین کنارک", amount: 255100000, type: "چک"},
+          {id: 3, number: 1698, date: "1399-01-23", customer: "صنایع بسته بندی فرآورده های شیری پگاه", amount: 365100000, type: "حواله"},
+          {id: 4, number: 981215, date: "1399-01-23", customer: "پویاموتور سپاهان", amount: 468500000, type: "حواله"},
         ],
         assignmentHeaders: [
-          {value: "number", text: "شماره"},
-          {value: "type", text: "نوع"},
+          {value: "proforma", text: "پیش فاکتور"},
+          {value: "perm", text: "مجوز"},
           {value: "date", text: "تاریخ"},
           {value: "amount", text: "مبلغ"},
         ],
@@ -70,8 +93,26 @@
       }
     },
     methods: {
+      checkMe(data){
+        if (data !== null){
+          return data.number;
+        }
+      },
+      getIncomes(){
+        if (typeof this.allIncomes !== "undefined" && this.allIncomes !== null){
+          return this.noNode(this.allIncomes);
+        }
+      },
+      getAssignments(){
+        console.log('income: ', this.income)
+        console.log('status: ', typeof this.income !== "undefined" && this.income != null)
+        if (typeof this.income !== "undefined" && this.income != null){
+          return this.noNode(this.income.incomerowSet);
+        }
+      },
       incomeExpanded(value){
-        console.log(value.item, this.incomeRowExpanded)
+        this.selectedIncomeId = value.item.id;
+        console.log('income id: ', this.selectedIncomeId)
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
@@ -85,7 +126,21 @@
       }
     },
     components: {
-      PermitIncomes
+      PermitIncomes,
+    },
+    mixins: [
+      baseFunctions
+    ],
+    apollo: {
+      allIncomes: allIncomes,
+      income: {
+        query: income,
+        variables(){
+          return {
+            income_id: this.selectedIncomeId
+          }
+        }
+      }
     }
   }
 </script>

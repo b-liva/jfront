@@ -1,28 +1,33 @@
 <template>
   <div>
     <v-container>
-      <v-layout justify-space-around row>
-        <v-flex xs12 md10>
+      <v-row>
+        <v-col cols="12" md="10">
           <v-card>
             <v-card-title>پیش فاکتور</v-card-title>
             <v-card-text>
               <v-data-table
                 :headers="proformasHeader"
-                :items="proformas"
+                :items="getProformas()"
                 :expanded="proformaRowExpanded"
+                :loading="$apollo.queries.allProformas.loading"
                 show-expand
                 single-expand
                 @item-expanded="proformaExpanded">
-                <template v-slot:item.proformaNumber="{item}">
-                  <router-link :to="{name: 'Proforma', params: {id: item.id, number: item.proformaNumber}}">
-                    {{item.proformaNumber}}
+                <template v-slot:item.number="{item}">
+                  <router-link :to="{name: 'Proforma', params: {id: item.id, number: item.number}}">
+                    {{item.number}}
                   </router-link>
+                </template>
+                <template v-slot:item.owner="{item}">
+                  {{item.owner.lastName}}
                 </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
                     <v-data-table
                       :headers="specHeaders"
-                      :items="specs"
+                      :items="getSpecs()"
+                      :loading="$apollo.queries.proformaSpecs.loading"
                     @click:row="findProformas">
                     </v-data-table>
                   </td>
@@ -30,17 +35,20 @@
               </v-data-table>
             </v-card-text>
           </v-card>
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
     </v-container>
     <v-dialog v-model="specProformasDialog" width="900px">
-      <spec-proformas :specProformas="specProformas"/>
+      <spec-proformas :spec_id="selectedSpecIdEq"/>
     </v-dialog>
   </div>
 </template>
 
 <script>
   import SpecProformas from "./SpecProformas";
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
+  import {allProformas} from "../../grahpql/queries/proforma/proforma";
+  import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
 
   export default {
     data(){
@@ -48,17 +56,19 @@
         name: "ProformaSummary",
         proformaRowExpanded: [],
         specProformasDialog: false,
+        selectedSpecIdEq: null,
+        selectedProformaId: null,
         proformasHeader: [
-          {value: "proformaNumber", text: "پیش فاکتور"},
+          {value: "number", text: "پیش فاکتور"},
           {value: "customerName", text: "مشتری"},
           {value: "date", text: "تاریخ"},
-          {value: "expert", text: "کارشناس"},
+          {value: "owner", text: "کارشناس"},
         ],
         proformas: [
-          {id: 1, proformaNumber: 980025, customerName: "شرکت زرین ذرت شاهرود", date: "1399-01-23", expert: "ظریف"},
-          {id: 2, proformaNumber: 980026, customerName: "آرمان گسترنوین کنارک", date: "1399-01-23", expert: "علوی"},
-          {id: 3, proformaNumber: 980027, customerName: "صنایع بسته بندی فرآورده های شیری پگاه", date: "1399-01-23", expert: "علوی"},
-          {id: 4, proformaNumber: 980060, customerName: "پویاموتور سپاهان", date: "1399-01-23", expert: "ظریف"},
+          {id: 1, number: 980025, customerName: "شرکت زرین ذرت شاهرود", date: "1399-01-23", owner: "ظریف"},
+          {id: 2, number: 980026, customerName: "آرمان گسترنوین کنارک", date: "1399-01-23", owner: "علوی"},
+          {id: 3, number: 980027, customerName: "صنایع بسته بندی فرآورده های شیری پگاه", date: "1399-01-23", owner: "علوی"},
+          {id: 4, number: 980060, customerName: "پویاموتور سپاهان", date: "1399-01-23", owner: "ظریف"},
         ],
         specHeaders: [
           {value: "qty", text: "تعداد"},
@@ -83,7 +93,16 @@
       }
     },
     methods: {
+      getSpecs(){
+        if (typeof this.proformaSpecs !== "undefined" && this.proformaSpecs != null){
+          return this.noNode(this.proformaSpecs.prefspecSet)
+        }
+      },
       proformaExpanded(value){
+        this.proformaSpecs = {
+          prefspecSet: {edges: []}
+        };
+        this.selectedProformaId = value.item.id;
         console.log(value.item, this.proformaRowExpanded)
         if(this.proformaRowExpanded.includes(value.item)){
           this.proformaRowExpanded.pop(value.item);
@@ -93,14 +112,34 @@
         }
       },
       findProformas(spec){
-        console.log(spec)
+        console.log('the spec: ', spec);
+        this.selectedSpecIdEq = spec.reqspecEq.id;
+        console.log('selected id: ', this.selectedSpecIdEq)
         this.specProformasDialog = true;
       },
+      getProformas(){
+        if (typeof this.allProformas !== 'undefined' && this.allProformas !== null){
+          return this.noNode(this.allProformas)
+        }
+      }
     },
     components: {
-      SpecProformas
+      SpecProformas,
     },
-
+    mixins: [
+      baseFunctions
+    ],
+    apollo: {
+      allProformas: allProformas,
+      proformaSpecs: {
+        query: proformaSpecs,
+        variables(){
+          return {
+            proforma_id: this.selectedProformaId
+          }
+        }
+      },
+    }
   }
 </script>
 

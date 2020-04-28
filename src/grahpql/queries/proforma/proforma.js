@@ -2,7 +2,7 @@ import gql from 'graphql-tag'
 
 export const allProformas = gql`
     query{
-        allProformas(first:20) {
+        allProformas(last:20) {
             edges {
                 node {
                     id

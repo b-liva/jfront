@@ -5,12 +5,12 @@
         <v-col
           cols="3"
           md=""
-          v-for="(card, index) in cardsData"
+          v-for="(card, index) in noTypeName(dashboardStatistics)"
           :key="index">
           <three-line-summary-card
-            :top="card.top"
-            :main-content="card.main"
-            :footer="card.footer"/>
+            :top="card.title"
+            :main-content="card.count + ' دستگاه'"
+            :footer="card.kw + ' کیلووات'"/>
         </v-col>
       </v-row>
     </v-container>
@@ -19,11 +19,13 @@
 
 <script>
   import ThreeLineSummaryCard from "./cards/ThreeLineSummaryCard";
+  import {dashboardStatistics} from "../grahpql/queries/dashboard/dashboard";
 
   export default {
     data() {
       return {
         name: "DashboardStatistics",
+        dashboardStatistics: "",
         cardsData: [
           {top: "تعداد درخواست ها", main: "2,271", footer: "2,786,227.2 کیلووات"},
           {top: "روتین (KW)", main: "928,549.0", footer: "14,635 دستگاه"},
@@ -36,7 +38,16 @@
       }
     },
     components: {
-      ThreeLineSummaryCard
+      ThreeLineSummaryCard,
+    },
+    methods: {
+      noTypeName(obj){
+        delete obj['__typename']
+        return obj
+      }
+    },
+    apollo: {
+      dashboardStatistics: dashboardStatistics,
     }
   }
 </script>

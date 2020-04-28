@@ -7,7 +7,7 @@ export default [
     name:'Dashboard'
   },
   {
-    path: '/income',
+    path: '/order',
     name: 'Income'
   }
 ]

@@ -22,7 +22,7 @@ export default new VueRouter({
     { path: '/order/:id', name: 'Order', component: OrderDetails},
     { path: '/proforma/:id', name: "Proforma", component: ProformaDetail},
     { path: '/incomes', name: 'Incomes', component: Income },
-    { path: '/income/:id', name: "Income", component: IncomeDetails},
+    { path: '/order/:id', name: "Income", component: IncomeDetails},
     { path: '/income2', name: 'Income2', component: Income2 },
     { path: '/permit/:id', name: "Permit", component: PermitDetails},
     { path: '/customers', name: 'Customers', component: Customers },

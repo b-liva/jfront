@@ -48,3 +48,52 @@ export const income = gql`
         }
     }
 `
+
+export const incomesByProformaId = gql`
+    query incomesByProformaId($proforma_id:ID!){
+        incomesByProformaId:proforma(id: $proforma_id) {
+            id
+            number
+            incomerowSet {
+                edges {
+                    node {
+                        id
+                        income {
+                            id
+                            number
+                            amount
+                            type{
+                                id
+                                title
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+export const incomesByPermitId = gql`
+    query incomesByPermitId($permit_id:ID!){
+        incomesByPermitId: perm(id:$permit_id) {
+            id
+            incomerowSet {
+                edges {
+                    node {
+                        id
+                        income {
+                            id
+                            number
+                            amount
+                            type{
+                                id
+                                title
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`

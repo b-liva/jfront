@@ -7,7 +7,7 @@
       <v-card-text>
         <v-data-table
           dense
-          :items="permitIncomes"
+          :items="getIncomesForId()"
           :headers="permitIncomeHeaders">
         </v-data-table>
       </v-card-text>
@@ -16,10 +16,13 @@
 </template>
 
 <script>
+  import {incomesByPermitId, incomesByProformaId} from "../../grahpql/queries/income/income";
+
   export default {
     data(){
       return {
         name: "PermitIncomes",
+        resultList: [],
         permitIncomeHeaders: [
           {value: "number", text: "شماره واریزی"},
           {value: "amount", text: "مبلغ"},
@@ -35,14 +38,65 @@
         ]
       }
     },
+    props: [
+      "proformaIdToFindIncomes",
+      "permitIdToFindIncomes"
+    ],
+    methods: {
+      getIncomesForId(){
+        this.resultList = [];
+        console.log('rr: ', this.resultList)
+        if (typeof this.incomesByProformaId !== "undefined" && this.incomesByProformaId != null){
+          let incomes = this.incomesByProformaId.incomerowSet.edges;
+          incomes.forEach(e => this.resultList.push(
+            {
+              'number': e.node.income.number,
+              'amount': e.node.income.amount,
+              'type': e.node.income.type.title,
+            }
+          ))
+        }
+        if (typeof this.incomesByPermitId !== "undefined" && this.incomesByPermitId != null){
+          let permitIncomes = this.incomesByPermitId.incomerowSet.edges;
+          permitIncomes.forEach(e => this.resultList.push(
+            {
+              'number': e.node.income.number,
+              'amount': e.node.income.amount,
+              'type': e.node.income.type.title,
+            }
+          ))
+        }
+        return this.resultList
+      }
+    },
     beforeCreate() {
     },
     created() {
+      console.log(this.proformaIdToFindIncomes)
+      console.log(this.permitIdToFindIncomes)
     },
     mounted(){
     },
     beforeMount() {
     },
+    apollo: {
+      incomesByProformaId: {
+        query: incomesByProformaId,
+        variables(){
+          return {
+            proforma_id: this.proformaIdToFindIncomes
+          }
+        }
+      },
+      incomesByPermitId: {
+        query: incomesByPermitId,
+        variables(){
+          return {
+            perm_id: this.permitIdToFindIncomes
+          }
+        }
+      }
+    }
   }
 </script>
 

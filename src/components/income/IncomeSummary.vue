@@ -47,7 +47,7 @@
       </v-row>
     </v-container>
     <v-dialog v-model="permitIncomeDialog" width="800px">
-      <permit-incomes :permit="permitId"/>
+      <permit-incomes :permit-id-to-find-incomes="permitIdToFindIncomes" :proforma-id-to-find-incomes="proformaIdToFindIncomes"/>
     </v-dialog>
   </div>
 </template>
@@ -62,6 +62,8 @@
       return {
         name: "IncomeSummary",
         selectedIncomeId: null,
+        proformaIdToFindIncomes: null,
+        permitIdToFindIncomes: null,
         incomeRowExpanded: [],
         incomeHeaders: [
           {value: "number", text: "شماره واریزی"},
@@ -121,7 +123,17 @@
         }
       },
       showPermitIncomes(permit){
-        console.log(permit)
+        console.log('assing: ', permit)
+        const is_proforma = permit.proforma !== null;
+        const is_permit = permit.perm !== null;
+        if (is_proforma){
+          this.proformaIdToFindIncomes = permit.proforma.id;
+          this.permitIdToFindIncomes = null
+        }
+        if (is_permit){
+          this.permitIdToFindIncomes = permit.perm.id;
+          this.proformaIdToFindIncomes = null;
+        }
         this.permitIncomeDialog = true;
       }
     },
@@ -140,7 +152,7 @@
             income_id: this.selectedIncomeId
           }
         }
-      }
+      },
     }
   }
 </script>

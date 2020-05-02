@@ -9,11 +9,14 @@
     </v-snackbar>
     <v-data-table
       :headers="headers"
-      :items="proformas"
+      :items="getRelatedProformas()"
       :expand="expanded"
       show-expand
       single-expand
       @item-expanded="proformaClicked">
+      <template v-slot:item.orderNumber="{item}">
+        {{item.reqId.number}}
+      </template>
       <template v-slot:top>
         <v-toolbar>
           <v-toolbar-title>پیش فاکتور</v-toolbar-title>
@@ -32,7 +35,7 @@
       </template>
       <template v-slot:expanded-item="{headers, item}">
         <td :colspan="headers.length">
-          <v-data-table dense class="elevation-24" :headers="pSpecHeader" :items="item.pspecs">
+          <v-data-table dense class="elevation-24" :headers="pSpecHeader" :items="getProformaSpecs(item)">
             <template v-slot:item.qty="props">
               <v-edit-dialog
                 :return-value.sync="props.item.qty"
@@ -88,6 +91,9 @@
 
 <script>
   import ProformaSpecForm from "./ProformaSpecForm";
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
+  import {proformasByOrderId} from "../../grahpql/queries/proforma/proforma";
+  import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
 
   export default {
     data() {
@@ -97,7 +103,7 @@
         snackbar: false,
         editingPSpec: false,
         proformaFormDialog: false,
-        proformas: '',
+        selectedProformaId: null,
         headers: [
           {value: 'number', text: 'شماره پیش فاکتور'},
           {value: 'orderNumber', text: 'شماره درخواست'},
@@ -114,38 +120,49 @@
       }
     },
     props: [
-      "order"
+      "order",
+      "order_id"
     ],
     methods: {
       getRelatedProformas(){
-        console.log('getting proformas for: ', this.order);
-        return [
-          {
-            id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
-              qty: 3,
-              kw: 160,
-              rpm: 1500,
-              voltage: 380,
-              price: 25000000,
-              editingPSpec: false
-            }]
-          },
-          {
-            id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
-            pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {
-              qty: 3,
-              kw: 160,
-              rpm: 1500,
-              voltage: 380,
-              price: 25000000,
-              editingPSpec: false
-            }]
-          },
-        ]
+        // console.log('getting proformas for: ', this.order);
+        if (typeof this.proformasByOrderId != "undefined" && this.proformasByOrderId != null){
+          return this.noNode(this.proformasByOrderId.xprefSet)
+        }
+        // return [
+        //   {
+        //     id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
+        //     pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
+        //       qty: 3,
+        //       kw: 160,
+        //       rpm: 1500,
+        //       voltage: 380,
+        //       price: 25000000,
+        //       editingPSpec: false
+        //     }]
+        //   },
+        //   {
+        //     id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
+        //     pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {
+        //       qty: 3,
+        //       kw: 160,
+        //       rpm: 1500,
+        //       voltage: 380,
+        //       price: 25000000,
+        //       editingPSpec: false
+        //     }]
+        //   },
+        // ]
       },
-      proformaClicked() {
-        console.log('proforma clicked.')
+      proformaClicked(proforma) {
+        console.log('proforma clicked.', proforma)
+      },
+      getProformaSpecs(item){
+        console.log(item)
+        this.selectedProformaId = item.id;
+        if (typeof this.proformaSpecs !== "undefined" && this.proformaSpecs !== null){
+          return this.noNode(this.proformaSpecs.prefspecSet);
+        }
       },
       editItem(item) {
         console.log('editing Item: ', item);
@@ -182,11 +199,32 @@
         console.log('implementing soon.')
       },
     },
+    mixins: [
+      baseFunctions
+    ],
     components: {
       ProformaSpecForm: ProformaSpecForm,
     },
     created() {
       this.proformas = this.getRelatedProformas();
+    },
+    apollo: {
+      proformasByOrderId: {
+        query: proformasByOrderId,
+        variables(){
+          return {
+            order_id: this.order_id
+          }
+        }
+      },
+      proformaSpecs: {
+        query: proformaSpecs,
+        variables(){
+          return {
+            proforma_id: this.selectedProformaId
+          }
+        }
+      }
     }
   }
 </script>

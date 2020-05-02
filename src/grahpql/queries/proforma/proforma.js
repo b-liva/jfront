@@ -41,3 +41,24 @@ export const proformasBySpec = gql`
         }
     }
 `
+
+export const proformasByOrderId = gql`
+    query proformasByOrderId($order_id:ID!){
+        proformasByOrderId:request(id:$order_id) {
+            id
+            number
+            xprefSet {
+                edges {
+                    node {
+                        id
+                        number
+                        reqId {
+                            id
+                            number
+                        }
+                    }
+                }
+            }
+        }
+    }
+`

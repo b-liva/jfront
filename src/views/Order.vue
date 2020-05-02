@@ -9,8 +9,9 @@
     </v-snackbar>
     <v-data-table
       :headers="headers"
-      :items="orders"
+      :items="getOrders()"
       :expanded="expanded"
+      :loading="$apollo.queries.allRequests.loading"
       class="elevation-1"
       show-expand
       single-expand
@@ -75,6 +76,9 @@
           {{item.customer.name}}
         </router-link>
       </template>
+      <template v-slot:item.owner="{item}">
+        {{item.owner.lastName}}
+      </template>
       <template v-slot:item.number="{item}">
         <router-link :to="{name: 'Order', params: {id: item.id, number: item.number}}">
           {{item.number}}
@@ -107,26 +111,17 @@
           <span>افزودن پیش فاکتور جدید به درخواست</span>
         </v-tooltip>
       </template>
-      <template v-slot:expanded-item="{headers, item}">
+      <template v-slot:expanded-item="{headers}">
         <td :colspan="headers.length">
-          <table class="expanded-table">
-            <thead>
-            <th v-for="head in specHeaders" :key="head.value">{{head.text}}</th>
-            <th></th>
-            </thead>
-            <tbody>
-            <tr v-for="spec in item.specs" :key="spec.id">
-              <td>{{spec.qty}}</td>
-              <td>{{spec.kw}}</td>
-              <td>{{spec.rpm}}</td>
-              <td>{{spec.voltage}}</td>
-              <td>
-                <v-icon @click="editSpec(spec)" small class="mr-2">mdi-pencil</v-icon>
-                <v-icon @click="deleteSpec(spec)" small class="mr-2">mdi-delete</v-icon>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+          <v-data-table
+          :items="getSpecs()"
+          :headers="specHeaders"
+          :loading="$apollo.queries.order.loading"
+          >
+            <template v-slot:no-data>
+              {{error}}
+            </template>
+          </v-data-table>
         </td>
       </template>
     </v-data-table>
@@ -239,7 +234,7 @@
       </v-card>
     </v-dialog>
     <v-dialog v-model="proformaListDialog">
-      <proforma-list :proformas="relatedProformas" :order="relatedOrder"/>
+      <proforma-list :order_id="selectedOrderId"/>
     </v-dialog>
     <v-dialog persistent v-model="proformaFormDialog">
       <proforma-spec-form v-if="proformaFormDialog" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
@@ -248,15 +243,20 @@
 </template>
 
 <script>
+  import {baseFunctions} from "../mixins/graphql/baseFunctions";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import ProformaList from "./proforma/ProformaList";
   import ProformaSpecForm from "./proforma/ProformaSpecForm";
+  import {allRequests} from "../grahpql/queries/order/order";
+  import {order} from "../grahpql/queries/order/order";
 
   export default {
     data() {
       return {
         name: "Order",
         editedIndex: -1,
+        error: null,
+        selectedOrderId: null,
         defaultItems: {
           owner: '',
           customer: {
@@ -326,9 +326,10 @@
         // headers: ['مشتری', 'شماره', 'مبلغ', 'تاریخ', 'نوع'],
         headers: [
           {text: 'مشتری', value: 'customer'},
+          {text: 'کارشناس', value: 'owner'},
           {text: 'شماره', value: 'number'},
           {text: 'تایخ', value: 'date'},
-          {text: 'اکشن', value: 'action'},
+          {text: '', value: 'action'},
         ],
         specHeaders: [
           {value: 'qty', text: 'دستگاه'},
@@ -497,12 +498,21 @@
           },
         ],
         relatedProformas: [],
-        relatedOrder: null,
         proformaOrder: null,
         orderSpecs: null,
       }
     },
     methods: {
+      getSpecs(){
+        if (typeof this.order !== "undefined" && this.order !== null){
+          return this.noNode(this.order.reqspecSet)
+        }
+      },
+      getOrders(){
+        if (typeof this.allRequests !== "undefined" && this.allRequests !== null){
+          return this.noNode(this.allRequests)
+        }
+      },
       clear() {
         this.order_form = Object.assign({}, this.defaultItems);
         this.editedIndex = -1;
@@ -577,6 +587,8 @@
         this.assignDialog = false
       },
       orderClicked(value) {
+        this.selectedOrderId = value.item.id;
+        console.log('this is id: ', this.selectedOrderId);
         console.log(value.item.id, this.expanded)
         if (this.expanded.includes(value.item)) {
           this.expanded.pop(value.item)
@@ -613,8 +625,8 @@
       },
       listRelatedProformas(order) {
         console.log('listing related order for: ', order);
-        this.relatedOrder = order;
-        this.relatedProformas = this.proformas.map((row, i) => row.orderNumber === order.number ? this.proformas[i] : -1).filter(index => index !== -1)
+        this.selectedOrderId = order.id;
+        // this.relatedProformas = this.proformas.map((row, i) => row.orderNumber === order.number ? this.proformas[i] : -1).filter(index => index !== -1)
         this.proformaListDialog = true;
       },
       addProforma(order) {
@@ -624,11 +636,28 @@
       }
     },
     computed: {},
+    mixins: [
+      baseFunctions
+    ],
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
       ProformaList: ProformaList,
       ProformaSpecForm: ProformaSpecForm,
     },
+    apollo: {
+      allRequests: allRequests,
+      order: {
+        query: order,
+        error(error){
+          this.error = JSON.stringify(error.message)
+        },
+        variables(){
+          return {
+            order_id: this.selectedOrderId
+          }
+        }
+      }
+    }
   }
 </script>
 

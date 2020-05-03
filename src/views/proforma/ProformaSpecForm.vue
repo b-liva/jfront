@@ -2,7 +2,7 @@
   <div>
 
     <v-card>
-      <v-card-title>ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری: {{order.customer.name}}
+      <v-card-title v-if="order">ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری: {{order.customer.name}}
       </v-card-title>
       <v-card-text>
         <v-layout row wrap>
@@ -11,7 +11,7 @@
               <v-icon @click="addAllToProformaSpecs">mdi-check-all</v-icon>
             </p>
             <ul>
-              <template v-for="spec in order.specs">
+              <template v-for="spec in specs">
                 <li v-if="!spec.staged" :key="spec.id">
                   <p class="mx-4">
                     <span>{{spec.qty}}</span>
@@ -57,11 +57,15 @@
 </template>
 
 <script>
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
+  import {order} from "../../grahpql/queries/order/order";
+
   export default {
     data() {
       return {
         name: "ProformaSpecForm",
         proformaSpecs: [],
+        specs: [],
         headers: [
           {value: 'qty', text: 'تعداد', align: 'center', class: 'qty-header'},
           {value: 'kw', text: 'کیلووات',},
@@ -72,14 +76,17 @@
         ]
       }
     },
-    props: ['order', 'proformaFormDialog'],
+    props: ['proformaFormDialog', 'orderId'],
     created() {
-      console.log('created')
-      this.order.specs.map((spec) => {
-        spec.price = 0;
-        spec.staged = false;
-      });
+      console.log('created', this.orderId)
+      // this.order.specs.map((spec) => {
+      //   spec.price = 0;
+      //   spec.staged = false;
+      // });
     },
+    mixins: [
+      baseFunctions
+    ],
     methods: {
       addToPorformaSpecs(spec) {
         this.proformaSpecs.push(spec)
@@ -91,7 +98,7 @@
         spec.staged = false
       },
       addAllToProformaSpecs() {
-        this.order.specs.map((row) => {
+        this.specs.map((row) => {
           console.log(row.price > 0 && !row.staged)
           if (!row.staged) {
             this.proformaSpecs.push(row)
@@ -108,6 +115,23 @@
       },
       close(){
         this.$emit('close-event')
+      }
+    },
+    watch: {
+      order: function () {
+        this.specs = this.noNode(this.order.reqspecSet)
+        this.specs.forEach(e => e.staged = false)
+        console.log('specs: ', this.specs)
+      }
+    },
+    apollo: {
+      order: {
+        query: order,
+        variables(){
+          return {
+            order_id: this.orderId
+          }
+        }
       }
     }
   }

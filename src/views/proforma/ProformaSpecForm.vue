@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <v-card>
       <v-card-title v-if="order">ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری: {{order.customer.name}}
       </v-card-title>
@@ -22,7 +21,7 @@
                     <span>دور</span>
                     <span>{{spec.voltage}}</span>
                     <span>ولت</span>
-                    <span><v-icon @click="addToPorformaSpecs(spec)"> mdi-plus</v-icon></span>
+                    <span><v-icon @click="addToProformaSpecs(spec)"> mdi-plus</v-icon></span>
                   </p>
                 </li>
               </template>
@@ -76,19 +75,12 @@
         ]
       }
     },
-    props: ['proformaFormDialog', 'orderId'],
-    created() {
-      console.log('created', this.orderId)
-      // this.order.specs.map((spec) => {
-      //   spec.price = 0;
-      //   spec.staged = false;
-      // });
-    },
+    props: ['orderId'],
     mixins: [
       baseFunctions
     ],
     methods: {
-      addToPorformaSpecs(spec) {
+      addToProformaSpecs(spec) {
         this.proformaSpecs.push(spec)
         spec.staged = true;
       },

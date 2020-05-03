@@ -236,7 +236,7 @@
         }else {
           this.specs.push(this.assignForm)
         }
-        // this.assignForm = cloneDeep(this.assignFormDefault)
+        // Probably saving the spec to db and fetching specs again.
       },
     },
     props: [
@@ -248,12 +248,6 @@
     ],
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
-    },
-    created(){
-      // this.setAssignForm();
-      console.log('created')
-    },
-    mounted() {
     },
     watch: {
       allIps: function () {

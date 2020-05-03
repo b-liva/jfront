@@ -10,3 +10,42 @@ export const specById = gql`
         }
     }
 `
+
+export const allIps = gql`
+    query{
+        allIps {
+            edges {
+                node {
+                    id
+                    title
+                }
+            }
+        }
+    }
+`
+
+export const allIcs = gql`
+    query{
+        allIcs {
+            edges {
+                node {
+                    id
+                    title
+                }
+            }
+        }
+    }
+`
+
+export const allIms = gql`
+    query{
+        allIms {
+            edges {
+                node {
+                    id
+                    title
+                }
+            }
+        }
+    }
+`

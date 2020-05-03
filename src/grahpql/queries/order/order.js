@@ -4,6 +4,11 @@ export const order = gql`
     query order($order_id:ID!){
         order: request(id: $order_id) {
             id
+            customer {
+                id
+                name
+            }
+            number
             reqspecSet(isActive: true) {
                 edges {
                     node {
@@ -17,6 +22,14 @@ export const order = gql`
                             rpm
                         }
                         im {
+                            id
+                            title
+                        }
+                        ic {
+                            id
+                            title
+                        }
+                        ip {
                             id
                             title
                         }

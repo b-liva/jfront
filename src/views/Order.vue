@@ -126,118 +126,119 @@
       </template>
     </v-data-table>
     <v-dialog v-model="assignDialog" fullscreen hide-overlay>
-      <v-card>
-        <v-card-title>افزودن ردیف{{orderEditIndex}}{{editedSpecIndex}}</v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-layout row wrap>
-              <v-flex class="purple lighten-4" xs4 md3>
-                <v-layout row wrap justify-space-around>
-                  <v-flex xs5 md6>
-                    <v-text-field
-                      class="box"
-                      type="number"
-                      v-model="assignForm.qty"
-                      label="تعداد">
-                    </v-text-field>
-                    <v-text-field class="box" label="کیلووات" v-model="assignForm.kw"></v-text-field>
-                  </v-flex>
-                  <v-flex xs5 md6>
-                    <v-text-field class="box" label="سرعت" v-model="assignForm.rpm"></v-text-field>
-                    <v-text-field class="box" label="ولتاژ" v-model="assignForm.voltage"></v-text-field>
-                  </v-flex>
-                  <v-layout>
-                    <v-flex xs5 md3>
-                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IPID">
-                        <v-radio
-                          v-for="n in IPList"
-                          :key="n.id"
-                          :label="n.title"
-                          :value="n.id"
-                        ></v-radio>
-                      </v-radio-group>
-                    </v-flex>
-                    <v-flex xs5 md3>
-                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ICID">
-                        <v-radio
-                          v-for="n in ICList"
-                          :key="n.id"
-                          :label="n.title"
-                          :value="n.id"
-                        ></v-radio>
-                      </v-radio-group>
-                    </v-flex>
-                    <v-flex xs5 md3>
-                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IMID">
-                        <v-radio
-                          v-for="n in IMList"
-                          :key="n.id"
-                          :label="n.title"
-                          :value="n.id"
-                        ></v-radio>
-                      </v-radio-group>
-                    </v-flex>
-                  </v-layout>
-                  <v-flex xs12 md6 class="">
-                    <PersianDatePicker
-                      v-model="assignForm.date"
-                      format="jYYYY-jMM-jDD"
-                      :auto-submit="true"/>
-                  </v-flex>
-                  <v-flex
-                    xs12
-                    md12>
-                    <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>
-                  </v-flex>
-                </v-layout>
-                <v-layout row wrap>
-                  <v-flex xs12>
-                    <v-icon
-                      @click="addSpecToList"
-                      small
-                      class="mr-2"
-                      v-on="on">mdi-arrow-left-bold
-                    </v-icon>
-                  </v-flex>
-                </v-layout>
-              </v-flex>
-              <v-flex xs8 md9 class="pink lighten-4"
-              >
-                <v-data-table
-                  v-if="orderEditIndex !== -1"
-                  :headers="specHeaders"
-                  :items="orders[orderEditIndex].specs">
-                  <template v-slot:item.action="{item}">
-                    <v-icon @click="editSpec(item)" small class="mr-2">mdi-pencil</v-icon>
-                    <v-icon @click="deleteSpec(item)" small class="mr-2">mdi-delete</v-icon>
-                  </template>
-                </v-data-table>
-                <ul>
-                  <li v-for="row in relatedSpecRows" :key="row.id">
-                    <span>{{spec[row].qty}} دستگاه </span>
-                    <span>{{spec[row].kw}} کیلووات</span>
-                    <span>{{spec[row].rpm}} دور </span>
-                    <span>{{spec[row].voltage}} ولت</span>
-                    <v-icon @click="editSpec(spec[row])" small class="mr-2">mdi-pencil</v-icon>
-                    <v-icon @click="deleteSpec(spec[row])" small class="mr-2">mdi-delete</v-icon>
-                  </li>
-                </ul>
-              </v-flex>
-            </v-layout>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="success" @click="submitAssignment">ثبت</v-btn>
-          <v-btn color="error" @click="cancelAssignment">انصراف</v-btn>
-          <v-icon @click="clear()">mdi-close-circle</v-icon>
-        </v-card-actions>
-      </v-card>
+      <order-spec-form v-if="assignDialog" :order-id="selectedOrderId" v-on:closeAssignDialog="assignDialog = false"/>
+<!--      <v-card>-->
+<!--        <v-card-title>افزودن ردیف{{orderEditIndex}}{{editedSpecIndex}}</v-card-title>-->
+<!--        <v-card-text>-->
+<!--          <v-container>-->
+<!--            <v-layout row wrap>-->
+<!--              <v-flex class="purple lighten-4" xs4 md3>-->
+<!--                <v-layout row wrap justify-space-around>-->
+<!--                  <v-flex xs5 md6>-->
+<!--                    <v-text-field-->
+<!--                      class="box"-->
+<!--                      type="number"-->
+<!--                      v-model="assignForm.qty"-->
+<!--                      label="تعداد">-->
+<!--                    </v-text-field>-->
+<!--                    <v-text-field class="box" label="کیلووات" v-model="assignForm.kw"></v-text-field>-->
+<!--                  </v-flex>-->
+<!--                  <v-flex xs5 md6>-->
+<!--                    <v-text-field class="box" label="سرعت" v-model="assignForm.rpm"></v-text-field>-->
+<!--                    <v-text-field class="box" label="ولتاژ" v-model="assignForm.voltage"></v-text-field>-->
+<!--                  </v-flex>-->
+<!--                  <v-layout>-->
+<!--                    <v-flex xs5 md3>-->
+<!--                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IPID">-->
+<!--                        <v-radio-->
+<!--                          v-for="n in IPList"-->
+<!--                          :key="n.id"-->
+<!--                          :label="n.title"-->
+<!--                          :value="n.id"-->
+<!--                        ></v-radio>-->
+<!--                      </v-radio-group>-->
+<!--                    </v-flex>-->
+<!--                    <v-flex xs5 md3>-->
+<!--                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ICID">-->
+<!--                        <v-radio-->
+<!--                          v-for="n in ICList"-->
+<!--                          :key="n.id"-->
+<!--                          :label="n.title"-->
+<!--                          :value="n.id"-->
+<!--                        ></v-radio>-->
+<!--                      </v-radio-group>-->
+<!--                    </v-flex>-->
+<!--                    <v-flex xs5 md3>-->
+<!--                      <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IMID">-->
+<!--                        <v-radio-->
+<!--                          v-for="n in IMList"-->
+<!--                          :key="n.id"-->
+<!--                          :label="n.title"-->
+<!--                          :value="n.id"-->
+<!--                        ></v-radio>-->
+<!--                      </v-radio-group>-->
+<!--                    </v-flex>-->
+<!--                  </v-layout>-->
+<!--                  <v-flex xs12 md6 class="">-->
+<!--                    <PersianDatePicker-->
+<!--                      v-model="assignForm.date"-->
+<!--                      format="jYYYY-jMM-jDD"-->
+<!--                      :auto-submit="true"/>-->
+<!--                  </v-flex>-->
+<!--                  <v-flex-->
+<!--                    xs12-->
+<!--                    md12>-->
+<!--                    <v-textarea label="توضیحات" v-model="assignForm.summary" auto-grow></v-textarea>-->
+<!--                  </v-flex>-->
+<!--                </v-layout>-->
+<!--                <v-layout row wrap>-->
+<!--                  <v-flex xs12>-->
+<!--                    <v-icon-->
+<!--                      @click="addSpecToList"-->
+<!--                      small-->
+<!--                      class="mr-2"-->
+<!--                      v-on="on">mdi-arrow-left-bold-->
+<!--                    </v-icon>-->
+<!--                  </v-flex>-->
+<!--                </v-layout>-->
+<!--              </v-flex>-->
+<!--              <v-flex xs8 md9 class="pink lighten-4"-->
+<!--              >-->
+<!--                <v-data-table-->
+<!--                  v-if="orderEditIndex !== -1"-->
+<!--                  :headers="specHeaders"-->
+<!--                  :items="orders[orderEditIndex].specs">-->
+<!--                  <template v-slot:item.action="{item}">-->
+<!--                    <v-icon @click="editSpec(item)" small class="mr-2">mdi-pencil</v-icon>-->
+<!--                    <v-icon @click="deleteSpec(item)" small class="mr-2">mdi-delete</v-icon>-->
+<!--                  </template>-->
+<!--                </v-data-table>-->
+<!--                <ul>-->
+<!--                  <li v-for="row in relatedSpecRows" :key="row.id">-->
+<!--                    <span>{{spec[row].qty}} دستگاه </span>-->
+<!--                    <span>{{spec[row].kw}} کیلووات</span>-->
+<!--                    <span>{{spec[row].rpm}} دور </span>-->
+<!--                    <span>{{spec[row].voltage}} ولت</span>-->
+<!--                    <v-icon @click="editSpec(spec[row])" small class="mr-2">mdi-pencil</v-icon>-->
+<!--                    <v-icon @click="deleteSpec(spec[row])" small class="mr-2">mdi-delete</v-icon>-->
+<!--                  </li>-->
+<!--                </ul>-->
+<!--              </v-flex>-->
+<!--            </v-layout>-->
+<!--          </v-container>-->
+<!--        </v-card-text>-->
+<!--        <v-card-actions>-->
+<!--          <v-btn color="success" @click="submitAssignment">ثبت</v-btn>-->
+<!--          <v-btn color="error" @click="cancelAssignment">انصراف</v-btn>-->
+<!--          <v-icon @click="clear()">mdi-close-circle</v-icon>-->
+<!--        </v-card-actions>-->
+<!--      </v-card>-->
     </v-dialog>
     <v-dialog v-model="proformaListDialog">
       <proforma-list :order_id="selectedOrderId"/>
     </v-dialog>
     <v-dialog persistent v-model="proformaFormDialog">
-      <proforma-spec-form v-if="proformaFormDialog" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
+      <proforma-spec-form v-if="proformaFormDialog" :order-id="selectedOrderId" :order="proformaOrder" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
   </div>
 </template>
@@ -247,6 +248,7 @@
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import ProformaList from "./proforma/ProformaList";
   import ProformaSpecForm from "./proforma/ProformaSpecForm";
+  import OrderSpecForm from "../components/order/spec/OrderSpecForm";
   import {allRequests} from "../grahpql/queries/order/order";
   import {order} from "../grahpql/queries/order/order";
 
@@ -298,7 +300,7 @@
           voltage: '',
           date: '',
           summary: '',
-          IPID: 1,
+          IPID: '',
           ICID: 1,
           IMID: 1,
         },
@@ -545,13 +547,14 @@
         confirm('از حذف این ردیف اطمینان دارید؟') && this.orders.splice(index, 1)
       },
       assignToMe(order) {
-        console.log(order)
+        this.selectedOrderId = order.id;
+        console.log('assign to me: ', order, this.selectedOrderId);
         this.assignDialog = true;
-        this.editedSpecIndex = -1;
-        this.orderEditIndex = this.orders.indexOf(order)
-        this.assignForm.customer = order.customer;
-        this.assignForm.number = order.number;
-        this.assignForm.id = order.id;
+        // this.editedSpecIndex = -1;
+        // this.orderEditIndex = this.orders.indexOf(order)
+        // this.assignForm.customer = order.customer;
+        // this.assignForm.number = order.number;
+        // this.assignForm.id = order.id;
       },
       addSpecToList() {
         console.log('submitting assignment', this.assignForm)
@@ -632,6 +635,8 @@
       addProforma(order) {
         console.log('adding proforma to order: ', order)
         this.proformaFormDialog = true;
+        this.selectedOrderId = order.id;
+        console.log(this.selectedOrderId)
         this.proformaOrder = order;
       }
     },
@@ -643,6 +648,7 @@
       PersianDatePicker: VuePersianDatetimePicker,
       ProformaList: ProformaList,
       ProformaSpecForm: ProformaSpecForm,
+      OrderSpecForm
     },
     apollo: {
       allRequests: allRequests,

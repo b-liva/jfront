@@ -1,9 +1,7 @@
 <template>
   <div>
     <v-card>
-      <v-card-title>{{specId}}ویرایش ردیف</v-card-title>
-      <div>{{assignForm}}</div>
-      <div>{{editingIndex}}</div>
+      <v-card-title>ویرایش ردیف</v-card-title>
       <v-card-text>
         <v-container>
           <v-layout row wrap>
@@ -24,7 +22,7 @@
                 </v-flex>
                 <v-layout>
                   <v-flex xs5 md3>
-                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IPID">
+                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ip.id">
                       <v-radio
                         v-for="n in IPList"
                         :key="n.id"
@@ -34,7 +32,7 @@
                     </v-radio-group>
                   </v-flex>
                   <v-flex xs5 md3>
-                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ICID">
+                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.ic.id">
                       <v-radio
                         v-for="n in ICList"
                         :key="n.id"
@@ -44,7 +42,7 @@
                     </v-radio-group>
                   </v-flex>
                   <v-flex xs5 md3>
-                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.IMID">
+                    <v-radio-group dense class="d-flex col-md-6 mb-6" v-model="assignForm.im.id">
                       <v-radio
                         v-for="n in IMList"
                         :key="n.id"
@@ -80,7 +78,10 @@
             >
               <v-data-table
                 :headers="specHeaders"
-                :items="specs">
+                :items="getSpecs()">
+                <template v-slot:item.ip="{item}"><template v-if="item.ip !== null">{{item.ip.title}}</template></template>
+                <template v-slot:item.ic="{item}"><template v-if="item.ic !== null">{{item.ic.title}}</template></template>
+                <template v-slot:item.im="{item}"><template v-if="item.im !== null">{{item.im.title}}</template></template>
                 <template v-slot:item.action="{item}">
                   <v-icon @click="editSpec(item)" small class="mr-2">mdi-pencil</v-icon>
                   <v-icon @click="deleteSpec(item)" small class="mr-2">mdi-delete</v-icon>
@@ -102,12 +103,18 @@
 
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
+  import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
+  import {order} from "../../../grahpql/queries/order/order";
+  import {allIps, allIcs, allIms} from "../../../grahpql/queries/order/spec/spec";
   import cloneDeep from 'lodash/cloneDeep'
 
   export default {
     data(){
       return {
         name: "OrderSpecForm",
+        allIps: null,
+        allIcs: null,
+        allIms: null,
         assignFormDefault: {
           id: '',
           orderId: '',
@@ -115,19 +122,34 @@
           kw: '',
           rpm: '',
           voltage: '',
-          IPID: 1,
-          ICID: 1,
-          IMID: 1,
+          ip: {id: ''},
+          ic: {id: ''},
+          im: {id: ''},
           date: '',
           summary: '',
         },
-        assignForm: '',
+        assignForm: {
+          id: '',
+          orderId: '',
+          qty: '',
+          kw: '',
+          rpm: '',
+          voltage: '',
+          ip: {id: ''},
+          ic: {id: ''},
+          im: {id: ''},
+          date: '',
+          summary: '',
+        },
         editingIndex: -1,
         specHeaders: [
           {value: 'qty', text: 'دستگاه'},
           {value: 'kw', text: 'کیلووات'},
           {value: 'rpm', text: 'سرعت'},
           {value: 'voltage', text: 'ولتاژ'},
+          {value: 'ip', text: 'IP'},
+          {value: 'im', text: 'IM'},
+          {value: 'ic', text: 'IC'},
           {value: 'action', text: ''},
         ],
         specs: [
@@ -171,26 +193,29 @@
             summary: 'some summary'
           },
         ],
-        ICList: [
-          {id: 1, title: 'IC411'},
-          {id: 2, title: 'IC511'},
-          {id: 3, title: 'IC611'},
-          {id: 4, title: 'IC666'},
-        ],
-        IPList: [
-          {id: 1, title: 'IP55'},
-          {id: 2, title: 'IP66'},
-        ],
-        IMList: [
-          {id: 1, title: 'IMB3'},
-          {id: 2, title: 'IMB35'},
-        ],
+        ICList: [],
+        IPList: [],
+        IMList: [],
       }
     },
     methods: {
+      getSpecs(){
+        if (typeof this.order !== "undefined" && this.order !== null){
+          return this.noNode(this.order.reqspecSet)
+        }
+      },
       editSpec: function(item){
-        this.editingIndex = this.specs.indexOf(item)
-        this.assignForm = cloneDeep(this.specs[this.editingIndex])
+        console.log(item);
+        if (item.ic === null){
+          item.ic = {id: ''}
+        }
+        if (item.im === null){
+          item.im = {id: ''}
+        }
+        if (item.ip === null){
+          item.ip = {id: ''}
+        }
+        this.assignForm = cloneDeep(item)
       },
       deleteSpec(){
         console.log('method.');
@@ -200,6 +225,7 @@
       },
       cancelAssignment(){
         console.log('assignment');
+        this.$emit('closeAssignDialog')
       },
       addSpecToList(){
         if (this.editingIndex !== -1){
@@ -210,30 +236,58 @@
         }else {
           this.specs.push(this.assignForm)
         }
-        this.assignForm = cloneDeep(this.assignFormDefault)
+        // this.assignForm = cloneDeep(this.assignFormDefault)
       },
-      setAssignForm(){
-        let filteredItems = this.specs.filter(e => {
-          return e.id === this.specId;
-        });
-        this.editingIndex = this.specs.indexOf(filteredItems[0])
-        this.assignForm = cloneDeep(this.specs[this.editingIndex])
-      }
     },
     props: [
-      "specId"
+      "specId",
+      "orderId"
+    ],
+    mixins: [
+      baseFunctions
     ],
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
     },
     created(){
-      this.setAssignForm();
-      console.log('created', this.assignForm)
-    },
-    beforeUpdate() {
       // this.setAssignForm();
-      console.log('before updated', this.assignForm)
+      console.log('created')
     },
+    mounted() {
+    },
+    watch: {
+      allIps: function () {
+        if (typeof this.allIps !== "undefined" && this.allIps !== null){
+          this.IPList = cloneDeep(this.noNode(this.allIps));
+          this.$set(this.assignForm, 'ip', this.allIps.edges[0].node)
+        }
+      },
+      allIcs: function () {
+        if (this.allIcs !== null){
+          this.ICList = cloneDeep(this.noNode(this.allIcs));
+          this.$set(this.assignForm, 'ic', this.allIcs.edges[0].node)
+        }
+      },
+      allIms: function () {
+        if (this.allIms !== null){
+          this.IMList = cloneDeep(this.noNode(this.allIms));
+          this.$set(this.assignForm, 'im', this.allIms.edges[0].node)
+        }
+      }
+    },
+    apollo: {
+      order: {
+        query: order,
+        variables(){
+          return {
+            order_id: this.orderId
+          }
+        }
+      },
+      allIps: allIps,
+      allIcs: allIcs,
+      allIms: allIms
+    }
   }
 </script>
 

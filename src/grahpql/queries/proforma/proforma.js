@@ -1,5 +1,18 @@
 import gql from 'graphql-tag'
 
+export const proformaById = gql`
+    query proformaById($proforma_id:ID!){
+        proformaById:proforma(id:$proforma_id) {
+            id
+            number
+            reqId {
+                id
+                number
+            }
+        }
+    }
+`
+
 export const allProformas = gql`
     query{
         allProformas(last:20) {

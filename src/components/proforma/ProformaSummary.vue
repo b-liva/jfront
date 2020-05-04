@@ -2,7 +2,7 @@
   <div>
     <v-container>
       <v-row>
-        <v-col cols="12" md="10">
+        <v-col cols="12" md="12">
           <v-card>
             <v-card-title>پیش فاکتور</v-card-title>
             <v-card-text>
@@ -21,6 +21,10 @@
                 </template>
                 <template v-slot:item.owner="{item}">
                   {{item.owner.lastName}}
+                </template>
+                <template v-slot:item.action="{ item }">
+                  <v-icon @click="editProforma(item)" small class="mr-2">mdi-pencil</v-icon>
+                  <v-icon @click="deleteProforma(item)" small class="mr-2">mdi-delete</v-icon>
                 </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
@@ -41,11 +45,15 @@
     <v-dialog v-model="specProformasDialog" width="900px">
       <spec-proformas :spec_id="selectedSpecIdEq"/>
     </v-dialog>
+    <v-dialog v-model="proformaFormDialog" max-width="800px">
+      <proforma-form :proforma-id="selectedProformaId"/>
+    </v-dialog>
   </div>
 </template>
 
 <script>
   import SpecProformas from "./SpecProformas";
+  import ProformaForm from "./ProformaForm";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {allProformas} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
@@ -55,6 +63,7 @@
       return {
         name: "ProformaSummary",
         proformaRowExpanded: [],
+        proformaFormDialog: false,
         specProformasDialog: false,
         selectedSpecIdEq: null,
         selectedProformaId: null,
@@ -63,6 +72,7 @@
           {value: "customerName", text: "مشتری"},
           {value: "date", text: "تاریخ"},
           {value: "owner", text: "کارشناس"},
+          {value: "action", text: ""},
         ],
         proformas: [
           {id: 1, number: 980025, customerName: "شرکت زرین ذرت شاهرود", date: "1399-01-23", owner: "ظریف"},
@@ -121,10 +131,18 @@
         if (typeof this.allProformas !== 'undefined' && this.allProformas !== null){
           return this.noNode(this.allProformas)
         }
-      }
+      },
+      editProforma(item){
+        this.proformaFormDialog = true;
+        this.selectedProformaId = item.id;
+      },
+      deleteProforma(item){
+        console.log('fn', item)
+      },
     },
     components: {
       SpecProformas,
+      ProformaForm
     },
     mixins: [
       baseFunctions

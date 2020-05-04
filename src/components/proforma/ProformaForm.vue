@@ -21,11 +21,18 @@
 
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
+  import {proformaById} from "../../grahpql/queries/proforma/proforma";
+  import cloneDeep from 'lodash/cloneDeep'
 
   export default {
     data(){
       return {
         name: "ProformaForm",
+        proformaFormDefault: {
+          id: '',
+          number: '',
+          date: '',
+        },
         proforma: '',
       }
     },
@@ -33,15 +40,26 @@
       "proformaId"
     ],
     created() {
-      this.proforma = {
-        id: this.proformaId,
-        number: "98-1025",
-        date: "1398-12-02",
-      }
+      this.proforma = cloneDeep(this.proformaFormDefault);
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
+    watch: {
+      proformaById: function () {
+        this.proforma = this.proformaById;
+      }
+    },
+    apollo: {
+      proformaById: {
+        query: proformaById,
+        variables(){
+          return {
+            proforma_id: this.proformaId
+          }
+        }
+      }
+    }
   }
 </script>
 

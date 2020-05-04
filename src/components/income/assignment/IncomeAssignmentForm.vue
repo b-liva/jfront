@@ -5,8 +5,9 @@
         اختصاص واریزی به {{incomeAssignmentRowId}}
       </v-card-title>
       <v-card-text>
+        {{incomeAssignmentForm}}
         <v-form>
-          <v-text-field label="شماره" v-model="incomeAssignmentForm.number"></v-text-field>
+          <v-text-field label="شماره" v-model="incomeAssignmentForm.income.number"></v-text-field>
           <v-text-field label="مبلغ" v-model="incomeAssignmentForm.amount"></v-text-field>
           <PersianDatePicker
             v-model="incomeAssignmentForm.date"
@@ -28,16 +29,34 @@
 
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
+  import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
+  import {incomeRowById} from "../../../grahpql/queries/income/incomeAssignment";
 
   export default {
     data(){
       return {
         name: "IncomeAssignmentForm",
-        incomeAssignmentForm: '',
+        incomeAssignmentFormDefault: {
+          income: {
+            id: '',
+            number: ''
+          },
+          amount: '',
+          summary: ''
+        },
+        incomeAssignmentForm: {
+          income: {
+            id: '',
+            number: ''
+          },
+          amount: '',
+          summary: ''
+        },
       }
     },
     props: [
-      "incomeAssignmentRowId"
+      "incomeAssignmentRowId",
+      "incomeId"
     ],
     methods: {
       getRelatedIncomeAssignmentRow(){
@@ -56,12 +75,28 @@
         console.log('method', item);
       },
     },
-    created() {
-      this.incomeAssignmentForm = this.getRelatedIncomeAssignmentRow();
-    },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
+    mixins: [
+      baseFunctions
+    ],
+    watch: {
+      incomeRowById: function () {
+        console.log(this.incomeRowById)
+        this.incomeAssignmentForm = this.incomeRowById;
+      }
+    },
+    apollo: {
+      incomeRowById: {
+        query: incomeRowById,
+        variables(){
+          return {
+            income_row_id: this.incomeAssignmentRowId
+          }
+        }
+      }
+    }
   }
 </script>
 

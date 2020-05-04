@@ -29,6 +29,15 @@ export const income = gql`
         income(id:$income_id) {
             id
             number
+            amount
+            type {
+                id
+                title
+            }
+            customer {
+                id
+                name
+            }
             incomerowSet {
                 edges {
                     node {
@@ -92,6 +101,19 @@ export const incomesByPermitId = gql`
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+`
+
+export const allPaymentTypes = gql`
+    query{
+        allPaymentTypes {
+            edges {
+                node {
+                    id
+                    title
                 }
             }
         }

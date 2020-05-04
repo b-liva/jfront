@@ -12,7 +12,7 @@
           </v-autocomplete>
           <v-text-field v-model="incomeForm.number" label="شماره"></v-text-field>
           <v-text-field v-model="incomeForm.amount" label="مبلغ"></v-text-field>
-          <v-radio-group v-model="incomeForm.type">
+          <v-radio-group v-if="incomeForm.type" v-model="incomeForm.type.id">
             <v-radio v-for="type in types" :key="type.id" :label="type.title" :value="type.id">
             </v-radio>
           </v-radio-group>
@@ -44,22 +44,17 @@
 
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
+  import {income, allPaymentTypes} from "../../grahpql/queries/income/income";
+  import {allCustomers} from "../../grahpql/queries/customer/customer";
 
   export default {
     data() {
       return {
         name: "IncomeForm",
-        incomeForm: '',
-        types: [
-          {id: 1, title: "حواله"},
-          {id: 2, title: "چک"},
-        ],
-        customers: [
-          {id: 1, name: "هوایار"},
-          {id: 2, name: "پتروشیمی مارون"},
-          {id: 3, name: "تهران بوستون"},
-          {id: 4, name: "سازش"},
-        ],
+        incomeForm: {},
+        types: [],
+        customers: [],
       }
     },
     methods: {
@@ -91,12 +86,36 @@
     beforeCreate() {
       console.log('before create: ', this.incomeForm, this.types)
     },
-    created() {
-      this.incomeForm = this.getRelatedIncome();
+    mixins: [
+      baseFunctions
+    ],
+    watch: {
+      income: function () {
+        console.log(this.income);
+        this.incomeForm = this.income;
+      },
+      allCustomers: function () {
+        this.customers = this.noNode(this.allCustomers)
+      },
+      allPaymentTypes: function () {
+        this.types = this.noNode(this.allPaymentTypes);
+      }
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
+    apollo: {
+      income: {
+        query: income,
+        variables(){
+          return {
+            income_id: this.incomeId
+          }
+        }
+      },
+      allCustomers: allCustomers,
+      allPaymentTypes: allPaymentTypes,
+    }
   }
 </script>
 

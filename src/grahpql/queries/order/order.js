@@ -1,5 +1,18 @@
 import gql from 'graphql-tag'
 
+export const  orderOnly = gql`
+    query orderOnly($order_id:ID!){
+        orderOnly:request(id:$order_id) {
+            id
+            number
+            customer{
+                id
+                name
+            }
+        }
+    }
+`
+
 export const order = gql`
     query order($order_id:ID!){
         order: request(id: $order_id) {

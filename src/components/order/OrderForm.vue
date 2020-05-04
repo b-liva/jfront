@@ -43,6 +43,7 @@
 </template>
 
 <script>
+  import {orderOnly} from "../../grahpql/queries/order/order";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import cloneDeep from 'lodash/cloneDeep'
 
@@ -50,10 +51,28 @@
     data(){
       return {
         name: "OrderForm",
-        order_form: {},
+        orderFormDefault: {
+          id: '',
+          customer: {
+            id: '',
+            name: '',
+          },
+          number: '',
+          summary: '',
+        },
+        order_form: {
+          id: '',
+          customer: {
+            id: '',
+            name: '',
+          },
+          number: '',
+          summary: '',
+        },
       }
     },
     props: [
+      "orderId",
       "order"
     ],
     methods: {
@@ -70,7 +89,23 @@
       PersianDatePicker: VuePersianDatetimePicker
     },
     created() {
-      this.order_form = cloneDeep(this.order);
+      this.order_form = cloneDeep(this.orderFormDefault);
+      // this.$set(this.order_form, this.orderFormDefault)
+    },
+    watch: {
+      orderOnly: function () {
+        this.order_form = this.orderOnly;
+      }
+    },
+    apollo: {
+      orderOnly: {
+        query: orderOnly,
+        variables(){
+          return {
+            order_id: this.orderId
+          }
+        }
+      }
     }
   }
 </script>

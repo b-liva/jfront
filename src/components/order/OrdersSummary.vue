@@ -1,8 +1,9 @@
 <template>
   <div>
+    <div>{{orderFormDialog}}</div>
     <v-container>
       <v-row>
-        <v-col cols="12" md="10">
+        <v-col cols="12" md="12">
           <v-card>
             <v-card-title>درخواست</v-card-title>
             <v-card-text>
@@ -15,6 +16,14 @@
                 single-expand
                 @item-expanded="orderExpanded"
               >
+                <template v-slot:top>
+                  <v-toolbar>
+                    <v-toolbar-title>درخواست خرید</v-toolbar-title>
+                    <v-divider vertical inset class="mx-4"/>
+                    <v-spacer></v-spacer>
+                    <v-btn class="primary" @click="newOrder">درخواست جدید</v-btn>
+                  </v-toolbar>
+                </template>
                 <template v-slot:item.number="{item}">
                   <router-link :to="{name: 'Order', params: {id: item.id, number: item.number}}">
                     {{item.number}}
@@ -25,6 +34,33 @@
                 </template>
                 <template v-slot:item.owner="{item}">
                   {{item.owner.lastName}}
+                </template>
+                <template v-slot:item.action="{ item }">
+                  <v-icon @click="editItem(item)" small class="mr-2">mdi-pencil</v-icon>
+                  <v-icon @click="deleteItem(item)" small class="mr-2">mdi-delete</v-icon>
+                  <v-tooltip top>
+                    <template v-slot:activator="{on}">
+                      <v-icon
+                        @click="assignSpecToOrder(item)"
+                        small
+                        class="mr-2"
+                        v-on="on">mdi-arrow-left-bold
+                      </v-icon>
+                    </template>
+                    <span>افزودن ردیف به درخواست</span>
+                  </v-tooltip>
+                  <v-tooltip top>
+                    <template v-slot:activator="{on}">
+                      <v-icon @click="listRelatedProformas(item)" v-on="on" small class="mr-2">mdi-format-list-bulleted</v-icon>
+                    </template>
+                    <span>مشاهده پیش فاکتور های مرتبط</span>
+                  </v-tooltip>
+                  <v-tooltip top>
+                    <template v-slot:activator="{on}">
+                      <v-icon @click="addProforma(item)" v-on="on" small class="mr-2">mdi-playlist-plus</v-icon>
+                    </template>
+                    <span>افزودن پیش فاکتور جدید به درخواست</span>
+                  </v-tooltip>
                 </template>
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
@@ -49,12 +85,28 @@
     <v-dialog v-model="specProformasDialog" width="900px">
       <spec-proformas :spec_id="selectedSpecId" />
     </v-dialog>
+    <v-dialog v-model="assignDialog" fullscreen hide-overlay>
+      <order-spec-form v-if="assignDialog" :order-id="selectedOrderId" v-on:closeAssignDialog="assignDialog = false"/>
+    </v-dialog>
+    <v-dialog v-model="proformaListDialog">
+      <proforma-list v-if="proformaListDialog" :order_id="selectedOrderId"/>
+    </v-dialog>
+    <v-dialog persistent v-model="proformaFormDialog">
+      <proforma-spec-form v-if="proformaFormDialog" :order-id="selectedOrderId" v-on:close-event="proformaFormDialog = false"/>
+    </v-dialog>
+    <v-dialog v-model="orderFormDialog" max-width="800px">
+      <order-form v-if="orderFormDialog" :order-id="selectedOrderId"/>
+    </v-dialog>
   </div>
 </template>
 
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {allRequests, order} from "../../grahpql/queries/order/order";
+  import OrderSpecForm from "./spec/OrderSpecForm";
+  import ProformaList from "../../views/proforma/ProformaList";
+  import ProformaSpecForm from "../../views/proforma/ProformaSpecForm";
+  import OrderForm from "./OrderForm";
 
   import SpecProformas from "../proforma/SpecProformas";
 
@@ -65,6 +117,11 @@
         error: null,
         allRequests: {edges: []},
         order: null,
+        assignDialog: false,
+        proformaListDialog: false,
+        proformaFormDialog: false,
+        orderFormDialog: false,
+        selectedOrderId: '',
         orderRowExpanded: [],
         specProformasDialog: false,
         expandedOrderId: '',
@@ -76,6 +133,7 @@
           {value: "totalKw", text: "کیلووات"},
           {value: "totalQty", text: "دستگاه"},
           {value: "owner", text: "کارشناس"},
+          {value: "action", text: ""},
         ],
         orders: [
           {
@@ -177,6 +235,10 @@
       }
     }, // todo: show percentage with css or d3 progress bars.
     methods: {
+      newOrder(){
+        this.orderFormDialog = true;
+        this.selectedOrderId = null;
+      },
       getOrderSpecs(){
         if (typeof this.order !== "undefined" && this.order !== null){
           return this.noNode(this.order.reqspecSet)
@@ -198,12 +260,40 @@
       },
       findProformas(spec) {
         this.selectedSpecId = spec.id;
-        console.log('id: ', this.selectedSpecId)
+        console.log('id: ', this.selectedSpecId);
         this.specProformasDialog = true;
-      }
+      },
+      editItem(item){
+        this.selectedOrderId = item.id;
+        this.orderFormDialog = true;
+        console.log('fn', item)
+      },
+      deleteItem(item){
+        this.selectedOrderId = item.id;
+        console.log('fn', item)
+      },
+      assignSpecToOrder(item){
+        this.selectedOrderId = item.id;
+        this.assignDialog = true;
+        console.log('fn', item)
+      },
+      listRelatedProformas(item){
+        this.selectedOrderId = item.id;
+        this.proformaListDialog = true;
+        console.log('fn', item)
+      },
+      addProforma(item){
+        this.selectedOrderId = item.id;
+        this.proformaFormDialog = true;
+        console.log('fn', item)
+      },
     },
     components: {
       SpecProformas,
+      OrderSpecForm,
+      ProformaList,
+      ProformaSpecForm,
+      OrderForm
     },
     apollo: {
       allRequests: allRequests,

@@ -77,9 +77,9 @@
 <script>
   // import db from '@/firebase/init'
   import * as d3 from "d3";
-  import BaseCard from "../components/cards/BaseCard";
-  import BarChart from "../components/charts/BarChart";
-  import LineChart from "../components/charts/LineChart";
+  import BaseCard from "../../components/cards/BaseCard";
+  import BarChart from "../../components/charts/BarChart";
+  import LineChart from "../../components/charts/LineChart";
 
   export default {
     data() {

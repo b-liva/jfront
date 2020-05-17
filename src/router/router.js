@@ -4,7 +4,7 @@ import Dashboard from "../views/Dashboard";
 import Order from '../views/order/Order';
 import Income from "../views/Income";
 import Income2 from "../views/Income2";
-import Customer from "../views/Customer"
+import Customer from "../views/customer/Customer"
 import Customers from "../views/customer/Customers";
 import OrderDetails from "../views/order/OrderDetails";
 import ProformaDetail from "../views/proforma/ProformaDetail";

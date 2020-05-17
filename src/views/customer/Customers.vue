@@ -29,8 +29,15 @@
       </template>
     </v-data-table>
     <v-dialog v-model="customerFormDialog" max-width="800px">
-      <customer-form :customer_id="selectedCustomerId" v-on:cuRefech="customerRefech"/>
+      <customer-form :customer_id="selectedCustomerId" v-on:cuRefetch="customerRefech"/>
     </v-dialog>
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="timeout"
+      color="success"
+    >
+      {{snackbarText}}
+    </v-snackbar>
   </div>
 </template>
 
@@ -45,6 +52,9 @@
         name: "Customers",
         customerFormDialog: false,
         selectedCustomerId: '',
+        snackbar: false,
+        timeout: 3000,
+        snackbarText: "",
         customersHeader: [
           {value: "name", text: "مشتری"},
           {value: "salesKw", text: "کیلووات"},
@@ -61,7 +71,6 @@
       editCustomer(item){
         this.selectedCustomerId = item.id;
         this.customerFormDialog = true;
-        console.log(item);
       },
       getCustomers() {
         if (typeof this.allCustomers !== "undefined" && this.allCustomers !== null){
@@ -73,6 +82,9 @@
       },
       customerRefech(){
         this.$apollo.queries.allCustomers.refetch();
+        this.customerFormDialog = false;
+        this.snackbarText = "مشتری جدید با موفقیت ثبت شد.";
+        this.snackbar = true
       }
     },
     components: {

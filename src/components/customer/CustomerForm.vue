@@ -1,8 +1,7 @@
 <template>
   <div>
     <v-card>
-      <v-container>{{customerById}}
-        <div>{{customer_id}}</div>
+      <v-container>
         <v-row>
           <v-col cols="10" md="6">
             <v-text-field label="نام" v-model="customerForm.name"></v-text-field>
@@ -32,6 +31,7 @@
     data() {
       return {
         name: "CustomerForm",
+        test: '',
         selectedType: '',
         customerForm: {
           name: null,
@@ -57,11 +57,6 @@
       baseFunctions
     ],
     methods: {
-      clicked(){
-        let types = this.noNode(this.allCustomerTypes)
-        console.log(types)
-        this.$set(this.customerForm, 'type', types)
-      },
       submit() {
           this.$apollo.mutate(
             {
@@ -78,41 +73,40 @@
                 website: this.customerForm.website,
                 postalCode: this.customerForm.postalCode,
                 addr: this.customerForm.addr,
-                agent: this.customerForm.agent,
+                isAgent: this.customerForm.agent,
               }
-            }).then((data) => {
-            console.log(data)
-            this.$emit('cuRefech')
+            }).then(() => {
+            this.$emit('cuRefetch')
           }).catch((error => {
             console.error(error)
           }));
         }
       },
-    watch: {
-      allCustomerTypes: function () {
-        if (typeof this.allCustomerTypes !== "undefined" && this.allCustomerTypes !== null){
-          this.types = this.noNode(this.allCustomerTypes);
+    apollo: {
+      allCustomerTypes: {
+        query: allCustomerTypes,
+        result(result){
+          this.types = this.noNode(result.data.allCustomerTypes);
         }
       },
-      customerById: function () {
-        if (typeof this.customerById !== "undefined" && this.customerById !== null){
-          this.customerForm = this.customerById
-          this.customerForm.type_id = this.customerById.type.id
-          this.customerForm.owner_id = this.customerById.owner.id
-        }
-      }
-    },
-    created() {
-      console.log(this.customer_id)
-    },
-    apollo: {
-      allCustomerTypes: allCustomerTypes,
       customerById: {
         query: customerById,
+        manual: true,
         variables(){
           return {
             customer_id: this.customer_id
           }
+        },
+        skip(){
+          return !this.customer_id
+        },
+        result(result){
+          this.customerForm = result.data.customerById;
+          this.customerForm.type_id = result.data.customerById.type.id;
+          this.customerForm.owner_id = result.data.customerById.owner.id;
+        },
+        error(error){
+          console.error('Error: ', error)
         }
       }
     }

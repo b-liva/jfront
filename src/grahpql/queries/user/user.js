@@ -1,5 +1,18 @@
 import gql from 'graphql-tag'
 
+export const salesExperts = gql`
+    query{
+        salesExperts:allUsers(salesExp:true) {
+            edges {
+                node {
+                    id
+                    lastName
+                    salesExp
+                }
+            }
+        }
+    }
+`
 export const userStats = gql`
     query{
         userStats: allUsers(salesExp: true) {

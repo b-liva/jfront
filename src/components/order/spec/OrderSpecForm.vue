@@ -78,6 +78,7 @@
             >
               <v-data-table
                 :headers="specHeaders"
+                :loading="$apollo.queries.order.loading"
                 :items="getSpecs()">
                 <template v-slot:item.ip="{item}"><template v-if="item.ip !== null">{{item.ip.title}}</template></template>
                 <template v-slot:item.ic="{item}"><template v-if="item.ic !== null">{{item.ic.title}}</template></template>
@@ -105,6 +106,7 @@
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
   import {order} from "../../../grahpql/queries/order/order";
+  import {specMutation} from "../../../grahpql/queries/order/spec/mutation/mutation";
   import {allIps, allIcs, allIms} from "../../../grahpql/queries/order/spec/spec";
   import cloneDeep from 'lodash/cloneDeep'
 
@@ -237,6 +239,27 @@
           this.specs.push(this.assignForm)
         }
         // Probably saving the spec to db and fetching specs again.
+        this.$apollo.mutate({
+          mutation: specMutation,
+          variables: {
+            code: 99009900,
+            order_id: this.orderId,
+            type_id: "1",
+            owner_id: "",
+            qty: this.assignForm.qty,
+            kw: this.assignForm.kw,
+            voltage: this.assignForm.voltage,
+            rpm: this.assignForm.rpm,
+            rpm_new_id: "UnBtVHlwZU5vZGU6MQ==",
+            ip_id: this.assignForm.ip.id,
+            im_id: this.assignForm.im.id,
+            ic_id: this.assignForm.ic.id,
+            summary: this.assignForm.summary
+          }
+        }).then(response => {
+          console.log(response)
+          this.$apollo.queries.order.refetch();
+        });
       },
     },
     props: [

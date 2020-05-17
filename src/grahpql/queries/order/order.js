@@ -75,6 +75,41 @@ export const allRequests = gql`
         }
     }`
 
+export const filteredOrders = gql`
+    query filteredOrders(
+        $count:Int,
+        $number:Int,
+        $customer_name:String,
+        $no_proforma: Boolean
+    ){
+        filteredOrders:allRequests(
+            first: $count,
+            number:$number,
+            customer_Name_Icontains:$customer_name,
+            xpref_Isnull:$no_proforma
+        ) {
+            edges {
+                node {
+                    id
+                    number
+                    totalKw
+                    totalQty
+                    customer{
+                        id
+                        name
+                    }
+                    owner{
+                        id
+                        lastName
+                    }
+                    totalKw
+                    totalQty
+                }
+            }
+        }
+    }
+`
+
 export const ordersNoProforma = gql`
     query{
         ordersNoProforma(isActive:true, xpref_Isnull:true){

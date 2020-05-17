@@ -1,5 +1,26 @@
 <template>
   <div>
+    <div>{{filterForm}}</div>
+    <v-container>
+      <v-row>
+        <v-col cols="6">
+          <v-text-field
+            label="مشتری"
+            v-model="filterForm.customerName"></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            v-model="filterForm.number"
+            label="number">
+          </v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-checkbox
+            v-model="filterForm.no_proforma"
+            label="بدون پیش فاکتور"></v-checkbox>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-snackbar
       v-model="snackbar"
       timeout="3000"
@@ -11,7 +32,7 @@
       :headers="headers"
       :items="getOrders()"
       :expanded="expanded"
-      :loading="$apollo.queries.allRequests.loading"
+      :loading="$apollo.queries.filteredOrders.loading"
       class="elevation-1"
       show-expand
       single-expand
@@ -143,7 +164,7 @@
   import ProformaList from "../proforma/ProformaList";
   import ProformaSpecForm from "../proforma/ProformaSpecForm";
   import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
-  import {allRequests} from "../../grahpql/queries/order/order";
+  import {allRequests, filteredOrders} from "../../grahpql/queries/order/order";
   import {order} from "../../grahpql/queries/order/order";
 
   export default {
@@ -152,6 +173,12 @@
         name: "Order",
         error: null,
         selectedOrderId: null,
+        filterForm: {
+          customerName: null,
+          number: null,
+          no_proforma: null,
+          count: null
+        },
         defaultItems: {
           owner: '',
           customer: {
@@ -226,8 +253,11 @@
         }
       },
       getOrders(){
-        if (typeof this.allRequests !== "undefined" && this.allRequests !== null){
-          return this.noNode(this.allRequests)
+        // if (typeof this.allRequests !== "undefined" && this.allRequests !== null){
+        //   return this.noNode(this.allRequests)
+        // }
+        if (typeof this.filteredOrders !== "undefined" && this.filteredOrders !== null){
+          return this.noNode(this.filteredOrders)
         }
       },
       clear() {
@@ -295,6 +325,17 @@
         variables(){
           return {
             order_id: this.selectedOrderId
+          }
+        }
+      },
+      filteredOrders: {
+        query: filteredOrders,
+        variables(){
+          return {
+            "count": this.filterForm.count !== "" ? this.filterForm.count : null,
+            "number": this.filterForm.number !== "" ? this.filterForm.number : null,
+            "customer_name": this.filterForm.customerName !== "" ? this.filterForm.customerName : null,
+            "no_proforma": this.filterForm.no_proforma !== "" ? this.filterForm.no_proforma : null
           }
         }
       }

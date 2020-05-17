@@ -1,6 +1,25 @@
 <template>
   <div>
-    <div>{{orderFormDialog}}</div>
+    <v-container>
+      <v-row>
+        <v-col cols="6">
+          <v-text-field
+            label="مشتری"
+            v-model="filterForm.customerName"></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            v-model="filterForm.number"
+            label="number">
+          </v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-checkbox
+            v-model="filterForm.no_proforma"
+            label="بدون پیش فاکتور"></v-checkbox>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-container>
       <v-row>
         <v-col cols="12" md="12">
@@ -8,9 +27,9 @@
             <v-card-title>درخواست</v-card-title>
             <v-card-text>
               <v-data-table
-                :loading="$apollo.queries.allRequests.loading"
+                :loading="$apollo.queries.filteredOrders.loading"
                 :headers="ordersHeader"
-                :items="noNode(allRequests)"
+                :items="getOrders()"
                 :expanded="orderRowExpanded"
                 show-expand
                 single-expand
@@ -102,7 +121,7 @@
 
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {allRequests, order} from "../../grahpql/queries/order/order";
+  import {allRequests, order, filteredOrders} from "../../grahpql/queries/order/order";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
   import ProformaSpecForm from "../../views/proforma/ProformaSpecForm";
@@ -126,6 +145,12 @@
         specProformasDialog: false,
         expandedOrderId: '',
         selectedSpecId: null,
+        filterForm: {
+          customerName: null,
+          number: null,
+          no_proforma: null,
+          count: null
+        },
         ordersHeader: [
           {value: "number", text: "شماره"},
           {value: "customer", text: "مشتری"},
@@ -239,6 +264,11 @@
         this.orderFormDialog = true;
         this.selectedOrderId = null;
       },
+      getOrders(){
+        if (typeof this.filteredOrders !== "undefined" && this.filteredOrders !== null){
+          return this.noNode(this.filteredOrders)
+        }
+      },
       getOrderSpecs(){
         if (typeof this.order !== "undefined" && this.order !== null){
           return this.noNode(this.order.reqspecSet)
@@ -308,6 +338,17 @@
           }
         }
       },
+      filteredOrders: {
+        query: filteredOrders,
+        variables(){
+          return {
+            "count": this.filterForm.count !== "" ? this.filterForm.count : null,
+            "number": this.filterForm.number !== "" ? this.filterForm.number : null,
+            "customer_name": this.filterForm.customerName !== "" ? this.filterForm.customerName : null,
+            "no_proforma": this.filterForm.no_proforma !== "" ? this.filterForm.no_proforma : null
+          }
+        }
+      }
     },
     mixins: [
       baseFunctions

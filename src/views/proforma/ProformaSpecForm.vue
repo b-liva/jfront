@@ -1,8 +1,80 @@
 <template>
   <div>
     <v-card>
-      <v-card-title v-if="order">ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری: {{order.customer.name}}
+      <v-card-title v-if="order">ثبت پیش فاکتور برای درخواست شماره: {{order.number}} مربوط به مشتری:
+        {{order.customer.name}}
+        <v-spacer/>
+        <span><span>شماره پیش فاکتور: </span><span class="green--text">{{proforma.number}}</span></span>
       </v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-row>
+            <v-col cols="4">
+              <v-row>
+                <v-col cols="4">
+                  <v-text-field v-model="order.number" label="شماره درخواست" disabled></v-text-field>
+                </v-col>
+                <v-col cols="4">
+                  <v-text-field v-model="proformaForm.numberTd" label="شماره تدوین" :disabled="!proformaSubmitIsActive"></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="6">
+                  <PersianDatePicker
+                    :disabled="!proformaSubmitIsActive"
+                    v-model="proformaForm.date"
+                    format="jYYYY-jMM-jDD"
+                    label="تاریخ صدور"
+                    :auto-submit="true"/>
+                  <PersianDatePicker
+                    :disabled="!proformaSubmitIsActive"
+                    v-model="proformaForm.expiry_date"
+                    format="jYYYY-jMM-jDD"
+                    label="تاریخ انقضا"
+                    :auto-submit="true"/>
+                </v-col>
+              </v-row>
+            </v-col>
+            <v-col cols="4">
+              <v-row>
+                <v-col>
+                  <v-textarea v-model="proformaForm.summary" label="توضیحات" :disabled="!proformaSubmitIsActive"></v-textarea>
+                  <v-btn class="primary" @click="submitProforma" v-if="proformaSubmitIsActive">ثبت</v-btn>
+                  <v-btn class="warning" @click="proformaSubmitIsActive = !proformaSubmitIsActive" v-if="!proformaSubmitIsActive">ویرایش</v-btn>
+                </v-col>
+              </v-row>
+            </v-col>
+            <v-col cols="4">
+              <v-btn @click="showPermPart = !showPermPart" :disabled="!proformaSubmitIsActive">مجوز</v-btn>
+              <div v-if="showPermPart">
+                <v-text-field
+                  label="شماره مجوز"
+                  :disabled="!proformaSubmitIsActive"
+                  v-model="proformaForm.permNumber"/>
+                <v-checkbox
+                  label="مجوز"
+                  v-model="proformaForm.perm"
+                  :disabled="!proformaSubmitIsActive"/>
+                <PersianDatePicker
+                  :disabled="!proformaSubmitIsActive"
+                  v-model="proformaForm.permDate"
+                  format="jYYYY-jMM-jDD"
+                  label="تاریخ صدور"
+                  :auto-submit="true"/>
+                <PersianDatePicker
+                  :disabled="!proformaSubmitIsActive"
+                  v-model="proformaForm.dueDate"
+                  format="jYYYY-jMM-jDD"
+                  label="تاریخ صدور"
+                  :auto-submit="true"/>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card-text>
+    </v-card>
+    <v-card :disabled="!pSpecFormIsActive">
+      <v-card-title>ردیف های پیش فاکتور</v-card-title>
       <v-card-text>
         <v-layout row wrap>
           <v-flex xs4>
@@ -51,6 +123,7 @@
         <v-btn @click="submit">ثبت</v-btn>
         <v-btn @click="cancel">انصراف</v-btn>
       </v-card-actions>
+
     </v-card>
   </div>
 </template>
@@ -58,13 +131,30 @@
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {order} from "../../grahpql/queries/order/order";
+  import {createProforma} from "../../grahpql/queries/proforma/mutation/mutation";
+  import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
 
   export default {
     data() {
       return {
         name: "ProformaSpecForm",
+        proforma: {},
+        proformaSubmitIsActive: true,
+        pSpecFormIsActive: false,
+        showPermPart: false,
         proformaSpecs: [],
         specs: [],
+        proformaForm: {
+          reqNumber: '',
+          numberTd: '',
+          date: '',
+          expiry_date: '',
+          perm: false,
+          permNumber: '',
+          permDate: '',
+          dueDate: '',
+          summary: '',
+        },
         headers: [
           {value: 'qty', text: 'تعداد', align: 'center', class: 'qty-header'},
           {value: 'kw', text: 'کیلووات',},
@@ -79,6 +169,9 @@
     mixins: [
       baseFunctions
     ],
+    components: {
+      PersianDatePicker: VuePersianDatetimePicker
+    },
     methods: {
       addToProformaSpecs(spec) {
         this.proformaSpecs.push(spec)
@@ -98,15 +191,46 @@
           }
         })
       },
-      submit(){
+      submit() {
         alert('sending to server')
         this.close()
       },
-      cancel(){
+      cancel() {
         this.close()
       },
-      close(){
+      close() {
         this.$emit('close-event')
+      },
+      submitProforma(){
+        console.log('submit proforma')
+        this.$apollo.mutate({
+          mutation: createProforma,
+          variables: {
+            req_id: this.orderId,
+            owner_id: "",
+            number: 0,
+            // "pub_date": "2009-06-15T13:45:30",
+            date_fa: this.proformaForm.date,
+            number_td: this.proformaForm.numberTd,
+            expiry_date: this.proformaForm.expiry_date,
+            perm_number: this.proformaForm.permNumber,
+            perm_date: this.proformaForm.permDate,
+            due_date: this.proformaForm.dueDate,
+            summary: this.proformaForm.summary,
+            perm: true
+          }
+        }).then(response => {
+          let data = response.data.proformaMutation
+          console.log(data)
+          if (data.xpref !== null && data.xpref.id !== null){
+            this.proformaSubmitIsActive = false;
+            this.pSpecFormIsActive = true;
+            this.$set(this.proforma, 'id', data.xpref.id)
+            this.$set(this.proforma, 'number', data.xpref.number)
+          }
+        }, error => {
+          console.log(error)
+        })
       }
     },
     watch: {
@@ -119,7 +243,7 @@
     apollo: {
       order: {
         query: order,
-        variables(){
+        variables() {
           return {
             order_id: this.orderId
           }
@@ -133,6 +257,7 @@
   th.text-center.qty-header.sortable {
     width: 82px;
   }
+
   .qty {
     align-items: center;
   }

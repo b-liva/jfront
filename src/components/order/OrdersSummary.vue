@@ -10,7 +10,7 @@
         <v-col cols="2">
           <v-text-field
             v-model="filterForm.number"
-            label="number">
+            label="شماره درخواست">
           </v-text-field>
         </v-col>
         <v-col cols="2">
@@ -24,12 +24,11 @@
       <v-row>
         <v-col cols="12" md="12">
           <v-card>
-            <v-card-title>درخواست</v-card-title>
             <v-card-text>
               <v-data-table
                 :loading="$apollo.queries.filteredOrders.loading"
                 :headers="ordersHeader"
-                :items="getOrders()"
+                :items="this.orders"
                 :expanded="orderRowExpanded"
                 show-expand
                 single-expand
@@ -87,7 +86,7 @@
                       v-if="expandedOrderId"
                       :loading="$apollo.queries.order.loading"
                       :headers="specHeaders"
-                      :items="getOrderSpecs()"
+                      :items="orderSpecs"
                       @click:row="findProformas">
                       <template v-slot:no-data>
                         {{error}}
@@ -114,14 +113,14 @@
       <proforma-spec-form v-if="proformaFormDialog" :order-id="selectedOrderId" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
     <v-dialog v-model="orderFormDialog" max-width="800px">
-      <order-form v-if="orderFormDialog" :order-id="selectedOrderId"/>
+      <order-form v-if="orderFormDialog" :order-id="selectedOrderId" v-on:refetchOrders="refetchOrders"/>
     </v-dialog>
   </div>
 </template>
 
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {allRequests, order, filteredOrders} from "../../grahpql/queries/order/order";
+  import {order, filteredOrders} from "../../grahpql/queries/order/order";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
   import ProformaSpecForm from "../../views/proforma/ProformaSpecForm";
@@ -134,8 +133,9 @@
       return {
         name: "OrdersSummary",
         error: null,
-        allRequests: {edges: []},
         order: null,
+        orders: [],
+        orderSpecs: [],
         assignDialog: false,
         proformaListDialog: false,
         proformaFormDialog: false,
@@ -160,103 +160,12 @@
           {value: "owner", text: "کارشناس"},
           {value: "action", text: ""},
         ],
-        orders: [
-          {
-            id: 1,
-            number: 990041,
-            customer: "شرکت زرین ذرت شاهرود",
-            date: "1399-01-23",
-            totalKw: 5.5,
-            totalQty: 1,
-            owner: "ظریف"
-          },
-          {
-            id: 2,
-            number: 990042,
-            customer: "آرمان گسترنوین کنارک",
-            date: "1399-01-23",
-            totalKw: 75,
-            totalQty: 1,
-            owner: "علوی"
-          },
-          {
-            id: 3,
-            number: 990043,
-            customer: "صنایع بسته بندی فرآورده های شیری پگاه",
-            date: "1399-01-23",
-            totalKw: 4028,
-            totalQty: 32,
-            owner: "علوی"
-          },
-          {
-            id: 4,
-            number: 990045,
-            customer: "پویاموتور سپاهان",
-            date: "1399-01-23",
-            totalKw: 160,
-            totalQty: 1,
-            owner: "ظریف"
-          },
-        ],
         specHeaders: [
           {value: "qty", text: "تعداد"},
           {value: "kw", text: "کیلووات"},
           {value: "voltage", text: "ولتاژ"},
           {value: "rpm", text: "سرعت"},
         ],
-        specs: [
-          {qty: 5, kw: 132, voltage: 380, rpm: 1500},
-          {qty: 2, kw: 160, voltage: 380, rpm: 1500},
-          {qty: 3, kw: 75, voltage: 380, rpm: 1000},
-          {qty: 1, kw: 90, voltage: 380, rpm: 300},
-        ],
-        specProformas: [
-          {
-            number: 981351,
-            customer: "پتروشیمی پردیس",
-            qty: 10,
-            cost: 25600000,
-            price: 27500000,
-            percentage: 12,
-            date: "1399-01-12"
-          },
-          {
-            number: 985241,
-            customer: "پتروشیمی مارون",
-            qty: 5,
-            cost: 25600000,
-            price: 27700000,
-            percentage: 12.5,
-            date: "1399-01-13"
-          },
-          {
-            number: 986548,
-            customer: "پتروشیمی تخت جمشید",
-            qty: 1,
-            cost: 25600000,
-            price: 28500000,
-            percentage: 13,
-            date: "1399-01-18"
-          },
-          {
-            number: 982564,
-            customer: "هوایار",
-            qty: 3,
-            cost: 25600000,
-            price: 29800000,
-            percentage: 15,
-            date: "1399-01-20"
-          },
-          {
-            number: 983548,
-            customer: "پتروشیمی پردیس",
-            qty: 9,
-            cost: 25600000,
-            price: 27500000,
-            percentage: 16,
-            date: "1399-01-23"
-          },
-        ]
       }
     }, // todo: show percentage with css or d3 progress bars.
     methods: {
@@ -264,17 +173,8 @@
         this.orderFormDialog = true;
         this.selectedOrderId = null;
       },
-      getOrders(){
-        if (typeof this.filteredOrders !== "undefined" && this.filteredOrders !== null){
-          return this.noNode(this.filteredOrders)
-        }
-      },
-      getOrderSpecs(){
-        if (typeof this.order !== "undefined" && this.order !== null){
-          return this.noNode(this.order.reqspecSet)
-        }
-      },
       orderExpanded(value) {
+        this.orderSpecs = []
         this.error = null
         this.order = {
           reqspecSet: {edges: []}
@@ -317,6 +217,12 @@
         this.proformaFormDialog = true;
         console.log('fn', item)
       },
+      refetchOrders(orderId){
+        this.orderFormDialog = false;
+        this.selectedOrderId = orderId;
+        this.assignDialog = true;
+        this.$apollo.queries.filteredOrders.refetch()
+      }
     },
     components: {
       SpecProformas,
@@ -326,7 +232,6 @@
       OrderForm
     },
     apollo: {
-      allRequests: allRequests,
       order: {
         query: order,
         error(error){
@@ -336,10 +241,21 @@
           return {
             order_id: this.expandedOrderId
           }
-        }
+        },
+        skip(){
+          return !this.expandedOrderId;
+        },
+        result(result){
+          if (typeof result.data.order !== "undefined"){
+            this.orderSpecs = this.noNode(result.data.order.reqspecSet)
+          }else {
+            this.orderSpecs = []
+          }
+        },
       },
       filteredOrders: {
         query: filteredOrders,
+        debounce: 1000,
         variables(){
           return {
             "count": this.filterForm.count !== "" ? this.filterForm.count : null,
@@ -347,6 +263,9 @@
             "customer_name": this.filterForm.customerName !== "" ? this.filterForm.customerName : null,
             "no_proforma": this.filterForm.no_proforma !== "" ? this.filterForm.no_proforma : null
           }
+        },
+        result(result){
+          this.orders = this.noNode(result.data.filteredOrders)
         }
       }
     },

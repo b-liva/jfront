@@ -3,7 +3,6 @@
     <v-card>
       <v-card-title>
         <span>ثبت سفارش</span>
-
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -105,11 +104,6 @@
       baseFunctions
     ],
     methods: {
-      getCustomers(){
-        if (typeof this.customerIdAndName !== "undefined" && this.customerIdAndName !== null){
-          this.customers = this.noNode(this.customerIdAndName)
-        }
-      },
       submit(){
         console.log(this.order_form, this.colleagues)
         this.$apollo.mutate({
@@ -123,8 +117,15 @@
               finished: this.order_form.finished,
               owner_id: ""
           }
-        })
-        this.$emit('close')
+        }).then((response) => {
+          if (response.data.OrderMutation.requests !== null){
+            let orderId = response.data.OrderMutation.requests.id;
+            this.$emit('refetchOrders', orderId)
+          }
+        }, (error) => {
+          console.error('error from order form: ', error)
+        });
+
       },
       cancel(){
         this.order_form = cloneDeep(this.order);
@@ -136,23 +137,6 @@
     },
     created() {
       this.order_form = cloneDeep(this.orderFormDefault);
-      // this.$set(this.order_form, this.orderFormDefault)
-    },
-    watch: {
-      orderOnly: function () {
-        this.order_form = this.orderOnly;
-      },
-      customerIdAndName: function () {
-        if (typeof this.customerIdAndName !== "undefined" && this.customerIdAndName !== null){
-          this.customers = this.noNode(this.customerIdAndName)
-        }
-      },
-      salesExperts: function () {
-        if (typeof this.salesExperts !== "undefined" && this.salesExperts !== null){
-          this.salesExpertUsers = this.noNode(this.salesExperts)
-          console.log(this.salesExpertUsers)
-        }
-      }
     },
     apollo: {
       orderOnly: {
@@ -161,10 +145,26 @@
           return {
             order_id: this.orderId
           }
+        },
+        skip(){
+          return !this.orderId
+        },
+        result(result){
+          this.order_form = result.data.orderOnly
         }
       },
-      customerIdAndName: customerIdAndName,
-      salesExperts: salesExperts
+      customerIdAndName: {
+        query: customerIdAndName,
+        result(result){
+          this.customers = this.noNode(result.data.customerIdAndName)
+        }
+      },
+      salesExperts: {
+        query: salesExperts,
+        result(result){
+          this.salesExpertUsers = this.noNode(result.data.salesExperts)
+        }
+      }
     }
   }
 </script>

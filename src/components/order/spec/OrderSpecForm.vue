@@ -79,7 +79,7 @@
               <v-data-table
                 :headers="specHeaders"
                 :loading="$apollo.queries.order.loading"
-                :items="getSpecs()">
+                :items="orderSpecs">
                 <template v-slot:item.ip="{item}"><template v-if="item.ip !== null">{{item.ip.title}}</template></template>
                 <template v-slot:item.ic="{item}"><template v-if="item.ic !== null">{{item.ic.title}}</template></template>
                 <template v-slot:item.im="{item}"><template v-if="item.im !== null">{{item.im.title}}</template></template>
@@ -114,6 +114,7 @@
     data(){
       return {
         name: "OrderSpecForm",
+        orderSpecs: [],
         allIps: null,
         allIcs: null,
         allIms: null,
@@ -201,13 +202,7 @@
       }
     },
     methods: {
-      getSpecs(){
-        if (typeof this.order !== "undefined" && this.order !== null){
-          return this.noNode(this.order.reqspecSet)
-        }
-      },
       editSpec: function(item){
-        console.log(item);
         if (item.ic === null){
           item.ic = {id: ''}
         }
@@ -259,6 +254,8 @@
         }).then(response => {
           console.log(response)
           this.$apollo.queries.order.refetch();
+        }, error => {
+          console.log(error)
         });
       },
     },
@@ -272,26 +269,6 @@
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
     },
-    watch: {
-      allIps: function () {
-        if (typeof this.allIps !== "undefined" && this.allIps !== null){
-          this.IPList = cloneDeep(this.noNode(this.allIps));
-          this.$set(this.assignForm, 'ip', this.allIps.edges[0].node)
-        }
-      },
-      allIcs: function () {
-        if (this.allIcs !== null){
-          this.ICList = cloneDeep(this.noNode(this.allIcs));
-          this.$set(this.assignForm, 'ic', this.allIcs.edges[0].node)
-        }
-      },
-      allIms: function () {
-        if (this.allIms !== null){
-          this.IMList = cloneDeep(this.noNode(this.allIms));
-          this.$set(this.assignForm, 'im', this.allIms.edges[0].node)
-        }
-      }
-    },
     apollo: {
       order: {
         query: order,
@@ -299,11 +276,32 @@
           return {
             order_id: this.orderId
           }
+        },
+        result(result){
+          this.orderSpecs = this.noNode(result.data.order.reqspecSet)
         }
       },
-      allIps: allIps,
-      allIcs: allIcs,
-      allIms: allIms
+      allIps: {
+        query: allIps,
+        result(result){
+          this.IPList = cloneDeep(this.noNode(result.data.allIps));
+          this.$set(this.assignForm, 'ip', result.data.allIps.edges[0].node)
+        }
+      },
+      allIcs: {
+        query: allIcs,
+        result(result){
+          this.ICList = cloneDeep(this.noNode(result.data.allIcs));
+          this.$set(this.assignForm, 'ic', result.data.allIcs.edges[0].node)
+        }
+      },
+      allIms: {
+        query: allIms,
+        result(result){
+          this.IMList = cloneDeep(this.noNode(result.data.allIms));
+          this.$set(this.assignForm, 'im', result.data.allIms.edges[0].node)
+        }
+      }
     }
   }
 </script>

@@ -1,20 +1,20 @@
 <template>
   <div>
     <v-card>
-      <v-card-title>اختصاص واریزی</v-card-title>
+      <v-card-title>ثبت دریافتی</v-card-title>
       <v-card-text>
         <v-form>
           <v-autocomplete
-            v-model="incomeForm.customer"
+            v-model="incomeForm.customerId"
             :items="customers"
             item-text="name"
+            item-value="id"
             label="مشتری">
           </v-autocomplete>
           <v-text-field v-model="incomeForm.number" label="شماره"></v-text-field>
           <v-text-field v-model="incomeForm.amount" label="مبلغ"></v-text-field>
-          <v-radio-group v-if="incomeForm.type" v-model="incomeForm.type.id">
-            <v-radio v-for="type in types" :key="type.id" :label="type.title" :value="type.id">
-            </v-radio>
+          <v-radio-group v-if="true" v-model="incomeForm.typeId">
+            <v-radio v-for="type in types" :key="type.id" :label="type.title" :value="type.id"></v-radio>
           </v-radio-group>
           <PersianDatePicker
             v-model="incomeForm.date"
@@ -23,13 +23,13 @@
             label="دریافت"
             :auto-submit="true"/>
           <PersianDatePicker
-            v-if="incomeForm.type === 2"
+            v-if="showDueDatePicker"
             v-model="incomeForm.dueDate"
             format="jYYYY-jMM-jDD"
             display-format="dddd jDD jMMMM jYYYY"
             label="سررسید"
             :auto-submit="true"/>
-          <v-textarea v-model="incomeForm.summary">
+          <v-textarea v-model="incomeForm.summary" label="توضیحات">
           </v-textarea>
         </v-form>
       </v-card-text>
@@ -46,20 +46,58 @@
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {income, allPaymentTypes} from "../../grahpql/queries/income/income";
+  import {createIncome} from "../../grahpql/queries/income/mutation/mutation";
   import {allCustomers} from "../../grahpql/queries/customer/customer";
 
   export default {
     data() {
       return {
         name: "IncomeForm",
-        incomeForm: {},
+        incomeForm: {
+          customerId: '',
+          number: '',
+          amount: '',
+          typeId: '',
+          date: '',
+          dueDate: '',
+          summary: '',
+        },
         types: [],
         customers: [],
       }
     },
     methods: {
+      showDueDatePicker(){
+        let temp = this.types.filter(e => {
+          console.log(e)
+          return e.id === this.incomeForm.typeId
+        });
+        console.log(temp)
+        let index = this.types.indexOf(temp[0])
+        console.log(index !== 0)
+        return index !== 0
+      },
       submitIncome() {
         console.log('method.');
+        this.$apollo.mutate({
+          mutation: createIncome,
+          variables: {
+            "owner_id": "",
+            "customer_id": this.incomeForm.customerId,
+            "type_id": this.incomeForm.typeId,
+            "amount": this.incomeForm.amount,
+            "number": this.incomeForm.amount,
+            "date_fa": this.incomeForm.date,
+            "due_date": this.incomeForm.dueDate,
+            "summary": this.incomeForm.summary,
+          }
+        }).then(
+          response => {
+            console.log(response)
+          },error => {
+            console.log(error)
+          }
+        )
       },
       cancelIncome() {
         console.log('method.');

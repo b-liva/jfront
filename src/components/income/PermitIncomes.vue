@@ -44,8 +44,8 @@
     ],
     methods: {
       getIncomesForId(){
+
         this.resultList = [];
-        console.log('rr: ', this.resultList)
         if (typeof this.incomesByProformaId !== "undefined" && this.incomesByProformaId != null){
           let incomes = this.incomesByProformaId.incomerowSet.edges;
           incomes.forEach(e => this.resultList.push(
@@ -66,6 +66,7 @@
             }
           ))
         }
+        console.log(this.resultList)
         return this.resultList
       }
     },

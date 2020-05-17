@@ -14,6 +14,14 @@
                 show-expand
                 single-expand
                 @item-expanded="proformaExpanded">
+                <template v-slot:top>
+                  <v-toolbar>
+                    <v-toolbar-title>پیش فاکتور</v-toolbar-title>
+                    <v-divider class="mx-4" inset vertical/>
+                    <v-spacer/>
+                    <v-btn @click="newProforma" class="primary">پیش فاکتور جدید</v-btn>
+                  </v-toolbar>
+                </template>
                 <template v-slot:item.number="{item}">
                   <router-link :to="{name: 'Proforma', params: {id: item.id, number: item.number}}">
                     {{item.number}}
@@ -46,7 +54,7 @@
       <spec-proformas :spec_id="selectedSpecIdEq"/>
     </v-dialog>
     <v-dialog v-model="proformaFormDialog" max-width="800px">
-      <proforma-form :proforma-id="selectedProformaId"/>
+      <proforma-form v-if="proformaFormDialog" :proforma-id="selectedProformaId"/>
     </v-dialog>
   </div>
 </template>
@@ -103,6 +111,10 @@
       }
     },
     methods: {
+      newProforma(){
+        this.proformaFormDialog = true;
+        this.selectedProformaId = null;
+      },
       getSpecs(){
         if (typeof this.proformaSpecs !== "undefined" && this.proformaSpecs != null){
           return this.noNode(this.proformaSpecs.prefspecSet)

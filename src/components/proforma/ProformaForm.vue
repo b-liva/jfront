@@ -40,7 +40,9 @@
       "proformaId"
     ],
     created() {
-      this.proforma = cloneDeep(this.proformaFormDefault);
+      if(!this.proformaId){
+        this.proforma = cloneDeep(this.proformaFormDefault);
+      }
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker

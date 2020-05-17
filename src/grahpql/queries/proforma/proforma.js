@@ -75,3 +75,16 @@ export const proformasByOrderId = gql`
         }
     }
 `
+
+export const proformaIdByNumber = gql`
+    query proformaIdByNumber($number:Int){
+        proformaIdByNumber:allProformas(number:$number) {
+            edges {
+                node {
+                    id
+                    number
+                }
+            }
+        }
+    }
+`

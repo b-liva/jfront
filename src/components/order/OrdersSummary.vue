@@ -123,7 +123,7 @@
   import {order, filteredOrders} from "../../grahpql/queries/order/order";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
-  import ProformaSpecForm from "../../views/proforma/ProformaSpecForm";
+  import ProformaSpecForm from "../proforma/ProformaSpecForm";
   import OrderForm from "./OrderForm";
 
   import SpecProformas from "../proforma/SpecProformas";

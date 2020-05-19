@@ -90,7 +90,7 @@
 </template>
 
 <script>
-  import ProformaSpecForm from "./ProformaSpecForm";
+  import ProformaSpecForm from "../../components/proforma/ProformaSpecForm";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {proformasByOrderId} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
@@ -211,6 +211,9 @@
     apollo: {
       proformasByOrderId: {
         query: proformasByOrderId,
+        skip(){
+          return !this.order_id
+        },
         variables(){
           return {
             order_id: this.order_id

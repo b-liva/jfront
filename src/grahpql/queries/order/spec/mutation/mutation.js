@@ -52,3 +52,45 @@ export const specMutation = gql`
         }
     }
 `
+
+export const createPrefSpecsBulk = gql`
+    mutation createPrefSpecsBulk(
+        $proforma_id:ID,
+        $spec_list: [ProformaSpecInput]
+    ){
+        createPrefSpecsBulk(input: {
+            proformaId:$proforma_id,
+            specsList:$spec_list
+        }) {
+            clientMutationId
+            proformaSpecs {
+                xprefId{
+                    id
+                    number
+                    customerName
+                    reqId{
+                        id
+                        number
+                    }
+                }
+                code
+                id
+                qty
+                kw
+                voltage
+                rpm
+                price
+                ip{
+                    title
+                }
+                im{
+                    title
+                }
+                ic{
+                    title
+                }
+                summary
+            }
+        }
+    }
+`

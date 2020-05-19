@@ -49,3 +49,27 @@ export const allIms = gql`
         }
     }
 `
+
+export const specsNoProforma = gql`
+    query specsNoProforma($proforma_id:ID!) {
+        specsNoProforma: proforma(id: $proforma_id) {
+            id
+            specsNoProforma {
+                id
+                qty
+                kw
+                rpm
+                rpmNew {
+                    id
+                    rpm
+                }
+                voltage
+            }
+            reqId{
+                id
+                number
+            }
+            customerName
+        }
+    }
+`

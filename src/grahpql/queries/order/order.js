@@ -13,6 +13,31 @@ export const  orderOnly = gql`
     }
 `
 
+export const orderByNumber = gql`
+    query orderByNumber($number:Int){
+        orderByNumber:allRequests(number:$number){
+            edges{
+                node{
+                    id
+                    number
+                }
+            }
+        }
+    }
+`
+export const orderIdAndNumber = gql`
+    query orderIdAndNumber($order_id:ID!){
+        orderIdAndNumber:request(id:$order_id) {
+            id
+            number
+            customer{
+                id
+                name
+            }
+        }
+    }
+`
+
 export const order = gql`
     query order($order_id:ID!){
         order: request(id: $order_id) {

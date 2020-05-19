@@ -54,14 +54,18 @@
       <spec-proformas :spec_id="selectedSpecIdEq"/>
     </v-dialog>
     <v-dialog v-model="proformaFormDialog" max-width="800px">
-      <proforma-form v-if="proformaFormDialog" :proforma-id="selectedProformaId"/>
+      <proforma-creation-holder-form
+        v-if="proformaFormDialog"
+        :proforma-id="selectedProformaId"
+        v-on:close-event="proformaFormDialog = false"
+      />
     </v-dialog>
   </div>
 </template>
 
 <script>
   import SpecProformas from "./SpecProformas";
-  import ProformaForm from "./ProformaForm";
+  import ProformaCreationHolderForm from "./ProformaCreationHolderForm";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {allProformas} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
@@ -154,7 +158,7 @@
     },
     components: {
       SpecProformas,
-      ProformaForm
+      ProformaCreationHolderForm
     },
     mixins: [
       baseFunctions

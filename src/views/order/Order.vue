@@ -11,7 +11,7 @@
         <v-col cols="2">
           <v-text-field
             v-model="filterForm.number"
-            label="number">
+            label="شماره درخواست">
           </v-text-field>
         </v-col>
         <v-col cols="2">
@@ -153,7 +153,7 @@
       <proforma-list v-if="proformaListDialog" :order_id="selectedOrderId"/>
     </v-dialog>
     <v-dialog persistent v-model="proformaFormDialog">
-      <proforma-spec-form v-if="proformaFormDialog" :order-id="selectedOrderId" v-on:close-event="proformaFormDialog = false"/>
+      <proforma-creation-holder-form v-if="proformaFormDialog" :order-id="selectedOrderId" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
   </div>
 </template>
@@ -162,7 +162,7 @@
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import ProformaList from "../proforma/ProformaList";
-  import ProformaSpecForm from "../proforma/ProformaSpecForm";
+  import ProformaCreationHolderForm from "../../components/proforma/ProformaCreationHolderForm";
   import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
   import {allRequests, filteredOrders} from "../../grahpql/queries/order/order";
   import {order} from "../../grahpql/queries/order/order";
@@ -312,7 +312,7 @@
     components: {
       PersianDatePicker: VuePersianDatetimePicker,
       ProformaList: ProformaList,
-      ProformaSpecForm: ProformaSpecForm,
+      ProformaCreationHolderForm,
       OrderSpecForm
     },
     apollo: {

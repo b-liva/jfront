@@ -1,5 +1,19 @@
 <template>
   <div>
+    <v-card>
+      <v-toolbar
+        flat
+        color="transparent">
+        <v-toolbar-title>پیش فاکتور</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn
+          icon
+          @click="$emit('close-event')"
+        >
+          <v-icon class="red--text">mdi-close-circle</v-icon>
+        </v-btn>
+      </v-toolbar>
+    </v-card>
     <v-stepper
       v-model="e1"
       :vertical="vertical"
@@ -56,7 +70,7 @@
               :proforma-id="this.proforma.id"
               v-on:proformaSpecSuccess="pSpecSuccess"
             />
-            <p v-else>برای ثبت قیمت باید پیش فاکتور ثبت شده باشد. (مرحله قبل)</p>
+            <p v-else>برای ثبت قیمت باید پیش فاکتور ثبت شده باشد. (مرحله 1)</p>
           </v-stepper-content>
           <v-stepper-content
           step="3">

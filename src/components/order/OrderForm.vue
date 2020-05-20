@@ -1,9 +1,6 @@
 <template>
   <div>
     <v-card>
-      <v-card-title>
-        <span>ثبت سفارش</span>
-      </v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
@@ -64,7 +61,7 @@
 
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {orderOnly} from "../../grahpql/queries/order/order";
+  import {order, orderOnly} from "../../grahpql/queries/order/order";
   import {customerIdAndName} from "../../grahpql/queries/customer/customer";
   import {salesExperts} from "../../grahpql/queries/user/user";
   import {OrderMutation} from "../../grahpql/queries/order/mutation/mutation";
@@ -105,7 +102,6 @@
     ],
     methods: {
       submit(){
-        console.log(this.order_form, this.colleagues)
         this.$apollo.mutate({
           mutation: OrderMutation,
           variables: {
@@ -120,7 +116,7 @@
         }).then((response) => {
           if (response.data.OrderMutation.requests !== null){
             let orderId = response.data.OrderMutation.requests.id;
-            this.$emit('refetchOrders', orderId)
+            this.$emit('orderCreated', orderId)
           }
         }, (error) => {
           console.error('error from order form: ', error)
@@ -151,6 +147,17 @@
         },
         result(result){
           this.order_form = result.data.orderOnly
+        }
+      },
+      order: {
+        query: order,
+        variables(){
+          return {
+            order_id: this.orderId
+          }
+        },
+        result(result){
+          this.orderSpecs = this.noNode(result.data.order.reqspecSet)
         }
       },
       customerIdAndName: {

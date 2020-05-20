@@ -109,11 +109,13 @@
     <v-dialog v-model="proformaListDialog">
       <proforma-list v-if="proformaListDialog" :order_id="selectedOrderId"/>
     </v-dialog>
-    <v-dialog persistent v-model="proformaFormDialog">
-      <proforma-spec-form v-if="proformaFormDialog" :order-id="selectedOrderId" v-on:close-event="proformaFormDialog = false"/>
-    </v-dialog>
-    <v-dialog v-model="orderFormDialog" max-width="800px">
-      <order-form v-if="orderFormDialog" :order-id="selectedOrderId" v-on:refetchOrders="refetchOrders"/>
+    <v-dialog v-model="orderFormHolderDialog" max-width="1000px" persistent>
+      <order-creation-holder-form
+        v-if="orderFormHolderDialog"
+        :order-id="selectedOrderId"
+        v-on:updateOrders="updateOrders"
+        v-on:closeOrderFormHolder="orderFormHolderDialog = false"
+      />
     </v-dialog>
   </div>
 </template>
@@ -123,8 +125,7 @@
   import {order, filteredOrders} from "../../grahpql/queries/order/order";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
-  import ProformaSpecForm from "../proforma/ProformaSpecForm";
-  import OrderForm from "./OrderForm";
+  import OrderCreationHolderForm from "./OrderCreationHolderForm";
 
   import SpecProformas from "../proforma/SpecProformas";
 
@@ -140,6 +141,7 @@
         proformaListDialog: false,
         proformaFormDialog: false,
         orderFormDialog: false,
+        orderFormHolderDialog: false,
         selectedOrderId: '',
         orderRowExpanded: [],
         specProformasDialog: false,
@@ -170,7 +172,7 @@
     }, // todo: show percentage with css or d3 progress bars.
     methods: {
       newOrder(){
-        this.orderFormDialog = true;
+        this.orderFormHolderDialog = true;
         this.selectedOrderId = null;
       },
       orderExpanded(value) {
@@ -190,37 +192,28 @@
       },
       findProformas(spec) {
         this.selectedSpecId = spec.id;
-        console.log('id: ', this.selectedSpecId);
         this.specProformasDialog = true;
       },
       editItem(item){
         this.selectedOrderId = item.id;
         this.orderFormDialog = true;
-        console.log('fn', item)
       },
       deleteItem(item){
         this.selectedOrderId = item.id;
-        console.log('fn', item)
       },
       assignSpecToOrder(item){
         this.selectedOrderId = item.id;
         this.assignDialog = true;
-        console.log('fn', item)
       },
       listRelatedProformas(item){
         this.selectedOrderId = item.id;
         this.proformaListDialog = true;
-        console.log('fn', item)
       },
       addProforma(item){
         this.selectedOrderId = item.id;
         this.proformaFormDialog = true;
-        console.log('fn', item)
       },
-      refetchOrders(orderId){
-        this.orderFormDialog = false;
-        this.selectedOrderId = orderId;
-        this.assignDialog = true;
+      updateOrders(){
         this.$apollo.queries.filteredOrders.refetch()
       }
     },
@@ -228,8 +221,7 @@
       SpecProformas,
       OrderSpecForm,
       ProformaList,
-      ProformaSpecForm,
-      OrderForm
+      OrderCreationHolderForm
     },
     apollo: {
       order: {

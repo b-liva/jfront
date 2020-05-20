@@ -77,6 +77,7 @@
             <v-flex xs8 md9 class="pink lighten-4"
             >
               <v-data-table
+                item-key="id"
                 :headers="specHeaders"
                 :loading="$apollo.queries.order.loading"
                 :items="orderSpecs">
@@ -146,6 +147,7 @@
         },
         editingIndex: -1,
         specHeaders: [
+          {value: 'id', text: 'id', align: ' d-none'},
           {value: 'qty', text: 'دستگاه'},
           {value: 'kw', text: 'کیلووات'},
           {value: 'rpm', text: 'سرعت'},
@@ -226,7 +228,6 @@
       },
       addSpecToList(){
         if (this.editingIndex !== -1){
-          console.log(this.editingIndex, this.specs[this.editingIndex])
           // this.specs[this.editingIndex] = this.assignForm;
           Object.assign(this.specs[this.editingIndex], this.assignForm);
           this.editingIndex = -1;
@@ -251,9 +252,13 @@
             ic_id: this.assignForm.ic.id,
             summary: this.assignForm.summary
           }
-        }).then(response => {
-          console.log(response)
-          this.$apollo.queries.order.refetch();
+        }).then(() => {
+          this.$apollo.queries.order.refetch().then(() => {
+            this.$emit('updateSpecs', this.orderSpecs)
+          }, error => {
+            console.log(error)
+          });
+
         }, error => {
           console.log(error)
         });

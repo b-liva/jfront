@@ -1,8 +1,11 @@
 import gql from 'graphql-tag'
 
-export const allIncomes = gql`
-    query{
-        allIncomes {
+export const incomesFiltered = gql`
+    query incomesFiltered($customer_name:String, $number:Int){
+        incomesFiltered:allIncomes(
+            customer_Name_Icontains:$customer_name,
+            number:$number
+        ) {
             edges {
                 node {
                     id

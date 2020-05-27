@@ -2,6 +2,23 @@
   <div>
     <v-container>
       <v-row>
+        <v-col cols="4">
+          <v-text-field
+          label="مشتری"
+          v-model="customerName"></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            label="شماره واریزی"
+            v-model="incomeNumber"
+            type="number"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-btn @click="resetFilters" class="primary" small>ریست</v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
         <v-col cols="12" md="12">
           <v-card>
             <v-card-text>
@@ -9,7 +26,7 @@
                 :headers="incomeHeaders"
                 :items="incomes"
                 :expanded="incomeRowExpanded"
-                :loading="$apollo.queries.allIncomes.loading"
+                :loading="$apollo.queries.incomesFiltered.loading"
                 show-expand
                 single-expand
                 @item-expanded="incomeExpanded">
@@ -89,7 +106,7 @@
   import PermitIncomes from "./PermitIncomes";
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
-  import {allIncomes, incomeRowByIncomeId} from "../../grahpql/queries/income/income";
+  import {incomesFiltered, incomeRowByIncomeId} from "../../grahpql/queries/income/income";
   import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
 
   export default {
@@ -97,6 +114,8 @@
       return {
         name: "IncomeSummary",
         incomeToFindRows: "",
+        incomeNumber: null,
+        customerName: '',
         incomeInstance: {
           amount: '',
           customer: {
@@ -143,6 +162,10 @@
       }
     },
     methods: {
+      resetFilters(){
+        this.customerName = "";
+        this.incomeNumber = null;
+      },
       editIncomeAssignment(incomeRow){
         this.selectedIncomeAssignmentId = incomeRow.id;
         this.incomeAssignmentDialog = true;
@@ -208,10 +231,17 @@
       }
     },
     apollo: {
-      allIncomes: {
-        query: allIncomes,
+      incomesFiltered: {
+        query: incomesFiltered,
+        debounce: 1000,
+        variables(){
+          return {
+            "customer_name": this.customerName,
+            "number": this.incomeNumber
+          }
+        },
         result(result){
-          this.incomes = this.noNode(result.data.allIncomes)
+          this.incomes = this.noNode(result.data.incomesFiltered)
         }
       },
       incomeRowByIncomeId: {

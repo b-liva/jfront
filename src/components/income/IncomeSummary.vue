@@ -162,7 +162,7 @@
       incomeAssignmentDone(incomeId){
         this.incomeToFindRows = this.incomes.filter(e => e.id===incomeId)[0];
         if(this.incomeRowExpanded.includes(this.incomeToFindRows)){
-          this.incomeRowExpanded.pop(this.incomeToFindRows);
+          this.$apollo.queries.incomeRowByIncomeId.refetch()
         }else {
           this.incomeRowExpanded = [];
           this.incomeRowExpanded.push(this.incomeToFindRows);

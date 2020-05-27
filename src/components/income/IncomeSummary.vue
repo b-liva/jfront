@@ -1,19 +1,22 @@
 <template>
   <div>
+    <div v-if="incomeToFindRows !== ''">income to find rows: {{incomeToFindRows.number}}</div>
+    <div v-if="incomeRowExpanded.length > 0">income: {{incomeRowExpanded[0].number}}</div>
     <v-container>
       <v-row>
+        <span v-if="incomeInstance">
+          income instance :{{incomeInstance.number}}
+        </span>
         <v-col cols="12" md="12">
           <v-card>
             <v-card-text>
-              <v-text-field v-model="search"></v-text-field>
               <v-data-table
                 :headers="incomeHeaders"
-                :items="getIncomes()"
+                :items="incomes"
                 :expanded="incomeRowExpanded"
                 :loading="$apollo.queries.allIncomes.loading"
                 show-expand
                 single-expand
-                :search="search"
                 @item-expanded="incomeExpanded">
                 <template v-slot:top>
                   <v-toolbar>
@@ -30,7 +33,7 @@
                   {{item.customer.name}}
                 </template>
                 <template v-slot:item.type="{item}">
-                  {{item.type.title}}
+                  <template v-if="item.type !== null">{{item.type.title}}</template>
                 </template>
                 <template v-slot:item.action="{item}">
                   <v-icon @click="editIncome(item)" small class="mr-2">mdi-pencil</v-icon>
@@ -42,15 +45,15 @@
                     <v-data-table
                       dense
                       :headers="assignmentHeaders"
-                      :items="getAssignments()"
-                      :loading="$apollo.queries.income.loading">
-<!--                      @click:row="showPermitIncomes"-->
+                      :loading="$apollo.queries.incomeRowByIncomeId.loading"
+                      :items="assignments">
+                      <!--                      @click:row="showPermitIncomes"-->
 
                       <template v-slot:item.proforma="{item}">
-                        {{checkMe(item.proforma)}}
+                        {{checkMe('prof', item.proforma)}}
                       </template>
                       <template v-slot:item.perm="{item}">
-                        {{checkMe(item.perm)}}
+                        {{checkMe('perm', item.perm)}}
                       </template>
                       <template v-slot:item.action="{item}">
                         <v-icon @click="editIncomeAssignment(item)" small class="mr-2">mdi-pencil</v-icon>
@@ -69,10 +72,21 @@
       <permit-incomes :permit-id-to-find-incomes="permitIdToFindIncomes" :proforma-id-to-find-incomes="proformaIdToFindIncomes"/>
     </v-dialog>
     <v-dialog v-model="incomeFormDialog" max-width="800px">
-      <income-form v-if="incomeFormDialog" :income-id="selectedIncomeId"/>
+      <income-form v-if="incomeFormDialog" :income-id="incomeInstance.id"/>
     </v-dialog>
-    <v-dialog v-model="incomeAssignmentDialog" max-width="800px">
-      <income-assignment-form v-if="incomeAssignmentDialog" :income-id="selectedIncomeId" :income-assignment-row-id="selectedIncomeAssignmentId"/>
+    <v-dialog v-model="incomeAssignmentDialog" max-width="800px" persistent>
+      <income-assignment-form
+        v-if="incomeAssignmentDialog"
+        :income="incomeInstance"
+        :income-assignment-row-id="selectedIncomeAssignmentId"
+        :refetchAssignments="incomeAssignmentDone"
+      />
+    </v-dialog>
+    <v-dialog persistent v-model="incomeCreationHolder" max-width="1000px">
+      <income-creation-holder-from
+        v-on:closeIncomeCreationHolder="incomeCreationHolder = false"
+        v-if="incomeCreationHolder"
+      />
     </v-dialog>
   </div>
 </template>
@@ -82,19 +96,38 @@
   import PermitIncomes from "./PermitIncomes";
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
-  import {allIncomes, income} from "../../grahpql/queries/income/income";
+  import {allIncomes, incomeRowByIncomeId} from "../../grahpql/queries/income/income";
+  import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
 
   export default {
     data(){
       return {
         name: "IncomeSummary",
-        search: '',
-        selectedIncomeId: null,
+        incomeToFindRows: "",
+        incomeInstance: {
+          amount: '',
+          customer: {
+            id:'',
+            name: ''
+          },
+          id:"",
+          number: "",
+          owner: {
+            id: '',
+            lastName: ''
+          },
+          type: {
+            id: '',
+            title: ''
+          }
+        },
+        error: null,
         selectedIncomeAssignmentId: null,
         proformaIdToFindIncomes: null,
         permitIdToFindIncomes: null,
         incomeFormDialog: false,
         incomeAssignmentDialog: false,
+        incomeCreationHolder: false,
         incomeRowExpanded: [],
         incomeHeaders: [
           {value: "number", text: "شماره واریزی"},
@@ -104,24 +137,13 @@
           {value: "date", text: "تاریخ"},
           {value: "action", text: ""},
         ],
-        incomes: [
-          {id: 1, number: 651, date: "1399-01-23", customer: "شرکت زرین ذرت شاهرود", amount: 165100000, type: "حواله"},
-          {id: 2, number: 18491, date: "1399-01-23", customer: "آرمان گسترنوین کنارک", amount: 255100000, type: "چک"},
-          {id: 3, number: 1698, date: "1399-01-23", customer: "صنایع بسته بندی فرآورده های شیری پگاه", amount: 365100000, type: "حواله"},
-          {id: 4, number: 981215, date: "1399-01-23", customer: "پویاموتور سپاهان", amount: 468500000, type: "حواله"},
-        ],
+        incomes: [],
         assignmentHeaders: [
           {value: "proforma", text: "پیش فاکتور"},
           {value: "perm", text: "مجوز"},
           {value: "date", text: "تاریخ"},
           {value: "amount", text: "مبلغ"},
           {value: "action", text: ""},
-        ],
-        assignments: [
-          {number: 98252, date: "1399-01-15", amount: 31805100, type: 'پیش فاکتور'},
-          {number: 1002, date: "1399-01-23", amount: 8505100, type: 'مجوز'},
-          {number: 365, date: "1399-01-1", amount: 6985100, type: 'مجوز'},
-          {number: 98645, date: "1399-01-18", amount: 1458100, type: 'پیش فاکتور'},
         ],
         permitId: null,
         permitIncomeDialog: false,
@@ -137,81 +159,89 @@
         this.incomeAssignmentDialog = true;
       },
       openIncomeForm(){
-        this.selectedIncomeId = null;
-        this.incomeFormDialog = true;
+        this.incomeCreationHolder = true;
       },
-      checkMe(data){
-        if (data !== null){
+      checkMe(type, data){
+        if (typeof data !== "undefined" && typeof data.number !== "undefined"){
           return data.number;
         }
       },
-      getIncomes(){
-        if (typeof this.allIncomes !== "undefined" && this.allIncomes !== null){
-          return this.noNode(this.allIncomes);
-        }
-      },
-      getAssignments(){
-        console.log('income: ', this.income)
-        console.log('status: ', typeof this.income !== "undefined" && this.income != null)
-        if (typeof this.income !== "undefined" && this.income != null){
-          return this.noNode(this.income.incomerowSet);
-        }
+      incomeAssignmentDone(){
+        this.$apollo.queries.incomeRowByIncomeId.refetch()
+        this.incomeAssignmentDialog = false;
       },
       incomeExpanded(value){
-        this.selectedIncomeId = value.item.id;
-        console.log('income id: ', this.selectedIncomeId)
+        this.incomeToFindRows = value.item;
+        console.log('item expanded: ', this.incomeToFindRows);
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
           this.incomeRowExpanded = [];
           this.incomeRowExpanded.push(value.item);
         }
-      },
-      showPermitIncomes(permit){
-        console.log('assing: ', permit)
-        const is_proforma = permit.proforma !== null;
-        const is_permit = permit.perm !== null;
-        if (is_proforma){
-          this.proformaIdToFindIncomes = permit.proforma.id;
-          this.permitIdToFindIncomes = null
-        }
-        if (is_permit){
-          this.permitIdToFindIncomes = permit.perm.id;
-          this.proformaIdToFindIncomes = null;
-        }
-        this.permitIncomeDialog = true;
+        console.log('last')
       },
       editIncome(income){
-        this.selectedIncomeId = income.id;
+        this.incomeInstance = income;
         this.incomeFormDialog = true;
       },
       deleteIncome(income){
         console.log('action', income)
       },
       assignIncomeToPermit(income){
+        console.log('assignIncomeToPermit: ', income.number)
         this.selectedIncomeAssignmentId = null;
         this.incomeAssignmentDialog = true;
-        this.selectedIncomeId = income.id;
+        this.incomeInstance= income;
+        console.log('*&*&: ', this.incomeInstance)
       },
     },
     components: {
       PermitIncomes,
       IncomeForm,
-      IncomeAssignmentForm
+      IncomeAssignmentForm,
+      IncomeCreationHolderFrom
     },
     mixins: [
       baseFunctions
     ],
+    updated() {
+      console.log('summary updated: ', this.incomeInstance)
+    },
+    computed: {
+      assignments(){
+        console.log('new *****: ', this.incomeRowByIncomeId)
+        if (typeof  this.incomeRowByIncomeId !== "undefined"){
+          return this.noNode(this.incomeRowByIncomeId);
+        }else { return  []}
+      }
+    },
     apollo: {
-      allIncomes: allIncomes,
-      income: {
-        query: income,
-        variables(){
-          return {
-            income_id: this.selectedIncomeId
-          }
+      allIncomes: {
+        query: allIncomes,
+        result(result){
+          this.incomes = this.noNode(result.data.allIncomes)
         }
       },
+      incomeRowByIncomeId: {
+        query: incomeRowByIncomeId,
+        skip(){
+          let x = typeof this.incomeToFindRows.number !== "undefined";
+          return !x
+        },
+        variables(){
+          console.log('set variable: ', this.incomeToFindRows.number);
+          return {
+            "income_id": this.incomeToFindRows.id
+          }
+        },
+        // result({data}){
+        //   console.log('new *****: ', data)
+        //   if (typeof  data.incomeRowByIncomeId !== "undefined"){
+        //     this.assignments = this.noNode(data.incomeRowByIncomeId);
+        //   }else { return  []}
+        // }
+      }
     }
   }
 </script>

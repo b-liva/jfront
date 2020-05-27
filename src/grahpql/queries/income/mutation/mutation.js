@@ -25,6 +25,10 @@ export const createIncome = gql`
             income{
                 id
                 number
+                customer{
+                    id
+                    name
+                }
             }
             errors{
                 field

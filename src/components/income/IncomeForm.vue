@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-card>
-      <v-card-title>ثبت دریافتی</v-card-title>
       <v-card-text>
         <v-form>
           <v-autocomplete
@@ -45,7 +44,7 @@
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {income, allPaymentTypes} from "../../grahpql/queries/income/income";
+  import {allPaymentTypes} from "../../grahpql/queries/income/income";
   import {createIncome} from "../../grahpql/queries/income/mutation/mutation";
   import {allCustomers} from "../../grahpql/queries/customer/customer";
 
@@ -86,14 +85,14 @@
             "customer_id": this.incomeForm.customerId,
             "type_id": this.incomeForm.typeId,
             "amount": this.incomeForm.amount,
-            "number": this.incomeForm.amount,
+            "number": this.incomeForm.number,
             "date_fa": this.incomeForm.date,
             "due_date": this.incomeForm.dueDate,
             "summary": this.incomeForm.summary,
           }
-        }).then(
-          response => {
-            console.log(response)
+        }).then( response => {
+            console.log('created income: ', response.data)
+            this.$emit('incomeCreated', response.data.createIncome.income)
           },error => {
             console.log(error)
           }
@@ -127,32 +126,56 @@
     mixins: [
       baseFunctions
     ],
-    watch: {
-      income: function () {
-        console.log(this.income);
-        this.incomeForm = this.income;
-      },
-      allCustomers: function () {
-        this.customers = this.noNode(this.allCustomers)
-      },
-      allPaymentTypes: function () {
-        this.types = this.noNode(this.allPaymentTypes);
-      }
-    },
+    // watch: {
+    //   allCustomers: function () {
+    //     this.customers = this.noNode(this.allCustomers)
+    //   },
+    //   allPaymentTypes: function () {
+    //     this.types = this.noNode(this.allPaymentTypes);
+    //   }
+    // },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
+    // updated() {
+    //   console.log('income form updated.')
+    //   this.incomeForm = this.income;
+    // },
+    // computed: {
+    //   income(){
+    //     if (typeof  this.incomeWithRows !== "undefined"){
+    //       return this.incomeWithRows;
+    //     }else {
+    //       return []
+    //     }
+    //   }
+    // },
     apollo: {
-      income: {
-        query: income,
-        variables(){
-          return {
-            income_id: this.incomeId
-          }
+      // incomeWithRows: {
+      //   query: incomeWithRows,
+      //   skip(){
+      //     return !this.incomeId
+      //   },
+      //   variables(){
+      //     return {
+      //       income_id: this.incomeId
+      //     }
+      //   }
+      // },
+      allCustomers: {
+        query: allCustomers,
+        result({data}){
+          console.log(data)
+          this.customers = this.noNode(data.allCustomers)
         }
       },
-      allCustomers: allCustomers,
-      allPaymentTypes: allPaymentTypes,
+      allPaymentTypes: {
+        query: allPaymentTypes,
+        result({data}){
+          console.log(data)
+          this.types = this.noNode(data.allPaymentTypes);
+        }
+      },
     }
   }
 </script>

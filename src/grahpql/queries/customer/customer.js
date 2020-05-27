@@ -154,3 +154,23 @@ export const customerMutation = gql`
     }
 
 `
+
+export const customerUnpaidProformas = gql`
+    query customerUnpaidProformas($customer_id:ID!){
+        customerUnpaidProformas:customer(id:$customer_id) {
+            id
+            name
+            customerTotalKw
+            unpaidProformas{
+                id
+                number
+                amountTotal
+                paidTotal
+                unpaidTotal
+            }
+            saleTotal
+            paidTotal
+            unpaidTotal
+        }
+    }
+`

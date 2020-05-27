@@ -9,9 +9,11 @@ export const allIncomes = gql`
                     number
                     amount
                     owner{
+                        id
                         lastName
                     }
                     customer{
+                        id
                         name
                     }
                     type{
@@ -24,9 +26,9 @@ export const allIncomes = gql`
     }
 `
 
-export const income = gql`
-    query income($income_id:ID!){
-        income(id:$income_id) {
+export const incomeWithRows = gql`
+    query incomeWithRows($income_id:ID!){
+        incomeWithRows:income(id:$income_id) {
             id
             number
             amount
@@ -114,6 +116,23 @@ export const allPaymentTypes = gql`
                 node {
                     id
                     title
+                }
+            }
+        }
+    }
+`
+
+export const incomeRowByIncomeId = gql`
+    query incomeRowByIncomeId($income_id:ID){
+        incomeRowByIncomeId:allIncomeRows(income: $income_id) {
+            edges {
+                node {
+                    id
+                    proforma{
+                        id
+                        number
+                    }
+                    amount
                 }
             }
         }

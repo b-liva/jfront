@@ -107,6 +107,7 @@
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
   import {incomesFiltered, incomeRowByIncomeId} from "../../grahpql/queries/income/income";
+  import {deleteIncome} from "../../grahpql/queries/income/mutation/deletion";
   import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
 
   export default {
@@ -206,7 +207,19 @@
         this.incomeFormDialog = true;
       },
       deleteIncome(income){
-        console.log('action', income)
+        let confirmed = confirm("مورد تأیید است؟ ");
+        if (confirmed) {
+          this.$apollo.mutate({
+            mutation: deleteIncome,
+            variables: {
+              "income_id": income.id
+            }
+          }).then(() => {
+            this.$apollo.queries.incomesFiltered.refetch()
+          }, error => {
+            console.error(error)
+          })
+        }
       },
       assignIncomeToPermit(income){
         this.selectedIncomeAssignmentId = null;

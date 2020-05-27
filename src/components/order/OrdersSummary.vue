@@ -123,6 +123,7 @@
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {order, filteredOrders} from "../../grahpql/queries/order/order";
+  import {deleteOrder} from "../../grahpql/queries/order/mutation/deletion";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
   import OrderCreationHolderForm from "./OrderCreationHolderForm";
@@ -200,6 +201,19 @@
       },
       deleteItem(item){
         this.selectedOrderId = item.id;
+        let a = confirm("مورد تأیید است؟")
+        if (a){
+          this.$apollo.mutate({
+            mutation: deleteOrder,
+            variables: {
+              "order_id": item.id
+            }
+          }).then(() => {
+            this.$apollo.queries.filteredOrders.refetch()
+          }, error => {
+            console.error(error)
+          })
+        }
       },
       assignSpecToOrder(item){
         this.selectedOrderId = item.id;

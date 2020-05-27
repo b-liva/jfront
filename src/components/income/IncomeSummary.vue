@@ -1,12 +1,7 @@
 <template>
   <div>
-    <div v-if="incomeToFindRows !== ''">income to find rows: {{incomeToFindRows.number}}</div>
-    <div v-if="incomeRowExpanded.length > 0">income: {{incomeRowExpanded[0].number}}</div>
     <v-container>
       <v-row>
-        <span v-if="incomeInstance">
-          income instance :{{incomeInstance.number}}
-        </span>
         <v-col cols="12" md="12">
           <v-card>
             <v-card-text>
@@ -47,8 +42,6 @@
                       :headers="assignmentHeaders"
                       :loading="$apollo.queries.incomeRowByIncomeId.loading"
                       :items="assignments">
-                      <!--                      @click:row="showPermitIncomes"-->
-
                       <template v-slot:item.proforma="{item}">
                         {{checkMe('prof', item.proforma)}}
                       </template>
@@ -166,20 +159,24 @@
           return data.number;
         }
       },
-      incomeAssignmentDone(){
-        this.$apollo.queries.incomeRowByIncomeId.refetch()
+      incomeAssignmentDone(incomeId){
+        this.incomeToFindRows = this.incomes.filter(e => e.id===incomeId)[0];
+        if(this.incomeRowExpanded.includes(this.incomeToFindRows)){
+          this.incomeRowExpanded.pop(this.incomeToFindRows);
+        }else {
+          this.incomeRowExpanded = [];
+          this.incomeRowExpanded.push(this.incomeToFindRows);
+        }
         this.incomeAssignmentDialog = false;
       },
       incomeExpanded(value){
         this.incomeToFindRows = value.item;
-        console.log('item expanded: ', this.incomeToFindRows);
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
           this.incomeRowExpanded = [];
           this.incomeRowExpanded.push(value.item);
         }
-        console.log('last')
       },
       editIncome(income){
         this.incomeInstance = income;
@@ -189,11 +186,9 @@
         console.log('action', income)
       },
       assignIncomeToPermit(income){
-        console.log('assignIncomeToPermit: ', income.number)
         this.selectedIncomeAssignmentId = null;
         this.incomeAssignmentDialog = true;
         this.incomeInstance= income;
-        console.log('*&*&: ', this.incomeInstance)
       },
     },
     components: {
@@ -205,12 +200,8 @@
     mixins: [
       baseFunctions
     ],
-    updated() {
-      console.log('summary updated: ', this.incomeInstance)
-    },
     computed: {
       assignments(){
-        console.log('new *****: ', this.incomeRowByIncomeId)
         if (typeof  this.incomeRowByIncomeId !== "undefined"){
           return this.noNode(this.incomeRowByIncomeId);
         }else { return  []}
@@ -230,17 +221,11 @@
           return !x
         },
         variables(){
-          console.log('set variable: ', this.incomeToFindRows.number);
           return {
             "income_id": this.incomeToFindRows.id
           }
         },
-        // result({data}){
-        //   console.log('new *****: ', data)
-        //   if (typeof  data.incomeRowByIncomeId !== "undefined"){
-        //     this.assignments = this.noNode(data.incomeRowByIncomeId);
-        //   }else { return  []}
-        // }
+        fetchPolicy:"cache-and-network"
       }
     }
   }

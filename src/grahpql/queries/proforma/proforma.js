@@ -13,9 +13,12 @@ export const proformaById = gql`
     }
 `
 
-export const allProformas = gql`
-    query{
-        allProformas(last:20) {
+export const proformaFiltered = gql`
+    query proformaFiltered($customer_name:String, $proforma_number:Int){
+        proformaFiltered:allProformas(
+            reqId_Customer_Name_Icontains:$customer_name,
+            number:$proforma_number
+        ) {
             edges {
                 node {
                     id

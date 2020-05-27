@@ -2,6 +2,23 @@
   <div>
     <v-container>
       <v-row>
+        <v-col cols="4">
+          <v-text-field
+            label="مشتری"
+            v-model="customerName"></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            label="شماره پیش فاکتور"
+            v-model="proformaNumber"
+            type="number"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-btn @click="resetFilters" class="primary" small>ریست</v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
         <v-col cols="12" md="12">
           <v-card>
             <v-card-title>پیش فاکتور</v-card-title>
@@ -10,7 +27,7 @@
                 :headers="proformasHeader"
                 :items="getProformas()"
                 :expanded="proformaRowExpanded"
-                :loading="$apollo.queries.allProformas.loading"
+                :loading="$apollo.queries.proformaFiltered.loading"
                 show-expand
                 single-expand
                 @item-expanded="proformaExpanded">
@@ -67,7 +84,7 @@
   import SpecProformas from "./SpecProformas";
   import ProformaCreationHolderForm from "./ProformaCreationHolderForm";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {allProformas} from "../../grahpql/queries/proforma/proforma";
+  import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
 
   export default {
@@ -75,6 +92,8 @@
       return {
         name: "ProformaSummary",
         proformaRowExpanded: [],
+        customerName: "",
+        proformaNumber: null,
         proformaFormDialog: false,
         specProformasDialog: false,
         selectedSpecIdEq: null,
@@ -115,6 +134,10 @@
       }
     },
     methods: {
+      resetFilters(){
+        this.proformaNumber = null;
+        this.customerName = "";
+      },
       newProforma(){
         this.proformaFormDialog = true;
         this.selectedProformaId = null;
@@ -144,8 +167,8 @@
         this.specProformasDialog = true;
       },
       getProformas(){
-        if (typeof this.allProformas !== 'undefined' && this.allProformas !== null){
-          return this.noNode(this.allProformas)
+        if (typeof this.proformaFiltered !== 'undefined' && this.proformaFiltered !== null){
+          return this.noNode(this.proformaFiltered)
         }
       },
       editProforma(item){
@@ -164,7 +187,16 @@
       baseFunctions
     ],
     apollo: {
-      allProformas: allProformas,
+      proformaFiltered: {
+        query: proformaFiltered,
+        debounce: 1000,
+        variables(){
+          return {
+            "customer_name": this.customerName,
+            "proforma_number": this.proformaNumber
+          }
+        }
+      },
       proformaSpecs: {
         query: proformaSpecs,
         variables(){

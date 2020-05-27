@@ -86,6 +86,7 @@
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
+  import {deleteProforma} from "../../grahpql/queries/proforma/mutation/deletion";
 
   export default {
     data(){
@@ -152,7 +153,6 @@
           prefspecSet: {edges: []}
         };
         this.selectedProformaId = value.item.id;
-        console.log(value.item, this.proformaRowExpanded)
         if(this.proformaRowExpanded.includes(value.item)){
           this.proformaRowExpanded.pop(value.item);
         }else {
@@ -161,9 +161,7 @@
         }
       },
       findProformas(spec){
-        console.log('the spec: ', spec);
         this.selectedSpecIdEq = spec.reqspecEq.id;
-        console.log('selected id: ', this.selectedSpecIdEq)
         this.specProformasDialog = true;
       },
       getProformas(){
@@ -176,12 +174,24 @@
         this.selectedProformaId = item.id;
       },
       deleteProforma(item){
-        console.log('fn', item)
+        let a = confirm("مورد تأیید است؟")
+        if (a){
+          this.$apollo.mutate({
+            mutation: deleteProforma,
+            variables: {
+              "proforma_id": item.id
+            }
+          }).then(() => {
+            this.$apollo.queries.proformaFiltered.refetch()
+          }, error => {
+            console.error(error)
+          });
+        }
       },
     },
     components: {
       SpecProformas,
-      ProformaCreationHolderForm
+      ProformaCreationHolderForm,
     },
     mixins: [
       baseFunctions

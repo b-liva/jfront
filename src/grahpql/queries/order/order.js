@@ -9,6 +9,15 @@ export const  orderOnly = gql`
                 id
                 name
             }
+            summary
+            colleagues{
+                edges{
+                    node{
+                        id
+                        lastName
+                    }
+                }
+            }
         }
     }
 `
@@ -102,13 +111,12 @@ export const allRequests = gql`
 
 export const filteredOrders = gql`
     query filteredOrders(
-        $count:Int,
         $number:Int,
         $customer_name:String,
         $no_proforma: Boolean
     ){
         filteredOrders:allRequests(
-            first: $count,
+            first: 100,
             number:$number,
             customer_Name_Icontains:$customer_name,
             xpref_Isnull:$no_proforma

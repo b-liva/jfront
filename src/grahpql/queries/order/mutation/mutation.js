@@ -39,3 +39,51 @@ export const OrderMutation = gql`
         }
     }
 `
+
+export const editOrderPayload = gql`
+    query editOrderPayload($order_id:ID!){
+        editOrderPayload: request(id: $order_id) {
+            id
+            customer {
+                id
+                name
+            }
+            number
+            colleagues {
+                edges {
+                    node {
+                        id
+                        lastName
+                    }
+                }
+            }
+            reqspecSet(isActive: true) {
+                edges {
+                    node {
+                        id
+                        qty
+                        kw
+                        voltage
+                        rpm
+                        rpmNew {
+                            id
+                            rpm
+                        }
+                        im {
+                            id
+                            title
+                        }
+                        ic {
+                            id
+                            title
+                        }
+                        ip {
+                            id
+                            title
+                        }
+                    }
+                }
+            }
+        }
+    }
+`

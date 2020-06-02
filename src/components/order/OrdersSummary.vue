@@ -197,7 +197,8 @@
       },
       editItem(item){
         this.selectedOrderId = item.id;
-        this.orderFormDialog = true;
+        this.orderFormHolderDialog = true;
+        // this.orderFormDialog = true;
       },
       deleteItem(item){
         this.selectedOrderId = item.id;

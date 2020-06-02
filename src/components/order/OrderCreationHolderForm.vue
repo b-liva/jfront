@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card>
+    <v-card>{{orderId}}
       <v-toolbar
         flat
         color="transparent">
@@ -23,7 +23,7 @@
           :key="`1-step`"
           step="1"
         >
-          ثبت درخواست خرید
+          {{stepOneMsg}}
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
@@ -31,7 +31,7 @@
           :editable="editable"
           :key="`2-step`"
           step="2">
-          ثبت ردیف
+          {{stepTwoMsg}}
         </v-stepper-step>
         <v-divider/>
         <v-stepper-step
@@ -39,12 +39,12 @@
         :complete="e1 > 3"
         :key="`3-step`"
         step=3>
-          مشاهده جزئیات
+          {{stepThreeMsg}}
         </v-stepper-step>
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="1">
-          <order-form v-on:orderCreated="orderCreated"/>
+          <order-form :order-id="orderId" v-on:orderCreated="orderCreated"/>
         </v-stepper-content>
         <v-stepper-content step="2">
           <order-spec-form v-if="orderSpecFormIsActive" :order-id="selectedOrderId" v-on:updateSpecs="updateSpecs"/>
@@ -63,11 +63,16 @@
   import OrderForm from "./OrderForm";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import OrderPreview from "./OrderPreview";
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
+  import {editOrderPayload} from "../../grahpql/queries/order/mutation/mutation";
 
   export default {
     data(){
       return {
         name: "OrderCreationHolderForm",
+        stepOneMsg: 'ثبت در خواست خرید',
+        stepTwoMsg: "ثبت ردیف",
+        stepThreeMsg: "مشاهده جزئیات",
         e1: 1,
         editable: true,
         orderSpecFormIsActive: false,
@@ -83,6 +88,18 @@
       OrderForm,
       OrderPreview
     },
+    created() {
+      if (this.orderId){
+        console.log(this.orderId)
+        this.stepOneMsg = "ویرایش درخواست خرید"
+        this.stepTwoMsg = "ویرایش ردیف"
+        this.orderSpecFormIsActive = true
+        this.selectedOrderId = this.orderId
+      }
+    },
+    mixins: [
+      baseFunctions
+    ],
     methods: {
       orderCreated(orderId){
         this.selectedOrderId = orderId;
@@ -92,6 +109,23 @@
       },
       updateSpecs(specs){
         this.specs = specs;
+      }
+    },
+    apollo: {
+      editOrderPayload: {
+        query: editOrderPayload,
+        skip(){
+          return !this.orderId
+        },
+        variables(){
+          return {
+            "order_id": this.orderId
+          }
+        },
+        result({data}){
+          console.log('editing order: ', data.editOrderPayload)
+          this.specs = this.noNode(data.editOrderPayload.reqspecSet)
+        }
       }
     }
   }

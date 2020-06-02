@@ -2,7 +2,8 @@
   <div>
     <v-card>
       <v-card-text>
-        <v-container>
+        <v-container>{{orderId}}
+          <div>{{colleagues}}</div>
           <v-row>
             <v-col cols="12" md="8">
               <v-row>
@@ -102,9 +103,10 @@
     ],
     methods: {
       submit(){
-        this.$apollo.mutate({
-          mutation: OrderMutation,
-          variables: {
+        if (!this.orderId){
+          this.$apollo.mutate({
+            mutation: OrderMutation,
+            variables: {
               customer_id: this.order_form.customerId,
               number: this.order_form.number,
               date_fa: this.order_form.date,
@@ -112,16 +114,18 @@
               summary: this.order_form.summary,
               finished: this.order_form.finished,
               owner_id: ""
-          }
-        }).then((response) => {
-          if (response.data.OrderMutation.requests !== null){
-            let orderId = response.data.OrderMutation.requests.id;
-            this.$emit('orderCreated', orderId)
-          }
-        }, (error) => {
-          console.error('error from order form: ', error)
-        });
-
+            }
+          }).then((response) => {
+            if (response.data.OrderMutation.requests !== null){
+              let orderId = response.data.OrderMutation.requests.id;
+              this.$emit('orderCreated', orderId)
+            }
+          }, (error) => {
+            console.error('error from order form: ', error)
+          });
+        }else {
+          console.log('editing else...........')
+        }
       },
       cancel(){
         this.order_form = cloneDeep(this.order);
@@ -145,19 +149,27 @@
         skip(){
           return !this.orderId
         },
-        result(result){
-          this.order_form = result.data.orderOnly
+        result({data}){
+          console.log("order only: ", data.orderOnly.colleagues.edges)
+          this.order_form = data.orderOnly
+          this.order_form.customerId = data.orderOnly.customer.id;
+          let colleagues = this.noNode(data.orderOnly.colleagues)
+          colleagues.forEach(c => this.colleagues.push(c.id))
         }
       },
       order: {
         query: order,
+        skip(){
+          return !this.orderId
+        },
         variables(){
           return {
             order_id: this.orderId
           }
         },
-        result(result){
-          this.orderSpecs = this.noNode(result.data.order.reqspecSet)
+        result({data}){
+          console.log("order: ", data)
+          this.orderSpecs = this.noNode(data.order.reqspecSet)
         }
       },
       customerIdAndName: {

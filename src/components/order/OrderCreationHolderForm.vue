@@ -44,7 +44,7 @@
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="1">
-          <order-form :order-id="orderId" v-on:orderCreated="orderCreated"/>
+          <order-form :order-id="selectedOrderId" v-on:orderCreated="orderCreated"/>
         </v-stepper-content>
         <v-stepper-content step="2">
           <order-spec-form v-if="orderSpecFormIsActive" :order-id="selectedOrderId" v-on:updateSpecs="updateSpecs"/>

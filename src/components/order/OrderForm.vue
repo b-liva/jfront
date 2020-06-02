@@ -2,6 +2,16 @@
   <div>
     <v-card>
       <v-card-text>
+        <div v-if="errors.length > 0">
+          <ol>
+            <li v-for="error in errors" :key="error.field">
+              {{error.field}}:
+              <ul>
+                <li v-for="(errorMsg, index) in error.messages" :key="index">{{errorMsg}}</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
         <v-container>{{orderId}}
           <div>{{colleagues}}</div>
           <v-row>
@@ -92,6 +102,8 @@
         customers: [],
         salesExpertUsers: [],
         colleagues: [],
+        errors: [],
+        OrderMutationVariables: {},
       }
     },
     props: [
@@ -103,29 +115,37 @@
     ],
     methods: {
       submit(){
-        if (!this.orderId){
-          this.$apollo.mutate({
-            mutation: OrderMutation,
-            variables: {
-              customer_id: this.order_form.customerId,
-              number: this.order_form.number,
-              date_fa: this.order_form.date,
-              colleagues: this.colleagues,
-              summary: this.order_form.summary,
-              finished: this.order_form.finished,
-              owner_id: ""
-            }
-          }).then((response) => {
-            if (response.data.OrderMutation.requests !== null){
-              let orderId = response.data.OrderMutation.requests.id;
-              this.$emit('orderCreated', orderId)
-            }
-          }, (error) => {
-            console.error('error from order form: ', error)
-          });
-        }else {
-          console.log('editing else...........')
+        this.OrderMutationVariables = {
+          request_input: {
+            customer: this.order_form.customerId,
+            number: this.order_form.number,
+            dateFa: this.order_form.date,
+            colleagues: this.colleagues,
+            summary: this.order_form.summary,
+            finished: this.order_form.finished,
+            owner: 0
+          }
+        };
+        if (this.orderId){
+          this.OrderMutationVariables.request_input.id = this.orderId;
+          console.log('editing else...........', this.OrderMutationVariables)
         }
+        this.$apollo.mutate({
+          mutation: OrderMutation,
+          variables: this.OrderMutationVariables,
+        }).then((response) => {
+          console.log(response)
+          let results = response.data.OrderMutation;
+          if (results.requests !== null){
+            let orderId = results.requests.id;
+            this.$emit('orderCreated', orderId)
+          }else  if(results.errors.length > 0){
+            console.log('hava some errors.')
+            this.errors = results.errors;
+          }
+        }).catch(error => {
+          console.log('[error]', error.response);
+        });
       },
       cancel(){
         this.order_form = cloneDeep(this.order);
@@ -150,6 +170,7 @@
           return !this.orderId
         },
         result({data}){
+          this.colleagues = []
           console.log("order only: ", data.orderOnly.colleagues.edges)
           this.order_form = data.orderOnly
           this.order_form.customerId = data.orderOnly.customer.id;

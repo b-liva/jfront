@@ -55,7 +55,7 @@
           >
             <proforma-form
               :order-id="orderID"
-              :proforma-id="proformaId"
+              :proforma-id="proformaID"
               v-on:close-event="$emit('close-event')"
               v-on:success="proformaCreated"
             />
@@ -106,6 +106,7 @@
         pSpecFormIsActive: false,
         proforma: null,
         orderID: '',
+        proformaID: '',
         proformaSpecs: [],
         snackbar: false,
         snackbarMsg: '',
@@ -115,6 +116,7 @@
       if (this.orderId){
         this.orderID = this.orderId;
       }
+      this.proformaId ? this.proformaID = this.proformaId : this.proformaID = ''
     },
     props: ['orderId', 'proformaId'],
     methods: {
@@ -122,6 +124,7 @@
         console.log('parent: ', orderId, proforma);
         this.proforma = proforma;
         this.orderID = orderId;
+        this.proformaID = proforma.id;
         this.pSpecFormIsActive = true;
         this.e1 = 2;
         this.snackbarMsg = 'پیش فاکتور به درستی ثبت شد'

@@ -1,10 +1,15 @@
 <template>
   <div>
     <v-card>
-      <v-card-title v-if="orderID">ثبت پیش فاکتور برای درخواست شماره: {{orderData.number}} مربوط به مشتری:
-        {{orderData.customerName}}
+      <v-card-title v-if="orderID"> پیش فاکتور
         <v-spacer/>
-        <span><span>شماره پیش فاکتور: </span><span class="green--text">{{proforma.number}}</span></span>
+        <div>
+          <v-card-subtitle v-if="proformaFormIsVisible">
+            <div>شماره درخواست:  <span class="green--text">{{orderData.number}}</span></div>
+            <div>مشتری:  <span class="green--text">{{orderData.customerName}}</span></div>
+            <div>شماره پیش فاکتور:  <span class="green--text">{{proforma.number}}</span></div>
+          </v-card-subtitle>
+        </div>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -14,7 +19,7 @@
                 dense
                 v-model="orderData.number"
                 label="شماره درخواست"
-                :disabled="!orderNumberIsActive"
+                v-if="reqNumActive"
               ></v-text-field>
             </v-col>
           </v-row>
@@ -28,7 +33,6 @@
                     type="number"
                     v-model="proformaForm.numberTd"
                     label="شماره تدوین"
-                    :disabled="!proformaSubmitIsActive"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="6">
@@ -44,7 +48,6 @@
                   <span v-if="proformaForm.date">{{proformaForm.date}}</span>
                   <span v-else>انتخاب کنید</span>
                   <PersianDatePicker
-                    :disabled="!proformaSubmitIsActive"
                     v-model="proformaForm.date"
                     format="jYYYY-jMM-jDD"
                     element="proforma-date"
@@ -65,7 +68,6 @@
                   <span v-if="proformaForm.expiry_date">{{proformaForm.expiry_date}}</span>
                   <span v-else>انتخاب کنید</span>
                   <PersianDatePicker
-                    :disabled="!proformaSubmitIsActive"
                     v-model="proformaForm.expiry_date"
                     element="proforma-exp-date"
                     format="jYYYY-jMM-jDD"
@@ -81,14 +83,12 @@
                 <v-col cols="4">
                   <v-checkbox
                     label="مجوز"
-                    v-model="proformaForm.perm"
-                    :disabled="!proformaSubmitIsActive"/>
+                    v-model="proformaForm.perm"/>
                 </v-col>
                 <template v-if="proformaForm.perm">
                   <v-col cols="8">
                     <v-text-field
                       label="شماره مجوز"
-                      :disabled="!proformaSubmitIsActive"
                       v-model="proformaForm.permNumber"/>
                   </v-col>
                   <v-col cols="6">
@@ -104,7 +104,6 @@
                     <span v-if="proformaForm.permDate">{{proformaForm.permDate}}</span>
                     <span v-else>انتخاب کنید</span>
                     <PersianDatePicker
-                      :disabled="!proformaSubmitIsActive"
                       v-model="proformaForm.permDate"
                       format="jYYYY-jMM-jDD"
                       element="perm-date"
@@ -125,7 +124,6 @@
                     <span v-if="proformaForm.dueDate">{{proformaForm.dueDate}}</span>
                     <span v-else>انتخاب کنید</span>
                     <PersianDatePicker
-                      :disabled="!proformaSubmitIsActive"
                       v-model="proformaForm.dueDate"
                       element="due-date"
                       format="jYYYY-jMM-jDD"
@@ -142,14 +140,10 @@
               <v-textarea
                 v-model="proformaForm.summary"
                 label="توضیحات"
-                :disabled="!proformaSubmitIsActive"
               ></v-textarea>
             </v-col>
             <v-col cols="12">
-              <v-btn small class="primary" @click="submitProforma" v-if="proformaSubmitIsActive">ثبت</v-btn>
-              <v-btn small class="warning" @click="proformaSubmitIsActive = !proformaSubmitIsActive"
-                     v-if="!proformaSubmitIsActive">ویرایش
-              </v-btn>
+              <v-btn small class="primary" @click="submitProforma" >ثبت</v-btn>
               <v-btn class="error" small @click="cancel">انصراف</v-btn>
             </v-col>
           </v-row>
@@ -180,7 +174,7 @@
           perm: false,
           dueDate: false,
         },
-        proformaSubmitIsActive: true,
+        reqNumActive: true,
         showPermPart: false,
         orderNumberIsActive: false,
         proformaFormIsVisible: false,
@@ -206,6 +200,7 @@
           summary: '',
         },
         proforma: '',
+        createProformaVariables: {},
       }
     },
     props: [
@@ -232,29 +227,36 @@
     methods: {
       submitProforma() {
         console.log('submit proforma')
-        this.$apollo.mutate({
-          mutation: createProforma,
-          variables: {
-            req_id: this.orderID,
-            owner_id: "",
+        this.createProformaVariables = {
+          proforma_input: {
+            reqId: this.orderID,
+            owner: "",
             number: 0,
             // "pub_date": "2009-06-15T13:45:30",
-            date_fa: this.proformaForm.date,
-            number_td: this.proformaForm.numberTd,
-            expiry_date: this.proformaForm.expiry_date,
-            perm_number: this.proformaForm.permNumber,
-            perm_date: this.proformaForm.permDate,
-            due_date: this.proformaForm.dueDate,
+            dateFa: this.proformaForm.date,
+            numberTd: this.proformaForm.numberTd,
+            expDateFa: this.proformaForm.expiry_date,
+            permNumber: this.proformaForm.permNumber,
+            permDate: this.proformaForm.permDate,
+            dueDate: this.proformaForm.dueDate,
             summary: this.proformaForm.summary,
             perm: true
           }
+        }
+        if (this.proformaId){
+          this.createProformaVariables.proforma_input.id = this.proformaId
+        }
+        console.log('vars: ', this.createProformaVariables, this.proformaId)
+        this.$apollo.mutate({
+          mutation: createProforma,
+          variables: this.createProformaVariables
         }).then(response => {
           let data = response.data.proformaMutation;
-          console.log(data)
           if (data.xpref !== null && data.xpref.id !== null) {
-            this.proformaSubmitIsActive = false;
+            this.reqNumActive = false;
             this.$set(this.proforma, 'id', data.xpref.id)
             this.$set(this.proforma, 'number', data.xpref.number)
+            this.orderID = data.xpref.reqId.id;
             this.$emit("success", this.orderID, this.proforma)
             this.$apollo.queries.proformasByOrderId.refetch({
               "order_id": this.orderID

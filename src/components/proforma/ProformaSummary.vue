@@ -15,7 +15,7 @@
           ></v-text-field>
         </v-col>
         <v-col cols="2">
-          <v-btn @click="resetFilters" class="primary" small>ریست</v-btn>
+          <v-btn @click="resetFilters" class="error pa-2" x-small><v-icon>mdi-close</v-icon></v-btn>
         </v-col>
       </v-row>
       <v-row>

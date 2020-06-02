@@ -119,6 +119,7 @@
         allIps: null,
         allIcs: null,
         allIms: null,
+        specMutationVariables: {},
         assignFormDefault: {
           id: '',
           orderId: '',
@@ -223,7 +224,6 @@
         console.log('assignment');
       },
       cancelAssignment(){
-        console.log('assignment');
         this.$emit('closeAssignDialog')
       },
       addSpecToList(){
@@ -234,24 +234,29 @@
         }else {
           this.specs.push(this.assignForm)
         }
-        // Probably saving the spec to db and fetching specs again.
+        //todo: implement type and rpmNew.
+        this.specMutationVariables.reqspec_input = {
+          code: 99009900,
+          reqId: this.orderId,
+          type: "1",
+          owner: "",
+          qty: this.assignForm.qty,
+          kw: this.assignForm.kw,
+          voltage: this.assignForm.voltage,
+          rpm: this.assignForm.rpm,
+          rpmNew: "UnBtVHlwZU5vZGU6MQ==",
+          ip: this.assignForm.ip.id,
+          im: this.assignForm.im.id,
+          ic: this.assignForm.ic.id,
+          summary: this.assignForm.summary
+        }
+        if (this.assignForm.id !== ""){
+          this.specMutationVariables.reqspec_input.id = this.assignForm.id
+        }
+
         this.$apollo.mutate({
           mutation: specMutation,
-          variables: {
-            code: 99009900,
-            order_id: this.orderId,
-            type_id: "1",
-            owner_id: "",
-            qty: this.assignForm.qty,
-            kw: this.assignForm.kw,
-            voltage: this.assignForm.voltage,
-            rpm: this.assignForm.rpm,
-            rpm_new_id: "UnBtVHlwZU5vZGU6MQ==",
-            ip_id: this.assignForm.ip.id,
-            im_id: this.assignForm.im.id,
-            ic_id: this.assignForm.ic.id,
-            summary: this.assignForm.summary
-          }
+          variables: this.specMutationVariables
         }).then(() => {
           this.$apollo.queries.order.refetch().then(() => {
             this.$emit('updateSpecs', this.orderSpecs)

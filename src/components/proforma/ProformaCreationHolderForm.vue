@@ -67,7 +67,7 @@
             <proforma-spec-form
               v-if="pSpecFormIsActive"
               :order-id="orderID"
-              :proforma-id="this.proforma.id"
+              :proforma-id="proformaID"
               v-on:proformaSpecSuccess="pSpecSuccess"
             />
             <p v-else>برای ثبت قیمت باید پیش فاکتور ثبت شده باشد. (مرحله 1)</p>

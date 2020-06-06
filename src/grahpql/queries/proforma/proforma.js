@@ -9,6 +9,10 @@ export const proformaById = gql`
                 id
                 number
             }
+            perm
+            permNumber
+            numberTd
+            summary
         }
     }
 `

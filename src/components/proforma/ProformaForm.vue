@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card>
+    <v-card>{{proformaID}}
       <v-card-title v-if="orderID"> پیش فاکتور
         <v-spacer/>
         <div>
@@ -219,10 +219,8 @@
       }else {
         this.proformaID = this.proformaId;
       }
-      // if (!(this.proformaId || this.orderId)){}
       this.orderNumberIsActive = !(this.proformaID || this.orderID)
       this.proformaFormIsVisible = !this.orderNumberIsActive
-      console.log(this.proformaFormIsVisible)
     },
     methods: {
       submitProforma() {
@@ -244,7 +242,7 @@
           }
         }
         if (this.proformaId){
-          this.createProformaVariables.proforma_input.id = this.proformaId
+          this.createProformaVariables.proforma_input.id = this.proformaID
         }
         console.log('vars: ', this.createProformaVariables, this.proformaId)
         this.$apollo.mutate({
@@ -254,10 +252,10 @@
           let data = response.data.proformaMutation;
           if (data.xpref !== null && data.xpref.id !== null) {
             this.reqNumActive = false;
-            this.$set(this.proforma, 'id', data.xpref.id)
-            this.$set(this.proforma, 'number', data.xpref.number)
+            this.$set(this.proforma, 'id', data.xpref.id);
+            this.$set(this.proforma, 'number', data.xpref.number);
             this.orderID = data.xpref.reqId.id;
-            this.$emit("success", this.orderID, this.proforma)
+            this.$emit("success", this.orderID, this.proforma);
             this.$apollo.queries.proformasByOrderId.refetch({
               "order_id": this.orderID
             })
@@ -293,7 +291,16 @@
           return !this.proformaID
         },
         result(result) {
-          this.proforma = result.data;
+          this.proforma = result.data.proformaById;
+          this.proformaForm.perm = this.proforma.perm;
+          this.proformaForm.reqNumber = this.proforma.reqId.number;
+          this.proformaForm.id = this.proformaID;
+          this.proformaForm.perm = this.proforma.perm;
+          this.proformaForm.numberTd = this.proforma.numberTd;
+          this.proformaForm.permNumber = this.proforma.permNumber;
+          this.proformaForm.summary = this.proforma.summary;
+          this.orderData.number = this.proforma.reqId.number;
+          this.reqNumActive = false
         }
       },
       orderIdAndNumber: {

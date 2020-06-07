@@ -116,12 +116,14 @@
       if (this.orderId){
         this.orderID = this.orderId;
       }
-      this.proformaId ? this.proformaID = this.proformaId : this.proformaID = ''
+      if (this.proformaId){
+        this.proformaID = this.proformaId
+        this.pSpecFormIsActive = true
+      }
     },
     props: ['orderId', 'proformaId'],
     methods: {
       proformaCreated(orderId, proforma){
-        console.log('parent: ', orderId, proforma);
         this.proforma = proforma;
         this.orderID = orderId;
         this.proformaID = proforma.id;

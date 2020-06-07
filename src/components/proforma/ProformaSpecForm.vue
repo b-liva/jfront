@@ -1,7 +1,17 @@
 <template>
   <div>
-    <v-card>
+    <v-card>{{proformaID}} <span v-if="loading">loading </span>
       <v-card-title>ردیف های پیش فاکتور</v-card-title>
+<!--      <div style="direction: ltr">-->
+<!--        <div>specs</div>-->
+<!--        <div>-->
+<!--          <p v-for="i in specs" :key="i.id">{{i.id}}</p>-->
+<!--        </div>-->
+<!--        <div>profSpec: </div>-->
+<!--        <div>-->
+<!--          <p v-for="i in profSpecs" :key="i.id">{{i.id}} - {{i.reqspecEq.id}}</p>-->
+<!--        </div>-->
+<!--      </div>-->
       <v-card-text>
         <v-layout row wrap>
           <v-flex xs4>
@@ -20,6 +30,7 @@
                     <span>دور</span>
                     <span>{{spec.voltage}}</span>
                     <span>ولت</span>
+                    <span>{{spec.price}}</span>
                     <span><v-icon @click="addToProformaSpecs(spec)"> mdi-plus</v-icon></span>
                   </p>
                 </li>
@@ -30,7 +41,7 @@
             <v-data-table
               dense
               :headers="headers"
-              :items="proformaSpecs"
+              :items="profSpecs"
               hide-default-footer>
               <template v-slot:item.qty="{item}">
                 <v-text-field dense v-model="item.qty" class="qty"></v-text-field>
@@ -58,6 +69,7 @@
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {specsNoProforma} from "../../grahpql/queries/order/spec/spec";
   import {createPrefSpecsBulk} from "../../grahpql/queries/order/spec/mutation/mutation";
+  import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
 
   export default {
     data() {
@@ -65,7 +77,9 @@
         name: "ProformaSpecForm",
         proforma: {},
         pSpecFormIsActive: false,
-        proformaSpecs: [],
+        loading: false,
+        proformaID: null,
+        profSpecs: [],
         specs: [],
         orderData: {
           id: "",
@@ -73,6 +87,7 @@
           customerName: "",
         },
         headers: [
+          {value: 'eq', text: 'eq', align: 'center', class: 'qty-header'},
           {value: 'qty', text: 'تعداد', align: 'center', class: 'qty-header'},
           {value: 'kw', text: 'کیلووات',},
           {value: 'rpm', text: 'سرعت',},
@@ -86,28 +101,35 @@
     mixins: [
       baseFunctions
     ],
+    created() {
+      this.proformaID = this.proformaId
+    },
     methods: {
       addToProformaSpecs(spec) {
-        this.proformaSpecs.push(spec)
+        this.profSpecs.push(spec);
         spec.staged = true;
       },
       removeFromProformaSpecs(spec) {
-        const index = this.proformaSpecs.indexOf(spec)
-        console.log('spec: ', spec, 'index: ', index)
-        this.proformaSpecs.splice(index, 1)
-        spec.staged = false
+        const index = this.profSpecs.indexOf(spec);
+        this.profSpecs.splice(index, 1);
+        this.specs.forEach(e => {
+          if (typeof spec.reqspecEq !== "undefined" && e.id===spec.reqspecEq.id){
+            e.staged = false
+          }else if(typeof spec.reqspecEq === "undefined"){
+            spec.staged = false
+          }
+        })
       },
       addAllToProformaSpecs() {
         this.specs.map((row) => {
-          console.log(row.price > 0 && !row.staged)
           if (!row.staged) {
-            this.proformaSpecs.push(row)
+            this.profSpecs.push(row);
             row.staged = true
           }
         })
       },
       submit() {
-        let specPayLoad = this.proformaSpecs.map(e => {
+        let specPayLoad = this.profSpecs.map(e => {
           return {
             id: e.id,
             price: e.price,
@@ -117,11 +139,10 @@
         this.$apollo.mutate({
           mutation: createPrefSpecsBulk,
           variables: {
-            "proforma_id":this.proformaIdComputed,
+            "proforma_id":this.proformaID,
             "spec_list": specPayLoad
           },
         }).then(response => {
-          console.log(response);
           this.$emit('proformaSpecSuccess', response.data.createPrefSpecsBulk.proformaSpecs)
         }, error => {
           console.error('error occurred.', error)
@@ -134,25 +155,24 @@
         this.$emit('close-event')
       },
     },
-    computed: {
-      proformaIdComputed: function () {
-        return this.proformaId
-      }
-    },
+    // computed: {
+    //   proformaIdComputed: function () {
+    //     return this.proformaId
+    //   }
+    // },
     apollo: {
       specsNoProforma: {
         query: specsNoProforma,
         skip(){
-          return !this.proformaIdComputed
+          return !this.proformaID
         },
         variables(){
           return {
-            "proforma_id": this.proformaIdComputed
+            "proforma_id": this.proformaID
           }
         },
         result(result){
           console.log('why is this called again?')
-          console.log('from: ', result)
           let data = result.data.specsNoProforma;
           this.specs = data.specsNoProforma;
           this.specs.forEach(e => {
@@ -161,6 +181,31 @@
           this.orderData.id = data.reqId.id;
           this.orderData.number = data.reqId.number;
           this.orderData.customerName = data.customerName;
+        }
+      },
+      proformaSpecs: {
+        query: proformaSpecs,
+        skip(){
+          // Should check if there is specs or not.
+          return !(this.proformaID && this.specs.length > 0)
+        },
+        variables(){
+          return {
+            proforma_id: this.proformaID
+          }
+        },
+        result({data, loading}){
+          this.loading = loading;
+          if (this.profSpecs.length > 0){
+            this.profSpecs = this.noNode(data.proformaSpecs.prefspecSet)
+            this.profSpecs.forEach(e => {
+              this.specs.forEach(s => {
+                if (e.reqspecEq.id === s.id){
+                  s.staged = true
+                }
+              })
+            })
+          }
         }
       }
     }

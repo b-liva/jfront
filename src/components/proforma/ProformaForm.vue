@@ -157,7 +157,7 @@
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import {orderIdAndNumber, orderByNumber} from "../../grahpql/queries/order/order";
-  import {proformaById, proformasByOrderId} from "../../grahpql/queries/proforma/proforma";
+  import {proformaById} from "../../grahpql/queries/proforma/proforma";
   import cloneDeep from 'lodash/cloneDeep'
   import {createProforma} from "../../grahpql/queries/proforma/mutation/mutation";
 
@@ -256,9 +256,6 @@
             this.$set(this.proforma, 'number', data.xpref.number);
             this.orderID = data.xpref.reqId.id;
             this.$emit("success", this.orderID, this.proforma);
-            this.$apollo.queries.proformasByOrderId.refetch({
-              "order_id": this.orderID
-            })
           }
         }, error => {
           console.log(error)
@@ -320,12 +317,6 @@
             this.orderData.number = order.number;
             this.orderData.customerName = order.customer.name;
           }
-        }
-      },
-      proformasByOrderId: {
-        query: proformasByOrderId,
-        skip() {
-          return !this.orderID;
         }
       },
       orderByNumber: {

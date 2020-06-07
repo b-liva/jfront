@@ -155,11 +155,6 @@
         this.$emit('close-event')
       },
     },
-    // computed: {
-    //   proformaIdComputed: function () {
-    //     return this.proformaId
-    //   }
-    // },
     apollo: {
       specsNoProforma: {
         query: specsNoProforma,

@@ -90,7 +90,6 @@
     },
     created() {
       if (this.orderId){
-        console.log(this.orderId)
         this.stepOneMsg = "ویرایش درخواست خرید"
         this.stepTwoMsg = "ویرایش ردیف"
         this.orderSpecFormIsActive = true

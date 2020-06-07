@@ -11,7 +11,7 @@
             <dashboard-statistics/>
           </v-tab-item>
           <v-tab>
-            کاربران
+            کاربر
           </v-tab>
           <v-tab-item>
             <user-statistics/>

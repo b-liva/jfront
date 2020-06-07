@@ -210,7 +210,5 @@
 </script>
 
 <style scoped>
-.lll{
-  direction: ltr;
-}
+
 </style>

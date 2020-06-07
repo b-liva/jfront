@@ -271,11 +271,6 @@
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
-    // watch: {
-    //   proformaById: function () {
-    //     this.proforma = this.proformaById;
-    //   }
-    // },
     apollo: {
       proformaById: {
         query: proformaById,

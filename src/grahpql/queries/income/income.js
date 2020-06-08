@@ -131,6 +131,11 @@ export const incomeRowByIncomeId = gql`
             edges {
                 node {
                     id
+                    income{
+                        id
+                        number
+                        amount
+                    }
                     proforma{
                         id
                         number
@@ -138,6 +143,25 @@ export const incomeRowByIncomeId = gql`
                     amount
                 }
             }
+        }
+    }
+`
+
+export const  incomeById = gql`
+    query incomeById($income_id:ID!){
+        incomeById:income(id:$income_id) {
+            id
+            amount
+            customer {
+                id
+                name
+            }
+            number
+            type {
+                id
+                title
+            }
+            summary
         }
     }
 `

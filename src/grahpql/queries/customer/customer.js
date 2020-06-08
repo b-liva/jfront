@@ -32,6 +32,19 @@ export const allCustomers = gql`
     }
 `
 
+export const customersMinimal = gql`
+    query{
+        allCustomers {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+`
+
 export const customerById = gql`
     query customerById($customer_id:ID!){
         customerById:customer(id:$customer_id) {

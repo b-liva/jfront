@@ -67,7 +67,6 @@
     },
     methods: {
       incomeCreated(income){
-        console.log('from parent(income): ', income)
         this.incomeId = income.id;
         this.income = income;
         this.incomeAssignmentFormIsActive = true;

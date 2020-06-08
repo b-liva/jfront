@@ -142,6 +142,7 @@
         incomeAssignmentDialog: false,
         incomeCreationHolder: false,
         incomeRowExpanded: [],
+        assignments: "",
         incomeHeaders: [
           {value: "number", text: "شماره واریزی"},
           {value: "customer", text: "مشتری"},
@@ -168,7 +169,9 @@
         this.incomeNumber = null;
       },
       editIncomeAssignment(incomeRow){
+        console.log('irr: ', incomeRow)
         this.selectedIncomeAssignmentId = incomeRow.id;
+        this.incomeInstance = incomeRow.income
         this.incomeAssignmentDialog = true;
       },
       deleteIncomeAssignment(incomeRow){
@@ -236,13 +239,13 @@
     mixins: [
       baseFunctions
     ],
-    computed: {
-      assignments(){
-        if (typeof  this.incomeRowByIncomeId !== "undefined"){
-          return this.noNode(this.incomeRowByIncomeId);
-        }else { return  []}
-      }
-    },
+    // computed: {
+    //   assignments(){
+    //     if (typeof  this.incomeRowByIncomeId !== "undefined"){
+    //       return this.noNode(this.incomeRowByIncomeId);
+    //     }else { return  []}
+    //   }
+    // },
     apollo: {
       incomesFiltered: {
         query: incomesFiltered,
@@ -267,6 +270,12 @@
           return {
             "income_id": this.incomeToFindRows.id
           }
+        },
+        result({data}){
+          console.log(data)
+          let result = data.incomeRowByIncomeId;
+          this.assignments = this.noNode(result)
+          console.log('assign: ', this.assignments)
         },
         fetchPolicy:"cache-and-network"
       }

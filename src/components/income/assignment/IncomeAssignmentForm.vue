@@ -44,7 +44,6 @@
             <v-col cols="6">
               پیش فاکتور های دارای مانده
               <ol v-if="customerStatus">
-
                 <li
                   v-for="proforma in customerStatus.unpaidProformas"
                   :key="proforma.key"
@@ -82,6 +81,8 @@
           id: '',
           number: ''
         },
+        incomeRow: null,
+        customerId: null,
         loading: false,
         statusOk: false,
         incomeAssignmentFormDefault: {
@@ -112,42 +113,37 @@
       "income",
       "refetchAssignments"
     ],
-    created() {
-      console.log('*****: ', this.income.id)
-    },
-    updated() {
-      console.log('assg udpated: ', this.income)
-    },
     methods: {
       setProforma(proforma){
         this.proforma = proforma
       },
-      submitIncomeAssignment(item){
-        console.log('method', item);
+      submitIncomeAssignment(){
+        let incomeRowVariables = {
+          incomeRowInput: {
+            "owner": "",
+            "income": this.income.id,
+            "dateFa": this.incomeAssignmentForm.date,
+            "summary": this.incomeAssignmentForm.summary,
+            "proforma": this.incomeAssignmentForm.proformaId,
+            "amount": this.incomeAssignmentForm.amount
+          }
+        }
+        if (this.incomeRow){
+          incomeRowVariables.incomeRowInput.id = this.incomeRow.id
+        }
         this.$apollo.mutate({
           mutation: assingIncomeRowMutation,
-          variables: {
-            income_id: this.income.id,
-            date_fa: this.incomeAssignmentForm.date,
-            summary: this.incomeAssignmentForm.summary,
-            owner_id: "",
-            proforma_id: this.incomeAssignmentForm.proformaId,
-            amount: this.incomeAssignmentForm.amount
-          }
-        }).then(() => {
+          variables: incomeRowVariables
+        }).then((response) => {
           this.loading = true;
-          console.log('this is customerid: ', this.income.customer.id)
-          this.$apollo.queries.customerUnpaidProformas.refetch({
-            "customer_id": this.income.customer.id
-          });
-          console.log('emitting from income assg form')
+          this.incomeRow = response.data.assingIncomeRowMutation.incomeRow
+          this.$apollo.queries.customerUnpaidProformas.refetch();
         }, error => {
           console.log(error)
         });
       },
       cancelIncomeAssignment(item){
-        console.log('cancelIncomeAssignment: ', item, this.income.id);
-        // this.$emit('incomeAssigned', this.income.id)
+        console.log(item)
         this.refetchAssignments(this.income.id)
       },
     },
@@ -165,12 +161,15 @@
         },
         variables(){
           return {
-            income_row_id: this.incomeAssignmentRowId
+            "incomeRowId": this.incomeAssignmentRowId
           }
         },
-        result(){
-          console.log(this.incomeRowById);
-          this.incomeAssignmentForm = this.incomeRowById;
+        result({data}){
+          let result = data.incomeRowById
+          this.statusOk = true
+          this.incomeRow = result;
+          this.incomeAssignmentForm.amount = this.incomeRow.amount
+          this.proforma = this.incomeRow.proforma
         }
       },
       proformaIdByNumber: {
@@ -183,9 +182,6 @@
           return {
             number: this.proforma.number
           }
-        },
-        update(data){
-          console.log('update: ', data)
         },
         result ({data}){
           if (data && typeof data.proformaIdByNumber !== "undefined"){
@@ -212,12 +208,13 @@
       customerUnpaidProformas: {
         query: customerUnpaidProformas,
         variables(){
+          this.customerId = this.incomeRow ? this.incomeRow.income.customer.id : this.income.customer.id;
           return {
-            "customer_id": this.income.customer.id
+            "customer_id": this.customerId,
           }
         },
         skip(){
-          return !this.income
+          return !(this.income || this.incomeRow);
         },
         result(result){
           this.customerStatus = result.data.customerUnpaidProformas

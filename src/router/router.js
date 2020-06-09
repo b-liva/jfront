@@ -10,6 +10,8 @@ import OrderDetails from "../views/order/OrderDetails";
 import ProformaDetail from "../views/proforma/ProformaDetail";
 import IncomeDetails from "../views/income/IncomeDetails";
 import PermitDetails from "../views/permit/PermitDetails";
+import Login from "../views/Login";
+import Logout from "../views/Logout";
 
 Vue.use(VueRouter);
 
@@ -17,6 +19,8 @@ export default new VueRouter({
   mode: 'hash',
   base: process.env.BASE_URL,
   routes: [
+    { path:'/login', name:'Login', component: Login },
+    { path:'/logout', name:'Logout', component: Logout },
     { path:'', name:'Dashboard', component: Dashboard },
     { path: '/orders', name:'Orders', component: Order},
     { path: '/order/:id', name: 'Order', component: OrderDetails},

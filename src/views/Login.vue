@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <v-row>{{token}}
+      <v-row>
         <v-col cols="4">
           <v-form>
             <v-text-field
@@ -45,7 +45,7 @@
           console.log(res)
           this.token = res.data.login.token;
           onLogin(this.$apollo.provider.defaultClient, this.token)
-          this.$router.push('/')
+          this.$router.push('/dashboard')
         }, error => {
           console.log(error)
         })

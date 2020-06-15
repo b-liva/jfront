@@ -26,26 +26,42 @@
             <v-list-item-title>{{link.text}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>
+              <v-btn @click="logout" small class="error--text">خروج</v-btn>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
+
     </v-navigation-drawer>
   </nav>
 </template>
 
 <script>
+  import {onLogout} from "../vue-apollo";
+
   export default {
     data(){
       return{
         name: "Navbar",
         drawer: null,
         links: [
-          {name:'dashboard', icone: '', text: 'داشبورد', route:'/'},
+          {name:'dashboard', icone: '', text: 'داشبورد', route:'/dashboard'},
           {name:'customer', icone: '', text: 'مشتری', route:'/customers'},
           {name:'order', icone: '', text: 'سفارش', route:'/orders'},
           {name:'income', icone: '', text: 'واریزی', route:'/incomes'},
         ]
       }
     },
-    components: {}
+    components: {},
+    methods: {
+      logout(){
+        onLogout(this.$apollo.provider.defaultClient)
+        this.$router.push('/')
+      }
+    }
   }
 </script>
 

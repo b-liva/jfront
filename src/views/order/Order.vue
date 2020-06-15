@@ -1,6 +1,5 @@
 <template>
   <div>
-    <div>{{filterForm}}</div>
     <v-container>
       <v-row>
         <v-col cols="6">
@@ -93,7 +92,7 @@
         </v-toolbar>
       </template>
       <template v-slot:item.customer="{item}">
-        <router-link :to="{name: 'Customer', params:{id: item.customer.id, name: item.customer.name}}">
+        <router-link :to="{name: 'CustomerDetails', params:{id: item.customer.id, name: item.customer.name}}">
           {{item.customer.name}}
         </router-link>
       </template>
@@ -101,7 +100,7 @@
         {{item.owner.lastName}}
       </template>
       <template v-slot:item.number="{item}">
-        <router-link :to="{name: 'Order', params: {id: item.id, number: item.number}}">
+        <router-link :to="{name: 'OrderDetails', params: {id: item.id, number: item.number}}">
           {{item.number}}
         </router-link>
       </template>

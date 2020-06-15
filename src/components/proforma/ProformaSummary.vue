@@ -40,7 +40,7 @@
                   </v-toolbar>
                 </template>
                 <template v-slot:item.number="{item}">
-                  <router-link :to="{name: 'Proforma', params: {id: item.id, number: item.number}}">
+                  <router-link :to="{name: 'ProformaDetails', params: {id: item.id, number: item.number}}">
                     {{item.number}}
                   </router-link>
                 </template>

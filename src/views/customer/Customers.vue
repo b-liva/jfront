@@ -15,7 +15,7 @@
         </v-toolbar>
       </template>
       <template v-slot:item.name="{item}">
-        <router-link :to="{name: 'Customer', params: {id: item.id}}">{{item.name}}</router-link>
+        <router-link :to="{name: 'CustomerDetails', params: {id: item.id}}">{{item.name}}</router-link>
       </template>
       <template v-slot:item.agent="{item}">
         <v-icon v-if="item.agent">mdi-checkbox-marked</v-icon>

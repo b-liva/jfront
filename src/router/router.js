@@ -31,36 +31,36 @@ export default new VueRouter({
       children: [{path: '', component: Order}]
     },
     {
-      path: '/order/:id', name: 'Order', component: Layout,
-      children: [{path: '', component: OrderDetails}]
+      path: '/order', name: 'Order', component: Layout,
+      children: [{path: ':id', name: 'OrderDetails', component: OrderDetails}]
     },
     {
-      path: '/proforma/:id', name: "Proforma", component: Layout,
-      children: [{path: '', component: ProformaDetail}]
+      path: '/proforma', name: "Proforma", component: Layout,
+      children: [{path: ':id', name:"ProformaDetails", component: ProformaDetail}]
     },
     {
       path: '/incomes', name: 'Incomes', component: Layout,
       children: [{path: '', component: Income}]
     },
     {
-      path: '/order/:id', name: "Income", component: Layout,
-      children: [{path: '', component: IncomeDetails}]
+      path: '/income', name: "Income", component: Layout,
+      children: [{path: ':id', name:'IncomeDetails', component: IncomeDetails}]
     },
     {
       path: '/income2', name: 'Income2', component: Layout,
       children: [{path: '', component: Income2}]
     },
     {
-      path: '/permit/:id', name: "Permit", component: Layout,
-      children: [{path: '', component: PermitDetails}]
+      path: '/permit', name: "Permit", component: Layout,
+      children: [{path: ':id', name: 'PermitDetails', component: PermitDetails}]
     },
     {
       path: '/customers', name: 'Customers', component: Layout,
       children: [{path: '', component: Customers}]
     },
     {
-      path: '/customer/:id', name: 'Customer', component: Layout,
-      children: [{path: '', component: Customer}]
+      path: '/customer', name: 'Customer', component: Layout,
+      children: [{path: ':id', name: "CustomerDetails", component: Customer}]
     },
   ]
 })

@@ -39,7 +39,7 @@
                   </v-toolbar>
                 </template>
                 <template v-slot:item.number="{item}">
-                  <router-link :to="{name: 'Income', params: {id: item.id, number: item.number}}">{{item.number}}</router-link>
+                  <router-link :to="{name: 'IncomeDetails', params: {id: item.id, number: item.number}}">{{item.number}}</router-link>
                 </template>
                 <template v-slot:item.customer="{item}">
                   {{item.customer.name}}

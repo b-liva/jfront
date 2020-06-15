@@ -51,7 +51,16 @@
     data(){
       return {
         name: "IncomeDetails",
-        income: '',
+        income: {
+          id: this.$route.params.id,
+          number: this.$route.params.number,
+          customer: {
+            id: 1,
+            name: "هوایار"
+          },
+          data: "1399-01-17",
+          amount: 98520000,
+        },
         incomeAssignment: '',
         incomeFormDialog: false,
         incomeAssignmentFormDialog: false,
@@ -65,18 +74,6 @@
           {id: 1, number: 238, date: "1398-01-02", amount: 16510000},
           {id: 2, number: 1651, date: "1398-05-20", amount: 151315000},
         ]
-      }
-    },
-    created(){
-      this.income = {
-        id: this.$route.params.id,
-        number: this.$route.params.number,
-        customer: {
-          id: 1,
-          name: "هوایار"
-        },
-        data: "1399-01-17",
-        amount: 98520000,
       }
     },
     methods: {

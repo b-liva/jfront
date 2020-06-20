@@ -9,12 +9,18 @@
 
 <script>
   import Navbar from "../Navbar";
+  import {AUTH_TOKEN} from "../../vue-apollo";
 
   export default {
     data(){
       return{
         name: "Layout"
       }
+    },
+    beforeRouteEnter(to, from, next){
+      let token = localStorage.getItem(AUTH_TOKEN)
+      if (token) next()
+      else next({name: "Login"})
     },
     components: {
       Navbar

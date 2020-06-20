@@ -23,6 +23,7 @@
 <script>
   import {login} from "../grahpql/queries/user/auth";
   import {onLogin} from "../vue-apollo";
+  import {AUTH_TOKEN} from "../vue-apollo";
 
   export default {
     data(){
@@ -32,6 +33,10 @@
         password: '',
         token: '',
       }
+    },
+    beforeRouteEnter(to, from, next){
+      if (localStorage.getItem(AUTH_TOKEN)) next({ name: 'DashboardHome'})
+      else next()
     },
     methods: {
       login(){

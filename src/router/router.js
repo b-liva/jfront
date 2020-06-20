@@ -20,11 +20,14 @@ export default new VueRouter({
   mode: 'hash',
   base: process.env.BASE_URL,
   routes: [
-    {path: '/', name: 'Login', component: Login},
+    {path: '/', name: 'Login', components: {
+      'default': Login,
+      'header-top': HeaderTop
+      }},
     {path: '/logout', name: 'Logout', component: Logout},
     {
       path: '/dashboard', name: 'Dashboard', component: Layout,
-      children: [{path: '', component: Dashboard}]
+      children: [{path: '', component: Dashboard, name: 'DashboardHome'}]
     },
     {
       path: '/orders', name: 'Orders', component: Layout,
@@ -62,5 +65,6 @@ export default new VueRouter({
       path: '/customer', name: 'Customer', component: Layout,
       children: [{path: ':id', name: "CustomerDetails", component: Customer}]
     },
+    {path: "*", redirect: "/dashboard"}
   ]
 })

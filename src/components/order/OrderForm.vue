@@ -75,9 +75,13 @@
   import {order, orderOnly} from "../../grahpql/queries/order/order";
   import {customerIdAndName} from "../../grahpql/queries/customer/customer";
   import {salesExperts} from "../../grahpql/queries/user/user";
-  import {OrderMutation} from "../../grahpql/queries/order/mutation/mutation";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import cloneDeep from 'lodash/cloneDeep'
+  import {mapActions} from 'vuex'
+  import {
+    ACTION_LAST_ORDERS,
+    ACTION_INSERT_ORDER
+  } from "../../store/types";
 
   export default {
     data(){
@@ -114,6 +118,10 @@
       baseFunctions
     ],
     methods: {
+      ...mapActions({
+        updateOrdersAsync: ACTION_LAST_ORDERS,
+        insertOrder: ACTION_INSERT_ORDER,
+      }),
       submit(){
         this.OrderMutationVariables = {
           request_input: {
@@ -130,22 +138,7 @@
           this.OrderMutationVariables.request_input.id = this.orderId;
           console.log('editing else...........', this.OrderMutationVariables)
         }
-        this.$apollo.mutate({
-          mutation: OrderMutation,
-          variables: this.OrderMutationVariables,
-        }).then((response) => {
-          console.log(response)
-          let results = response.data.OrderMutation;
-          if (results.requests !== null){
-            let orderId = results.requests.id;
-            this.$emit('orderCreated', orderId)
-          }else  if(results.errors.length > 0){
-            console.log('hava some errors.')
-            this.errors = results.errors;
-          }
-        }).catch(error => {
-          console.log('[error]', error.response);
-        });
+        this.insertOrder(this.OrderMutationVariables)
       },
       cancel(){
         this.order_form = cloneDeep(this.order);

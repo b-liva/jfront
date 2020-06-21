@@ -79,7 +79,6 @@
               <v-data-table
                 item-key="id"
                 :headers="specHeaders"
-                :loading="$apollo.queries.order.loading"
                 :items="orderSpecs">
                 <template v-slot:item.ip="{item}"><template v-if="item.ip !== null">{{item.ip.title}}</template></template>
                 <template v-slot:item.ic="{item}"><template v-if="item.ic !== null">{{item.ic.title}}</template></template>
@@ -106,16 +105,15 @@
 <script>
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker'
   import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
-  import {order} from "../../../grahpql/queries/order/order";
-  import {specMutation} from "../../../grahpql/queries/order/spec/mutation/mutation";
   import {allIps, allIcs, allIms} from "../../../grahpql/queries/order/spec/spec";
   import cloneDeep from 'lodash/cloneDeep'
+  import {mapGetters, mapActions} from 'vuex'
+  import {ACTION_INSERT_SPEC, INSERTED_ORDER, INSERTED_SPECS} from "../../../store/types";
 
   export default {
     data(){
       return {
         name: "OrderSpecForm",
-        orderSpecs: [],
         allIps: null,
         allIcs: null,
         allIms: null,
@@ -158,53 +156,21 @@
           {value: 'ic', text: 'IC'},
           {value: 'action', text: ''},
         ],
-        specs: [
-          {
-            id: 2,
-            orderId: 1,
-            qty: 6,
-            kw: 132,
-            rpm: 3000,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-01",
-            summary: 'some summary'
-          },
-          {
-            id: 3,
-            orderId: 2,
-            qty: 9,
-            kw: 160,
-            rpm: 1500,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-12",
-            summary: 'some summary'
-          },
-          {
-            id: 4,
-            orderId: 2,
-            qty: 1,
-            kw: 75,
-            rpm: 1000,
-            voltage: 690,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-10",
-            summary: 'some summary'
-          },
-        ],
         ICList: [],
         IPList: [],
         IMList: [],
       }
     },
+    computed: {
+      ...mapGetters({
+        insertedOrder: INSERTED_ORDER,
+        orderSpecs: INSERTED_SPECS,
+      })
+    },
     methods: {
+      ...mapActions({
+        insertSpec: ACTION_INSERT_SPEC
+      }),
       editSpec: function(item){
         if (item.ic === null){
           item.ic = {id: ''}
@@ -232,12 +198,12 @@
           Object.assign(this.specs[this.editingIndex], this.assignForm);
           this.editingIndex = -1;
         }else {
-          this.specs.push(this.assignForm)
+          // this.specs.push(this.assignForm)
         }
         //todo: implement type and rpmNew.
         this.specMutationVariables.reqspec_input = {
           code: 99009900,
-          reqId: this.orderId,
+          reqId: this.insertedOrder.id,
           type: "1",
           owner: "",
           qty: this.assignForm.qty,
@@ -253,25 +219,12 @@
         if (this.assignForm.id !== ""){
           this.specMutationVariables.reqspec_input.id = this.assignForm.id
         }
-
-        this.$apollo.mutate({
-          mutation: specMutation,
-          variables: this.specMutationVariables
-        }).then(() => {
-          this.$apollo.queries.order.refetch().then(() => {
-            this.$emit('updateSpecs', this.orderSpecs)
-          }, error => {
-            console.log(error)
-          });
-
-        }, error => {
-          console.log(error)
-        });
+        this.insertSpec(this.specMutationVariables)
       },
     },
     props: [
       "specId",
-      "orderId"
+      // "orderId"
     ],
     mixins: [
       baseFunctions
@@ -280,17 +233,6 @@
       PersianDatePicker: VuePersianDatetimePicker,
     },
     apollo: {
-      order: {
-        query: order,
-        variables(){
-          return {
-            order_id: this.orderId
-          }
-        },
-        result(result){
-          this.orderSpecs = this.noNode(result.data.order.reqspecSet)
-        }
-      },
       allIps: {
         query: allIps,
         result(result){

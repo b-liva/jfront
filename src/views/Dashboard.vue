@@ -42,6 +42,12 @@
           <v-tab-item>
             <income-summary/>
           </v-tab-item>
+          <v-tab>
+            test
+          </v-tab>
+          <v-tab-item>
+            <order-state/>
+          </v-tab-item>
         </v-tabs>
       </v-flex>
     </v-layout>
@@ -57,6 +63,7 @@
   import IncomeSummary from "../components/income/IncomeSummary";
   import DashboardStatistics from "../components/DashboardStatistics";
   import PermitSummaryByExpert from "../components/permit/PermitSummaryByExpert";
+  import OrderState from "../components/order/OrderState";
 
   export default {
     data(){
@@ -77,7 +84,8 @@
       DashboardPermits,
       IncomeSummary,
       DashboardStatistics,
-      PermitSummaryByExpert
+      PermitSummaryByExpert,
+      OrderState
     }
   }
 </script>

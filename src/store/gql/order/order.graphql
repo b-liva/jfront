@@ -1,0 +1,73 @@
+mutation OrderMutation($request_input:RequestModelFormMutationInput!){
+    OrderMutation:requestMutation(input:$request_input) {
+        clientMutationId
+        requests{
+            id
+            customer{
+                id
+                name
+            }
+            number
+            owner{
+                id
+                lastName
+            }
+        }
+        errors{
+            field
+            messages
+        }
+    }
+}
+
+mutation specMutation($reqspec_input:ReqSpecModelFormMutationInput!){
+    specMutation:reqSpecMutation(input: $reqspec_input) {
+        clientMutationId
+        reqSpec{
+            id
+            qty
+            kw
+            voltage
+            rpm
+            rpmNew {
+                id
+                rpm
+            }
+            im {
+                id
+                title
+            }
+            ic {
+                id
+                title
+            }
+            ip {
+                id
+                title
+            }
+            reqId{
+                id
+                number
+            }
+        }
+        errors{
+            field
+            messages
+        }
+    }
+}
+
+query LastOrders{
+    LastOrders:allRequests(last:5) {
+        edges {
+            node {
+                id
+                number
+                customer{
+                    id
+                    name
+                }
+            }
+        }
+    }
+}

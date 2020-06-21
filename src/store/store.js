@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex';
+import order from "./modules/order";
 
 Vue.use(Vuex);
 
@@ -13,4 +14,7 @@ export const store = new Vuex.Store({
       {id: 5, name: 'هوایار'},
     ],
   },
+  modules: {
+    order
+  }
 })

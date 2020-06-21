@@ -17,6 +17,8 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
+  import {INSERTED_SPECS} from "../../store/types";
   export default {
     data(){
       return {
@@ -32,7 +34,11 @@
         ]
       }
     },
-    props: ["specs"]
+    computed: {
+      ...mapGetters({
+        specs: INSERTED_SPECS
+      })
+    },
   }
 </script>
 

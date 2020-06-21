@@ -47,11 +47,11 @@
           <order-form :order-id="selectedOrderId" v-on:orderCreated="orderCreated"/>
         </v-stepper-content>
         <v-stepper-content step="2">
-          <order-spec-form v-if="orderSpecFormIsActive" :order-id="selectedOrderId" v-on:updateSpecs="updateSpecs"/>
+          <order-spec-form v-if="orderSpecFormIsActive"/>
           <p v-else>هنوز درخواستی ثبت نشده است. (مرحله 1)</p>
         </v-stepper-content>
         <v-stepper-content step="3">
-          <order-preview v-if="specs.length > 0" :specs="specs"/>
+          <order-preview v-if="specs.length > 0"/>
           <p v-else>مشاهده جزئیات درخواست و ردیف ها</p>
         </v-stepper-content>
       </v-stepper-items>
@@ -64,7 +64,8 @@
   import OrderSpecForm from "./spec/OrderSpecForm";
   import OrderPreview from "./OrderPreview";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {editOrderPayload} from "../../grahpql/queries/order/mutation/mutation";
+  import {mapGetters} from 'vuex'
+  import {INSERTED_SPECS, ORDER_SPEC_FORM_IS_ACTIVE} from "../../store/types";
 
   export default {
     data(){
@@ -75,14 +76,19 @@
         stepThreeMsg: "مشاهده جزئیات",
         e1: 1,
         editable: true,
-        orderSpecFormIsActive: false,
+        // orderSpecFormIsActive: false,
         selectedOrderId: null,
-        specs: []
       }
     },
     props: [
       'orderId'
     ],
+    computed: {
+      ...mapGetters({
+        orderSpecFormIsActive: ORDER_SPEC_FORM_IS_ACTIVE,
+        specs: INSERTED_SPECS,
+      })
+    },
     components: {
       OrderSpecForm,
       OrderForm,
@@ -92,7 +98,7 @@
       if (this.orderId){
         this.stepOneMsg = "ویرایش درخواست خرید"
         this.stepTwoMsg = "ویرایش ردیف"
-        this.orderSpecFormIsActive = true
+        // this.orderSpecFormIsActive = true
         this.selectedOrderId = this.orderId
       }
     },
@@ -102,31 +108,11 @@
     methods: {
       orderCreated(orderId){
         this.selectedOrderId = orderId;
-        this.orderSpecFormIsActive = true;
+        // this.orderSpecFormIsActive = true;
         this.e1 = 2;
         this.$emit('updateOrders')
       },
-      updateSpecs(specs){
-        this.specs = specs;
-      }
     },
-    apollo: {
-      editOrderPayload: {
-        query: editOrderPayload,
-        skip(){
-          return !this.orderId
-        },
-        variables(){
-          return {
-            "order_id": this.orderId
-          }
-        },
-        result({data}){
-          console.log('editing order: ', data.editOrderPayload)
-          this.specs = this.noNode(data.editOrderPayload.reqspecSet)
-        }
-      }
-    }
   }
 </script>
 

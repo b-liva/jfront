@@ -71,3 +71,80 @@ query LastOrders{
         }
     }
 }
+
+mutation deleteOrder($delete_input:DeleteOrderInput!){
+    deleteOrder(input:$delete_input){
+        msg
+        number
+    }
+}
+
+query filteredOrders(
+    $number:Int,
+    $customer_name:String,
+    $no_proforma: Boolean
+){
+    filteredOrders:allRequests(
+        first: 100,
+        number:$number,
+        customer_Name_Icontains:$customer_name,
+        xpref_Isnull:$no_proforma
+    ) {
+        edges {
+            node {
+                id
+                number
+                totalKw
+                totalQty
+                customer{
+                    id
+                    name
+                }
+                owner{
+                    id
+                    lastName
+                }
+                totalKw
+                totalQty
+            }
+        }
+    }
+}
+
+query order($order_id:ID!){
+    order: request(id: $order_id) {
+        id
+        customer {
+            id
+            name
+        }
+        number
+        reqspecSet(isActive: true) {
+            edges {
+                node {
+                    id
+                    qty
+                    kw
+                    voltage
+                    rpm
+                    rpmNew {
+                        id
+                        rpm
+                    }
+                    im {
+                        id
+                        title
+                    }
+                    ic {
+                        id
+                        title
+                    }
+                    ip {
+                        id
+                        title
+                    }
+                }
+            }
+        }
+    }
+},

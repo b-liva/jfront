@@ -5,17 +5,17 @@
         <v-col cols="6">
           <v-text-field
             label="مشتری"
-            v-model="filterForm.customerName"></v-text-field>
+            v-model="orderFilterFormCom.customerName"></v-text-field>
         </v-col>
         <v-col cols="2">
           <v-text-field
-            v-model="filterForm.number"
+            v-model="orderFilterFormCom.number"
             label="شماره درخواست">
           </v-text-field>
         </v-col>
         <v-col cols="2">
           <v-checkbox
-            v-model="filterForm.no_proforma"
+            v-model="orderFilterFormCom.no_proforma"
             label="بدون پیش فاکتور"></v-checkbox>
         </v-col>
       </v-row>
@@ -26,9 +26,9 @@
           <v-card>
             <v-card-text>
               <v-data-table
-                :loading="$apollo.queries.filteredOrders.loading"
+                :loading="loadingFilteredOrders"
                 :headers="ordersHeader"
-                :items="this.orders"
+                :items="orders"
                 :expanded="orderRowExpanded"
                 show-expand
                 single-expand
@@ -83,10 +83,10 @@
                 <template v-slot:expanded-item="{headers}">
                   <td :colspan="headers.length">
                     <v-data-table
-                      v-if="expandedOrderId"
-                      :loading="$apollo.queries.order.loading"
+                      v-if="selectedOrderId"
                       :headers="specHeaders"
                       :items="orderSpecs"
+                      :loading="$apollo.queries.order.loading"
                       @click:row="findProformas">
                       <template v-slot:no-data>
                         {{error}}
@@ -122,13 +122,19 @@
 
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {order, filteredOrders} from "../../grahpql/queries/order/order";
-  import {deleteOrder} from "../../grahpql/queries/order/mutation/deletion";
+  import {order} from "../../grahpql/queries/order/order";
   import OrderSpecForm from "./spec/OrderSpecForm";
   import ProformaList from "../../views/proforma/ProformaList";
   import OrderCreationHolderForm from "./OrderCreationHolderForm";
-
   import SpecProformas from "../proforma/SpecProformas";
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
+  import {
+    ACTION_DELETE_ORDER,
+    ACTION_FILTERED_ORDERS, MUTATE_ORDER_SPECS,
+    FILTERED_ORDERS, LOADING_FILTERED_ORDERS, MUTATE_SELECTED_ORDER_ID, MUTATE_SPEC_FORM_IS_ACTIVE,
+    ORDER_FILTER_FORM, SELECTED_ORDER_ID, LOADING_ORDER_SPECS
+  } from "../../store/types";
+  import debounce from 'debounce'
 
   export default {
     data() {
@@ -136,14 +142,13 @@
         name: "OrdersSummary",
         error: null,
         order: null,
-        orders: [],
         orderSpecs: [],
         assignDialog: false,
         proformaListDialog: false,
         proformaFormDialog: false,
         orderFormDialog: false,
         orderFormHolderDialog: false,
-        selectedOrderId: '',
+        // selectedOrderId: '',
         orderRowExpanded: [],
         specProformasDialog: false,
         expandedOrderId: '',
@@ -171,23 +176,51 @@
         ],
       }
     }, // todo: show percentage with css or d3 progress bars.
+    created() {
+      this.updateFilteredOrders = debounce(this.updateFilteredOrders, 1000)
+    },
+    mounted() {
+      this.updateFilteredOrders()
+    },
     methods: {
+      ...mapMutations([
+        MUTATE_SELECTED_ORDER_ID,
+        MUTATE_ORDER_SPECS
+      ]),
+      ...mapActions({
+        deleteOrder: ACTION_DELETE_ORDER,
+        updateFilteredOrders: ACTION_FILTERED_ORDERS,
+        // updateOrderSpecs: ACTION_ORDER_SPECS,
+      }),
       newOrder(){
         this.orderFormHolderDialog = true;
-        this.selectedOrderId = null;
+        // this.selectedOrderId = null;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, null)
+        this.$store.commit(MUTATE_SPEC_FORM_IS_ACTIVE, false)
+        this.orderRowExpanded = [];
       },
       orderExpanded(value) {
-        this.orderSpecs = []
+        // this.orderSpecs = []
         this.error = null
         this.order = {
           reqspecSet: {edges: []}
         }
         if (this.orderRowExpanded.includes(value.item)) {
-          this.expandedOrderId = '';
+          console.log('to pop')
+          // this.expandedOrderId = '';
+          this.$store.commit(MUTATE_SELECTED_ORDER_ID, '')
           this.orderRowExpanded.pop(value.item);
         } else {
-          this.expandedOrderId = value.item.id;
+          // this.expandedOrderId = value.item.id;
+          console.log('to add')
           this.orderRowExpanded = [];
+          // this.$store.dispatch(MUTATE_SELECTED_ORDER_ID, value.item.id)
+          this.$store.commit(MUTATE_SELECTED_ORDER_ID, value.item.id)
+          // this.updateOrderSpecs(value.item.id)
+          this.$apollo.queries.order.refetch()
+          if (!this.orderSpecs.length){
+            console.log('we should find specs.')
+          }
           this.orderRowExpanded.push(value.item);
         }
       },
@@ -196,47 +229,67 @@
         this.specProformasDialog = true;
       },
       editItem(item){
-        this.selectedOrderId = item.id;
+        // this.selectedOrderId = item.id;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.orderFormHolderDialog = true;
         // this.orderFormDialog = true;
+        this.orderRowExpanded = [];
+        // this.updateOrderSpecs(item.id)
+        this.$apollo.queries.order.refetch()
       },
       deleteItem(item){
-        this.selectedOrderId = item.id;
+        // this.selectedOrderId = item.id;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         let a = confirm("مورد تأیید است؟")
         if (a){
-          this.$apollo.mutate({
-            mutation: deleteOrder,
-            variables: {
-              "order_id": item.id
-            }
-          }).then(() => {
-            this.$apollo.queries.filteredOrders.refetch()
-          }, error => {
-            console.error(error)
-          })
+          this.deleteOrder(item.id)
         }
       },
       assignSpecToOrder(item){
-        this.selectedOrderId = item.id;
+        // this.selectedOrderId = item.id;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
+        this.$store.commit(MUTATE_ORDER_SPECS, [])
+        // this.updateOrderSpecs(item.id)
+        this.$apollo.queries.order.refetch()
         this.assignDialog = true;
       },
       listRelatedProformas(item){
-        this.selectedOrderId = item.id;
+        // this.selectedOrderId = item.id;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.proformaListDialog = true;
       },
       addProforma(item){
-        this.selectedOrderId = item.id;
+        // this.selectedOrderId = item.id;
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.proformaFormDialog = true;
       },
       updateOrders(){
         this.$apollo.queries.filteredOrders.refetch()
       }
     },
+    computed: {
+      ...mapGetters({
+        orderFilterFormCom: ORDER_FILTER_FORM,
+        orders: FILTERED_ORDERS,
+        loadingFilteredOrders: LOADING_FILTERED_ORDERS,
+        selectedOrderId: SELECTED_ORDER_ID,
+        // orderSpecs: ORDER_SPECS,
+        loadingOrderSpecs: LOADING_ORDER_SPECS,
+      })
+    },
     components: {
       SpecProformas,
       OrderSpecForm,
       ProformaList,
       OrderCreationHolderForm
+    },
+    watch: {
+      orderFilterFormCom: {
+       handler(){
+         this.updateFilteredOrders()
+       },
+        deep: true,
+      }
     },
     apollo: {
       order: {
@@ -246,11 +299,11 @@
         },
         variables() {
           return {
-            order_id: this.expandedOrderId
+            order_id: this.selectedOrderId
           }
         },
         skip(){
-          return !this.expandedOrderId;
+          return !this.selectedOrderId;
         },
         result(result){
           if (typeof result.data.order !== "undefined"){
@@ -260,21 +313,6 @@
           }
         },
       },
-      filteredOrders: {
-        query: filteredOrders,
-        debounce: 1000,
-        variables(){
-          return {
-            "count": this.filterForm.count !== "" ? this.filterForm.count : null,
-            "number": this.filterForm.number !== "" ? this.filterForm.number : null,
-            "customer_name": this.filterForm.customerName !== "" ? this.filterForm.customerName : null,
-            "no_proforma": this.filterForm.no_proforma !== "" ? this.filterForm.no_proforma : null
-          }
-        },
-        result(result){
-          this.orders = this.noNode(result.data.filteredOrders)
-        }
-      }
     },
     mixins: [
       baseFunctions

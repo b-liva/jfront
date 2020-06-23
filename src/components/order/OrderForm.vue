@@ -77,10 +77,10 @@
   import {salesExperts} from "../../grahpql/queries/user/user";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import cloneDeep from 'lodash/cloneDeep'
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
   import {
     ACTION_LAST_ORDERS,
-    ACTION_INSERT_ORDER
+    ACTION_INSERT_ORDER, SELECTED_ORDER_ID
   } from "../../store/types";
 
   export default {
@@ -111,7 +111,7 @@
       }
     },
     props: [
-      "orderId",
+      // "orderId",
       "order"
     ],
     mixins: [
@@ -144,6 +144,11 @@
         this.order_form = cloneDeep(this.order);
         this.$emit('close')
       },
+    },
+    computed: {
+      ...mapGetters({
+        orderId: SELECTED_ORDER_ID
+      })
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker

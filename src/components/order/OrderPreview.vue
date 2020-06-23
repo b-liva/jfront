@@ -18,7 +18,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import {INSERTED_SPECS} from "../../store/types";
+  import {ORDER_SPECS} from "../../store/types";
   export default {
     data(){
       return {
@@ -36,7 +36,7 @@
     },
     computed: {
       ...mapGetters({
-        specs: INSERTED_SPECS
+        specs: ORDER_SPECS
       })
     },
   }

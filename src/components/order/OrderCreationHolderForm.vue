@@ -64,8 +64,8 @@
   import OrderSpecForm from "./spec/OrderSpecForm";
   import OrderPreview from "./OrderPreview";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {mapGetters} from 'vuex'
-  import {INSERTED_SPECS, ORDER_SPEC_FORM_IS_ACTIVE} from "../../store/types";
+  import {mapGetters, mapMutations} from 'vuex'
+  import {ORDER_SPECS, MUTATE_SPEC_FORM_IS_ACTIVE, ORDER_SPEC_FORM_IS_ACTIVE} from "../../store/types";
 
   export default {
     data(){
@@ -86,7 +86,7 @@
     computed: {
       ...mapGetters({
         orderSpecFormIsActive: ORDER_SPEC_FORM_IS_ACTIVE,
-        specs: INSERTED_SPECS,
+        specs: ORDER_SPECS,
       })
     },
     components: {
@@ -100,12 +100,16 @@
         this.stepTwoMsg = "ویرایش ردیف"
         // this.orderSpecFormIsActive = true
         this.selectedOrderId = this.orderId
+        this.$store.commit(MUTATE_SPEC_FORM_IS_ACTIVE, true)
       }
     },
     mixins: [
       baseFunctions
     ],
     methods: {
+      ...mapMutations([
+        MUTATE_SPEC_FORM_IS_ACTIVE
+      ]),
       orderCreated(orderId){
         this.selectedOrderId = orderId;
         // this.orderSpecFormIsActive = true;

@@ -5,33 +5,33 @@
         <v-col cols="6">
           <v-text-field
             label="مشتری"
-            v-model="filterForm.customerName"></v-text-field>
+            v-model="orderFilterForm.customerName"></v-text-field>
         </v-col>
         <v-col cols="2">
           <v-text-field
-            v-model="filterForm.number"
+            v-model="orderFilterForm.number"
             label="شماره درخواست">
           </v-text-field>
         </v-col>
         <v-col cols="2">
           <v-checkbox
-            v-model="filterForm.no_proforma"
+            v-model="orderFilterForm.no_proforma"
             label="بدون پیش فاکتور"></v-checkbox>
         </v-col>
       </v-row>
     </v-container>
     <v-snackbar
       v-model="snackbar"
-      timeout="3000"
+      :timeout=3000
       top
       color="success">
       سفارش با موفقیت ثبت شد.
     </v-snackbar>
     <v-data-table
       :headers="headers"
-      :items="getOrders()"
+      :items="orders"
       :expanded="expanded"
-      :loading="$apollo.queries.filteredOrders.loading"
+      :loading="loadingFilteredOrders"
       class="elevation-1"
       show-expand
       single-expand
@@ -136,7 +136,7 @@
           <v-data-table
           :items="getSpecs()"
           :headers="specHeaders"
-          :loading="$apollo.queries.order.loading"
+          :loading="loadingFilteredOrders"
           >
             <template v-slot:no-data>
               {{error}}
@@ -163,8 +163,11 @@
   import ProformaList from "../proforma/ProformaList";
   import ProformaCreationHolderForm from "../../components/proforma/ProformaCreationHolderForm";
   import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
-  import {allRequests, filteredOrders} from "../../grahpql/queries/order/order";
-  import {order} from "../../grahpql/queries/order/order";
+  // import {allRequests} from "../../grahpql/queries/order/order";
+  // import {order} from "../../grahpql/queries/order/order";
+  import {mapGetters, mapActions} from 'vuex'
+  import {ACTION_FILTERED_ORDERS, FILTERED_ORDERS, LOADING_FILTERED_ORDERS, ORDER_FILTER_FORM} from "../../store/types";
+  import debounce from "debounce";
 
   export default {
     data() {
@@ -245,18 +248,19 @@
         relatedProformas: [],
       }
     },
+    created() {
+      this.updateFilteredOrders = debounce(this.updateFilteredOrders, 1000)
+    },
+    mounted() {
+      this.updateFilteredOrders()
+    },
     methods: {
+      ...mapActions({
+        updateFilteredOrders: ACTION_FILTERED_ORDERS
+      }),
       getSpecs(){
         if (typeof this.order !== "undefined" && this.order !== null){
           return this.noNode(this.order.reqspecSet)
-        }
-      },
-      getOrders(){
-        // if (typeof this.allRequests !== "undefined" && this.allRequests !== null){
-        //   return this.noNode(this.allRequests)
-        // }
-        if (typeof this.filteredOrders !== "undefined" && this.filteredOrders !== null){
-          return this.noNode(this.filteredOrders)
         }
       },
       clear() {
@@ -304,7 +308,13 @@
         this.selectedOrderId = order.id;
       }
     },
-    computed: {},
+    computed: {
+      ...mapGetters({
+        orderFilterForm: ORDER_FILTER_FORM,
+        orders: FILTERED_ORDERS,
+        loadingFilteredOrders: LOADING_FILTERED_ORDERS
+      }),
+    },
     mixins: [
       baseFunctions
     ],
@@ -314,30 +324,27 @@
       ProformaCreationHolderForm,
       OrderSpecForm
     },
-    apollo: {
-      allRequests: allRequests,
-      order: {
-        query: order,
-        error(error){
-          this.error = JSON.stringify(error.message)
+    watch: {
+      orderFilterForm: {
+        handler(){
+          this.updateFilteredOrders()
         },
-        variables(){
-          return {
-            order_id: this.selectedOrderId
-          }
-        }
-      },
-      filteredOrders: {
-        query: filteredOrders,
-        variables(){
-          return {
-            "count": this.filterForm.count !== "" ? this.filterForm.count : null,
-            "number": this.filterForm.number !== "" ? this.filterForm.number : null,
-            "customer_name": this.filterForm.customerName !== "" ? this.filterForm.customerName : null,
-            "no_proforma": this.filterForm.no_proforma !== "" ? this.filterForm.no_proforma : null
-          }
-        }
+        deep: true,
       }
+    },
+    apollo: {
+      // allRequests: allRequests,
+      // order: {
+      //   query: order,
+      //   error(error){
+      //     this.error = JSON.stringify(error.message)
+      //   },
+      //   variables(){
+      //     return {
+      //       order_id: this.selectedOrderId
+      //     }
+      //   }
+      // },
     }
   }
 </script>

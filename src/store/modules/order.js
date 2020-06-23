@@ -6,11 +6,20 @@ import {store} from "../store";
 const state = {
   lastOrders: [],
   filteredOrders: [],
+  loadingFilteredOrders: false,
   insertedOrder: null,
+  orderFilterForm: {
+    count: '',
+    customerName: '',
+    number: '',
+    no_proforma: false,
+  },
   customerId: null,
-  hasProforma: null,
+  noProforma: null,
   orderSpecFormIsActive: false,
-  insertedSpecs: [],
+  orderSpecs: [],
+  expandedOrderId: null,
+  loadingOrderSpecs: false,
 }
 
 const getters = {
@@ -26,38 +35,67 @@ const getters = {
   [types.CUSTOMER_ID]: state => {
     return state.customerId
   },
-  [types.HAS_PROFORMA]: state => {
-    return state.hasProforma
+  [types.NO_PROFORMA]: state => {
+    return state.noProforma
   },
   [types.ORDER_SPEC_FORM_IS_ACTIVE]: state => {
     return state.orderSpecFormIsActive;
   },
-  [types.INSERTED_SPECS]: state => {
-    return state.insertedSpecs
+  [types.ORDER_SPECS]: state => {
+    return state.orderSpecs
+  },
+  [types.ORDER_FILTER_FORM]: state => {
+    return state.orderFilterForm;
+  },
+  [types.LOADING_FILTERED_ORDERS]: state => {
+    return state.loadingFilteredOrders;
+  },
+  [types.SELECTED_ORDER_ID]: state => {
+    return state.expandedOrderId;
+  },
+  [types.LOADING_ORDER_SPECS]: state => {
+    return state.loadingOrderSpecs
   }
 }
 const mutations = {
-  [types.MUTATE_LAST_ORDERS]: (state, payload) => {
-    state.lastOrders = payload.edges.map(e => e = e.node)
+  [types.MUTATE_LAST_ORDERS]: (state, lastOrders) => {
+    state.lastOrders = lastOrders.edges.map(e => e = e.node)
     console.log('mutation')
   },
-  [types.MUTATE_INSERTED_ORDER]: (state, payload) => {
-    state.insertedOrder = payload
+  [types.MUTATE_INSERTED_ORDER]: (state, insertedOrder) => {
+    state.insertedOrder = insertedOrder
   },
-  [types.MUTATE_FILTERED_ORDER]: (state, payload) => {
-    state.filteredOrders = payload
+  [types.MUTATE_FILTERED_ORDER]: (state, filteredOrders) => {
+    state.filteredOrders = filteredOrders
   },
-  [types.MUTATE_CUSTOMER_ID]: (state, payload) => {
-    state.customerId = payload
+  [types.MUTATE_CUSTOMER_ID]: (state, customerId) => {
+    state.customerId = customerId
   },
-  [types.MUTATE_HAS_PROFORMA]: (state, payload) => {
-    state.hasProforma = payload
+  [types.MUTATE_HAS_PROFORMA]: (state, noProforma) => {
+    state.noProforma = noProforma
   },
-  [types.MUTATE_SPEC_FORM_IS_ACTIVE]: (state, payload) => {
-    state.orderSpecFormIsActive = payload
+  [types.MUTATE_SPEC_FORM_IS_ACTIVE]: (state, formStatus) => {
+    state.orderSpecFormIsActive = formStatus
   },
-  [types.MUTATE_INSERTED_SPECS]: (state, payload) => {
-    state.insertedSpecs.push(payload)
+  [types.MUTATE_ORDER_SPECS]: (state, orderSpecs) => {
+    console.log('specs: ', orderSpecs)
+    state.orderSpecs = orderSpecs
+    // state.orderSpecs.push(orderSpecs)
+  },
+  [types.MUTATE_DELETED_ORDER]: (state, deleteOrder) => {
+    state.deleteOrder = deleteOrder
+  },
+  [types.MUTATE_ORDER_FILTER_FORM]: (state, filterForm) => {
+    state.orderFilterForm = filterForm
+  },
+  [types.MUTATE_LOADING_FILTERED_ORDERS]: (state, status) => {
+    state.loadingFilteredOrders = status
+  },
+  [types.MUTATE_SELECTED_ORDER_ID]: (state, orderId) => {
+    state.expandedOrderId = orderId;
+  },
+  [types.MUTATE_LOADING_ORDER_SPECS]: (state, status) => {
+    state.loadingOrderSpecs = status
   }
 }
 const actions = {
@@ -70,6 +108,7 @@ const actions = {
       if (results.requests !== null){
         commit(types.MUTATE_INSERTED_ORDER, results.requests)
         commit(types.MUTATE_SPEC_FORM_IS_ACTIVE, true)
+        commit(types.MUTATE_SELECTED_ORDER_ID, results.requests.id)
         // Update last orders.
         store._actions[types.ACTION_LAST_ORDERS][0]()
       }else  if(results.errors.length > 0){
@@ -91,20 +130,82 @@ const actions = {
       console.log(error)
     })
   },
-  [types.ACTION_FILTERED_ORDERS]: ({commit}, payload) => {
+  [types.ACTION_FILTERED_ORDERS]: ({commit}) => {
   //  get filtered orders from server
-    commit(types.MUTATE_FILTERED_ORDER, payload)
+    let form = store.getters[types.ORDER_FILTER_FORM]
+    let variabels = {
+      "count": form.count !== "" ? form.count : null,
+      "number": form.number !== "" ? form.number : null,
+      "customer_name": form.customerName !== "" ? form.customerName : null,
+    }
+    if (form.no_proforma){
+      variabels.no_proforma = true
+    }
+    commit(types.MUTATE_LOADING_FILTERED_ORDERS, true)
+    apolloClient.query({
+      query: orderGql.filteredOrders,
+      debounce: 1000,
+      fetchPolicy: 'network-only',
+      variables: variabels
+    }).then(({data}) => {
+      commit(types.MUTATE_LOADING_FILTERED_ORDERS, false)
+      let filtOrders = data.filteredOrders.edges.map(e => e = e.node)
+      commit(types.MUTATE_FILTERED_ORDER, filtOrders)
+    })
   },
-  [types.ACTION_INSERT_SPEC]: ({commit}, payload) => {
+  [types.ACTION_INSERT_SPEC]: (context, payload) => {
     apolloClient.mutate({
       mutation: orderGql.specMutation,
       variables: payload
     }).then(({data}) => {
       console.log('new spec: ', data)
-      commit(types.MUTATE_INSERTED_SPECS, data.specMutation.reqSpec)
+      // commit(types.MUTATE_ORDER_SPECS, data.specMutation.reqSpec)
+      store._actions[types.ACTION_ORDER_SPECS][0](data.specMutation.reqSpec.reqId.id)
     }, error => {
       console.log(error)
     });
+  },
+  [types.ACTION_DELETE_ORDER]: ({commit}, payload) => {
+    console.log(payload)
+    console.log(store.getters[types.ORDER_FILTER_FORM])
+
+    let variabels = {
+      "delete_input": {
+        "id": payload
+      }
+    }
+    apolloClient.mutate({
+      mutation: orderGql.deleteOrder,
+      variables: variabels
+    }).then(() => {
+      commit(types.MUTATE_DELETED_ORDER, payload)
+      store._actions[types.ACTION_FILTERED_ORDERS][0]()
+    }, error => {
+      console.error(error)
+    })
+  },
+  [types.ACTION_ORDER_FILTER_FORM]: ({commit}, payload) => {
+    commit(types.ACTION_ORDER_FILTER_FORM, payload)
+    store._actions[types.ACTION_FILTERED_ORDERS][0]()
+  },
+  [types.ACTION_ORDER_SPECS]: (context, payload) => {
+    //find order specs
+    context.commit(types.MUTATE_LOADING_ORDER_SPECS, true)
+    apolloClient.query({
+      query: orderGql.order,
+      variables: {
+        order_id: payload
+      },
+      fetchPolicy: 'network-only'
+    }).then(({data}) => {
+      console.log('updated: ', data.order.reqspecSet)
+      let specs = data.order.reqspecSet.edges.map(e => e = e.node)
+      context.commit(types.MUTATE_ORDER_SPECS, specs)
+      context.commit(types.MUTATE_LOADING_ORDER_SPECS, false)
+    }, (error) => {
+      let error_msg = JSON.stringify(error.message)
+      console.log(error_msg)
+    })
   }
 }
 export default {

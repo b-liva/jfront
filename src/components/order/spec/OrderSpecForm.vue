@@ -77,6 +77,7 @@
             <v-flex xs8 md9 class="pink lighten-4"
             >
               <v-data-table
+                v-if="orderSpecs.length"
                 item-key="id"
                 :headers="specHeaders"
                 :items="orderSpecs">
@@ -108,7 +109,12 @@
   import {allIps, allIcs, allIms} from "../../../grahpql/queries/order/spec/spec";
   import cloneDeep from 'lodash/cloneDeep'
   import {mapGetters, mapActions} from 'vuex'
-  import {ACTION_INSERT_SPEC, INSERTED_ORDER, INSERTED_SPECS} from "../../../store/types";
+  import {
+    ACTION_INSERT_SPEC, ACTION_ORDER_SPECS,
+    INSERTED_ORDER,
+    ORDER_SPECS,
+    SELECTED_ORDER_ID
+  } from "../../../store/types";
 
   export default {
     data(){
@@ -161,15 +167,20 @@
         IMList: [],
       }
     },
+    created() {
+      this.updateOrderSpecs(this.selectedOrderId)
+    },
     computed: {
       ...mapGetters({
         insertedOrder: INSERTED_ORDER,
-        orderSpecs: INSERTED_SPECS,
+        orderSpecs: ORDER_SPECS,
+        selectedOrderId: SELECTED_ORDER_ID,
       })
     },
     methods: {
       ...mapActions({
-        insertSpec: ACTION_INSERT_SPEC
+        insertSpec: ACTION_INSERT_SPEC,
+        updateOrderSpecs: ACTION_ORDER_SPECS,
       }),
       editSpec: function(item){
         if (item.ic === null){
@@ -203,7 +214,7 @@
         //todo: implement type and rpmNew.
         this.specMutationVariables.reqspec_input = {
           code: 99009900,
-          reqId: this.insertedOrder.id,
+          reqId: this.selectedOrderId,
           type: "1",
           owner: "",
           qty: this.assignForm.qty,

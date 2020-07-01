@@ -116,3 +116,19 @@ mutation createPrefSpecsBulk(
         }
     }
 }
+
+query proformaDetails($proforma_id:ID!){
+    proforma(id:$proforma_id) {
+        id
+        number
+        customerName
+        numberTd
+        permNumber
+        perm
+        summary
+        reqId{
+            id
+            number
+        }
+    }
+}

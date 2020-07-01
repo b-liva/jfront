@@ -87,7 +87,15 @@
   import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
   import {deleteProforma} from "../../grahpql/queries/proforma/mutation/deletion";
-  import {MUTATE_PROFORMA_FORM_SPECS, MUTATE_RESET_PROFORMA_FORMS} from "../../store/types/proforma";
+  import {mapActions} from "vuex"
+  import {
+    MUTATE_PROFORMA_FORM_SPECS,
+    MUTATE_RESET_PROFORMA_FORMS,
+    ACTION_UPDATE_PROFORMA_ORDER_SPECS,
+    ACTION_UPDATE_PROFORMA_SPECS,
+    MUTATE_PROFORMA_ID,
+    MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE
+  } from "../../store/types/proforma";
 
   export default {
     data(){
@@ -98,7 +106,6 @@
         proformaNumber: null,
         proformaFormDialog: false,
         specProformasDialog: false,
-        selectedSpecIdEq: null,
         selectedProformaId: null,
         proformasHeader: [
           {value: "number", text: "پیش فاکتور"},
@@ -117,6 +124,10 @@
       }
     },
     methods: {
+      ...mapActions({
+        updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,
+        updateProformaSpecs: ACTION_UPDATE_PROFORMA_SPECS
+      }),
       click(){
         console.log('click')
         this.$store.commit(MUTATE_PROFORMA_FORM_SPECS)
@@ -158,7 +169,12 @@
         }
       },
       editProforma(item){
+        console.log(item)
         this.proformaFormDialog = true;
+        this.$store.commit(MUTATE_PROFORMA_ID, item.id)
+        this.$store.commit(MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE, true)
+        this.updateProformaOrderSpecs(item.id)
+        this.updateProformaSpecs(item.id)
         this.selectedProformaId = item.id;
       },
       deleteProforma(item){

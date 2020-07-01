@@ -103,7 +103,7 @@
           customerName: "",
         },
         headers: [
-          {value: 'eqId', text: 'eq', align: 'center', class: 'qty-header'},
+          {value: 'eqId', text: 'eq', align: ' d-none', class: 'qty-header'},
           {value: 'qty', text: 'تعداد', align: 'center', class: 'qty-header'},
           {value: 'kw', text: 'کیلووات',},
           {value: 'rpm', text: 'سرعت',},

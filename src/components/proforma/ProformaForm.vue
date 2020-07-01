@@ -3,10 +3,10 @@
     <v-card>
       <p>ORDER ID:{{orderId}}</p>
       <p>proforma id: {{proformaInstance}}</p>
-      <v-card-title v-if="orderId"> پیش فاکتور
+      <v-card-title v-if="orderId || true"> پیش فاکتور
         <v-spacer/>
         <div>
-          <v-card-subtitle v-if="proformaFormIsVisible">
+          <v-card-subtitle v-if="proformaFormIsVisible || true">
             <div>شماره درخواست:  <span class="green--text">{{orderData.number}}</span></div>
             <div>مشتری:  <span class="green--text">{{proformaInstance.customerName}}</span></div>
             <div>شماره پیش فاکتور:  <span class="green--text">{{proformaInstance.number}}</span></div>
@@ -168,9 +168,9 @@
   import {
     ACTION_INSERT_PROFORMA,
     ACTION_UPDATE_PROFORMA_ORDER_SPECS,
-    // MUTATE_PROFORMA_ID,
+    ACTION_UPDATE_PROFORMA,
     MUTATE_PROFORMA_ORDER_ID, PROFORMA,
-    PROFORMA_ORDER_ID
+    PROFORMA_ORDER_ID, PROFORMA_ID
   } from "../../store/types/proforma";
 
   export default {
@@ -224,12 +224,31 @@
       if (!this.proformaInstance.id) {
         this.proforma = cloneDeep(this.proformaFormDefault);
       }
+      if (this.proformaId){
+        this.updateProforma(this.proformaId)
+      }
       // this.orderNumberIsActive = !(this.proformaID || this.orderID)
+    },
+    watch: {
+      proformaInstance: function () {
+        if (this.orderData.id === ""){
+          this.orderData.id = this.proformaInstance.order.id;
+          this.orderData.number = this.proformaInstance.order.number;
+          this.orderData.customerName = this.proformaInstance.customerName;
+          console.log('p data: ', this.proformaInstance);
+          this.proformaForm.numberTd = this.proformaInstance.numberTd;
+          this.proformaForm.perm = this.proformaInstance.perm;
+          this.proformaForm.permNumber = this.proformaInstance.permNumber;
+          this.proformaForm.summary = this.proformaInstance.summary;
+          this.reqNumActive = false
+        }
+      }
     },
     methods: {
       ...mapActions({
         updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,
         insertProforma: ACTION_INSERT_PROFORMA,
+        updateProforma: ACTION_UPDATE_PROFORMA
       }),
       submitProforma() {
         this.createProformaVariables = {
@@ -262,6 +281,7 @@
     computed: {
       ...mapGetters({
         orderId: PROFORMA_ORDER_ID,
+        proformaId: PROFORMA_ID,
         proformaInstance: PROFORMA,
       })
     },
@@ -269,48 +289,6 @@
       PersianDatePicker: VuePersianDatetimePicker
     },
     apollo: {
-      // proformaById: {
-      //   query: proformaById,
-      //   variables() {
-      //     return {
-      //       proforma_id: this.proformaID
-      //     }
-      //   },
-      //   skip() {
-      //     return !this.proformaID
-      //   },
-      //   result(result) {
-      //     this.proforma = result.data.proformaById;
-      //     this.proformaForm.perm = this.proforma.perm;
-      //     this.proformaForm.reqNumber = this.proforma.reqId.number;
-      //     this.proformaForm.id = this.proformaID;
-      //     this.proformaForm.perm = this.proforma.perm;
-      //     this.proformaForm.numberTd = this.proforma.numberTd;
-      //     this.proformaForm.permNumber = this.proforma.permNumber;
-      //     this.proformaForm.summary = this.proforma.summary;
-      //     this.orderData.number = this.proforma.reqId.number;
-      //     this.reqNumActive = false
-      //   }
-      // },
-      // orderIdAndNumber: {
-      //   query: orderIdAndNumber,
-      //   variables() {
-      //     return {
-      //       "order_id": this.orderId
-      //     }
-      //   },
-      //   skip() {
-      //     return !this.orderId;
-      //   },
-      //   result(result) {
-      //     let order = result.data.orderIdAndNumber;
-      //     if (typeof order !== "undefined") {
-      //       this.orderData.id = order.id;
-      //       this.orderData.number = order.number;
-      //       this.orderData.customerName = order.customer.name;
-      //     }
-      //   }
-      // },
       orderByNumber: {
         query: orderByNumber,
         debounce: 700,

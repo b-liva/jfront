@@ -3,6 +3,7 @@ import * as proformaGql from '../../gql/proforma/proforma.graphql'
 import {apolloClient} from "../../../index";
 import {store} from "../../store";
 import {createPrefSpecsBulk} from "../../../grahpql/queries/order/spec/mutation/mutation";
+import {MUTATE_PROFORMA} from "../../types/proforma";
 
 // STATE
 let state = {
@@ -10,7 +11,11 @@ let state = {
   proforma: {
     id: '',
     customerName: '',
-    number: ''
+    number: '',
+    order: {
+      id: '',
+      number: ''
+    }
   },
   proformaId: null,
   proformaOrderSpecs: [],
@@ -18,6 +23,8 @@ let state = {
   proformaFormSpecs: [],
   proformaSpecFormIsActive: false,
   proformaSpecPreviewFormIsActive: false,
+  snackbar: false,
+  snackbarMsg: '',
 }
 
 // GETTERS
@@ -45,6 +52,12 @@ let getters = {
   },
   [types.PROFORMA]: state => {
     return state.proforma;
+  },
+  [types.SNACKBAR]: state => {
+    return state.snackbar;
+  },
+  [types.SNACKBAR_MSG]: state => {
+    return state.snackbarMsg;
   }
 }
 
@@ -113,7 +126,13 @@ let mutations = {
     };
     state.proformaSpecs = [];
     state.proformaOrderSpecs = [];
-  }
+  },
+  [types.MUTATE_SNACKBAR]: (state, status) => {
+    state.snackbar= status
+  },
+  [types.MUTATE_SNACKBAR_MSG]: (state, msg) => {
+    state.snackbarMsg = msg
+  },
 
 };
 
@@ -121,6 +140,7 @@ let mutations = {
 let actions = {
   [types.ACTION_INSERT_PROFORMA]: ({commit}, payload) => {
     // do async insertion
+    console.log(payload)
     apolloClient.mutate({
       mutation: proformaGql.createProforma,
       variables: payload
@@ -133,10 +153,34 @@ let actions = {
       store._actions[types.ACTION_UPDATE_PROFORMA_ORDER_SPECS][0](proforma.id)
 
       commit(types.MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE, true)
+      commit(types.MUTATE_SNACKBAR_MSG, 'all Done')
+      commit(types.MUTATE_SNACKBAR, true)
     }, error => {
       console.log(error)
     })
 
+  },
+  [types.ACTION_UPDATE_PROFORMA]: ({commit}, proformaId) => {
+    apolloClient.query({
+      query: proformaGql.proformaDetails,
+      variables: {
+        'proforma_id': proformaId
+      }
+    }).then(({data}) => {
+      let proforma = {};
+      proforma.id = data.proforma.id;
+      proforma.number = data.proforma.number;
+      proforma.customerName = data.proforma.customerName;
+      proforma.order = data.proforma.reqId;
+      proforma.numberTd = data.proforma.numberTd;
+      proforma.perm = data.proforma.perm;
+      proforma.permNumber = data.proforma.permNumber;
+      proforma.summary = data.proforma.summary;
+      console.log('prof to update: ', proforma)
+      commit(MUTATE_PROFORMA, proforma)
+    }, error => {
+      console.log(error)
+    })
   },
   [types.ACTION_UPDATE_PROFORMA_SPECS]: ({commit}, proformaId) => {
     // do async tasks

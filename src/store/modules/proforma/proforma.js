@@ -62,7 +62,11 @@ let mutations = {
   [types.MUTATE_PROFORMA_ORDER_SPECS]: (state, proformaOrderSpecs) => {
     state.proformaOrderSpecs = proformaOrderSpecs;
   },
-  [types.MUTATE_PROFORMA_FORM_SPECS]: (state) => {
+  [types.MUTATE_PROFORMA_FORM_SPECS]: (state, reset) => {
+    if (reset){
+      state.proformaFormSpecs = []
+      return
+    }
     let pOSpecs = store.getters[types.PROFORMA_ORDER_SPECS];
     let pSpecs = store.getters[types.PROFORMA_SPECS];
     let specs = [];

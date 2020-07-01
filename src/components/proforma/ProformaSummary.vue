@@ -87,7 +87,7 @@
   import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
   import {deleteProforma} from "../../grahpql/queries/proforma/mutation/deletion";
-  import {MUTATE_PROFORMA_FORM_SPECS} from "../../store/types/proforma";
+  import {MUTATE_PROFORMA_FORM_SPECS, MUTATE_RESET_PROFORMA_FORMS} from "../../store/types/proforma";
 
   export default {
     data(){
@@ -128,6 +128,8 @@
       newProforma(){
         this.proformaFormDialog = true;
         this.selectedProformaId = null;
+        this.$store.commit(MUTATE_RESET_PROFORMA_FORMS)
+        this.$store.commit(MUTATE_PROFORMA_FORM_SPECS, true)
       },
       getSpecs(){
         if (typeof this.proformaSpecs !== "undefined" && this.proformaSpecs != null){

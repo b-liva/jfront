@@ -1,0 +1,118 @@
+query specsNoProforma($proforma_id:ID!) {
+    specsNoProforma: proforma(id: $proforma_id) {
+        id
+        specsNoProforma {
+            id
+            qty
+            kw
+            rpm
+            rpmNew {
+                id
+                rpm
+            }
+            voltage
+        }
+        reqId{
+            id
+            number
+        }
+        customerName
+    }
+}
+
+query proformaSpecs($proforma_id:ID){
+    proformaSpecs:allPrefSpecs(xprefId: $proforma_id){
+        edges{
+            node{
+                xprefId{
+                    id
+                    number
+                    customerName
+                    reqId{
+                        id
+                        number
+                    }
+                }
+                code
+                reqspecEq{
+                    id
+                }
+                id
+                qty
+                kw
+                voltage
+                rpm
+                price
+                ip{
+                    title
+                }
+                im{
+                    title
+                }
+                ic{
+                    title
+                }
+                summary
+            }
+        }
+    },
+}
+
+mutation createProforma($proforma_input:ProformaModelFormMutationInput!){
+    proformaMutation(input:$proforma_input) {
+        clientMutationId
+        xpref{
+            id
+            number
+            reqId{
+                id
+                number
+            }
+            customerName
+        }
+        errors{
+            field
+            messages
+        }
+    }
+}
+
+mutation createPrefSpecsBulk(
+    $proforma_id:ID,
+    $spec_list: [ProformaSpecInput]
+){
+    createPrefSpecsBulk(input: {
+        proformaId:$proforma_id,
+        specsList:$spec_list
+    }) {
+        clientMutationId
+        proformaSpecs {
+            xprefId{
+                id
+                number
+                customerName
+                reqId{
+                    id
+                    number
+                }
+            }
+            code
+            id
+            qty
+            kw
+            voltage
+            rpm
+            price
+            ip{
+                title
+            }
+            im{
+                title
+            }
+            ic{
+                title
+            }
+            summary
+        }
+    }
+}

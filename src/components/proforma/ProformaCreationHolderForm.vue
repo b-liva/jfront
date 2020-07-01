@@ -74,7 +74,6 @@
           </v-stepper-content>
           <v-stepper-content
           step="3">
-
             <proforma-preview v-if="proformaSpecs.length > 0" :proforma-specs="proformaSpecs"/>
             <p v-else>مشاهده جزئیات و دریافت فایل</p>
           </v-stepper-content>
@@ -93,6 +92,8 @@
   import ProformaForm from "./ProformaForm";
   import ProformaSpecForm from "./ProformaSpecForm";
   import ProformaPreview from "./ProformaPreview";
+  import {mapGetters} from 'vuex'
+  import {PROFORMA_SPEC_FORM_IS_ACTIVE, PROFORMA_SPECS} from "../../store/types/proforma";
 
   export default {
     data(){
@@ -103,11 +104,10 @@
         vertical: false,
         altLabels: false,
         editable: true,
-        pSpecFormIsActive: false,
+        // pSpecFormIsActive: false,
         proforma: null,
         orderID: '',
         proformaID: '',
-        proformaSpecs: [],
         snackbar: false,
         snackbarMsg: '',
       }
@@ -118,7 +118,7 @@
       }
       if (this.proformaId){
         this.proformaID = this.proformaId
-        this.pSpecFormIsActive = true
+        // this.pSpecFormIsActive = true
       }
     },
     props: ['orderId', 'proformaId'],
@@ -127,7 +127,7 @@
         this.proforma = proforma;
         this.orderID = orderId;
         this.proformaID = proforma.id;
-        this.pSpecFormIsActive = true;
+        // this.pSpecFormIsActive = true;
         this.e1 = 2;
         this.snackbarMsg = 'پیش فاکتور به درستی ثبت شد'
         this.snackbar = true;
@@ -138,6 +138,12 @@
         this.snackbarMsg = 'قیمت با موفقیت ثبت شد.'
         this.snackbar = true;
       }
+    },
+    computed: {
+      ...mapGetters({
+        pSpecFormIsActive: PROFORMA_SPEC_FORM_IS_ACTIVE,
+        proformaSpecs: PROFORMA_SPECS
+      })
     },
     components: {
       ProformaForm,

@@ -2,7 +2,7 @@
   <div>
     <v-snackbar
       v-model="snackbar"
-      timeout="3000"
+      :timeout=3000
       top
       color="success">
       واریزی با موفقیت ثبت شد.

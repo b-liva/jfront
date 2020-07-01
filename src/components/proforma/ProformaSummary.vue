@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <v-row>
+      <v-row><v-btn @click="click">click</v-btn>
         <v-col cols="4">
           <v-text-field
             label="مشتری"
@@ -87,6 +87,7 @@
   import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
   import {deleteProforma} from "../../grahpql/queries/proforma/mutation/deletion";
+  import {MUTATE_PROFORMA_FORM_SPECS} from "../../store/types/proforma";
 
   export default {
     data(){
@@ -116,6 +117,10 @@
       }
     },
     methods: {
+      click(){
+        console.log('click')
+        this.$store.commit(MUTATE_PROFORMA_FORM_SPECS)
+      },
       resetFilters(){
         this.proformaNumber = null;
         this.customerName = "";

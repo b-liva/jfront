@@ -3,7 +3,7 @@
     <v-snackbar
       v-model="snackbar"
       color="success"
-      timeout="3000"
+      :timeout=3000
       top>
       پیش فاکتور با موفقیت ثبت شد.
     </v-snackbar>

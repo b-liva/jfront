@@ -20,6 +20,9 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
+  import {PROFORMA_SPECS} from "../../store/types/proforma";
+
   export default {
     data(){
       return {
@@ -38,7 +41,12 @@
         ]
       }
     },
-    props: ["proformaSpecs"]
+    computed: {
+      ...mapGetters({
+        proformaSpecs: PROFORMA_SPECS
+      })
+    }
+    // props: ["proformaSpecs"]
   }
 </script>
 

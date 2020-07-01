@@ -1,13 +1,15 @@
 <template>
   <div>
-    <v-card>{{proformaID}}
-      <v-card-title v-if="orderID"> پیش فاکتور
+    <v-card>
+      <p>ORDER ID:{{orderId}}</p>
+      <p>proforma id: {{proformaInstance}}</p>
+      <v-card-title v-if="orderId"> پیش فاکتور
         <v-spacer/>
         <div>
           <v-card-subtitle v-if="proformaFormIsVisible">
             <div>شماره درخواست:  <span class="green--text">{{orderData.number}}</span></div>
-            <div>مشتری:  <span class="green--text">{{orderData.customerName}}</span></div>
-            <div>شماره پیش فاکتور:  <span class="green--text">{{proforma.number}}</span></div>
+            <div>مشتری:  <span class="green--text">{{proformaInstance.customerName}}</span></div>
+            <div>شماره پیش فاکتور:  <span class="green--text">{{proformaInstance.number}}</span></div>
           </v-card-subtitle>
         </div>
       </v-card-title>
@@ -156,18 +158,27 @@
 <script>
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
-  import {orderIdAndNumber, orderByNumber} from "../../grahpql/queries/order/order";
-  import {proformaById} from "../../grahpql/queries/proforma/proforma";
+  import {
+    // orderIdAndNumber,
+    orderByNumber} from "../../grahpql/queries/order/order";
+  // import {proformaById} from "../../grahpql/queries/proforma/proforma";
   import cloneDeep from 'lodash/cloneDeep'
-  import {createProforma} from "../../grahpql/queries/proforma/mutation/mutation";
+  // import {createProforma} from "../../grahpql/queries/proforma/mutation/mutation";
+  import {mapGetters, mapActions} from 'vuex'
+  import {
+    ACTION_INSERT_PROFORMA,
+    ACTION_UPDATE_PROFORMA_ORDER_SPECS,
+    // MUTATE_PROFORMA_ID,
+    MUTATE_PROFORMA_ORDER_ID, PROFORMA,
+    PROFORMA_ORDER_ID
+  } from "../../store/types/proforma";
 
   export default {
     data() {
       return {
         name: "ProformaForm",
         show: false,
-        orderID: '',
-        proformaID: '',
+        // orderID: '',
         date: {
           issue: false,
           expiry: false,
@@ -203,34 +214,29 @@
         createProformaVariables: {},
       }
     },
-    props: [
-      "proformaId",
-      "orderId"
-    ],
     mixins: [
       baseFunctions
     ],
     created() {
-      if(this.orderId){
-        this.orderID = this.orderId;
-      }
-      if (!this.proformaId) {
+      // if(this.orderId){
+      //   this.orderID = this.orderId;
+      // }
+      if (!this.proformaInstance.id) {
         this.proforma = cloneDeep(this.proformaFormDefault);
-      }else {
-        this.proformaID = this.proformaId;
       }
-      this.orderNumberIsActive = !(this.proformaID || this.orderID)
-      this.proformaFormIsVisible = !this.orderNumberIsActive
+      // this.orderNumberIsActive = !(this.proformaID || this.orderID)
     },
     methods: {
+      ...mapActions({
+        updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,
+        insertProforma: ACTION_INSERT_PROFORMA,
+      }),
       submitProforma() {
-        console.log('submit proforma')
         this.createProformaVariables = {
           proforma_input: {
-            reqId: this.orderID,
+            reqId: this.orderId,
             owner: "",
             number: 0,
-            // "pub_date": "2009-06-15T13:45:30",
             dateFa: this.proformaForm.date,
             numberTd: this.proformaForm.numberTd,
             expDateFa: this.proformaForm.expiry_date,
@@ -242,24 +248,9 @@
           }
         }
         if (this.proformaId){
-          this.createProformaVariables.proforma_input.id = this.proformaID
+          this.createProformaVariables.proforma_input.id = this.proformaInstance.id
         }
-        console.log('vars: ', this.createProformaVariables, this.proformaId)
-        this.$apollo.mutate({
-          mutation: createProforma,
-          variables: this.createProformaVariables
-        }).then(response => {
-          let data = response.data.proformaMutation;
-          if (data.xpref !== null && data.xpref.id !== null) {
-            this.reqNumActive = false;
-            this.$set(this.proforma, 'id', data.xpref.id);
-            this.$set(this.proforma, 'number', data.xpref.number);
-            this.orderID = data.xpref.reqId.id;
-            this.$emit("success", this.orderID, this.proforma);
-          }
-        }, error => {
-          console.log(error)
-        })
+        this.insertProforma(this.createProformaVariables)
       },
       cancel() {
         this.close()
@@ -268,52 +259,58 @@
         this.$emit('close-event')
       },
     },
+    computed: {
+      ...mapGetters({
+        orderId: PROFORMA_ORDER_ID,
+        proformaInstance: PROFORMA,
+      })
+    },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
     },
     apollo: {
-      proformaById: {
-        query: proformaById,
-        variables() {
-          return {
-            proforma_id: this.proformaID
-          }
-        },
-        skip() {
-          return !this.proformaID
-        },
-        result(result) {
-          this.proforma = result.data.proformaById;
-          this.proformaForm.perm = this.proforma.perm;
-          this.proformaForm.reqNumber = this.proforma.reqId.number;
-          this.proformaForm.id = this.proformaID;
-          this.proformaForm.perm = this.proforma.perm;
-          this.proformaForm.numberTd = this.proforma.numberTd;
-          this.proformaForm.permNumber = this.proforma.permNumber;
-          this.proformaForm.summary = this.proforma.summary;
-          this.orderData.number = this.proforma.reqId.number;
-          this.reqNumActive = false
-        }
-      },
-      orderIdAndNumber: {
-        query: orderIdAndNumber,
-        variables() {
-          return {
-            "order_id": this.orderID
-          }
-        },
-        skip() {
-          return !this.orderID;
-        },
-        result(result) {
-          let order = result.data.orderIdAndNumber;
-          if (typeof order !== "undefined") {
-            this.orderData.id = order.id;
-            this.orderData.number = order.number;
-            this.orderData.customerName = order.customer.name;
-          }
-        }
-      },
+      // proformaById: {
+      //   query: proformaById,
+      //   variables() {
+      //     return {
+      //       proforma_id: this.proformaID
+      //     }
+      //   },
+      //   skip() {
+      //     return !this.proformaID
+      //   },
+      //   result(result) {
+      //     this.proforma = result.data.proformaById;
+      //     this.proformaForm.perm = this.proforma.perm;
+      //     this.proformaForm.reqNumber = this.proforma.reqId.number;
+      //     this.proformaForm.id = this.proformaID;
+      //     this.proformaForm.perm = this.proforma.perm;
+      //     this.proformaForm.numberTd = this.proforma.numberTd;
+      //     this.proformaForm.permNumber = this.proforma.permNumber;
+      //     this.proformaForm.summary = this.proforma.summary;
+      //     this.orderData.number = this.proforma.reqId.number;
+      //     this.reqNumActive = false
+      //   }
+      // },
+      // orderIdAndNumber: {
+      //   query: orderIdAndNumber,
+      //   variables() {
+      //     return {
+      //       "order_id": this.orderId
+      //     }
+      //   },
+      //   skip() {
+      //     return !this.orderId;
+      //   },
+      //   result(result) {
+      //     let order = result.data.orderIdAndNumber;
+      //     if (typeof order !== "undefined") {
+      //       this.orderData.id = order.id;
+      //       this.orderData.number = order.number;
+      //       this.orderData.customerName = order.customer.name;
+      //     }
+      //   }
+      // },
       orderByNumber: {
         query: orderByNumber,
         debounce: 700,
@@ -329,7 +326,8 @@
           let data = result.data.orderByNumber;
           if (data.edges.length > 0){
             this.proformaFormIsVisible = true;
-            this.orderID = this.noNode(data)[0].id;
+            this.$store.commit(MUTATE_PROFORMA_ORDER_ID, this.noNode(data)[0].id)
+            // this.orderID = this.noNode(data)[0].id;
           }else {
             this.proformaFormIsVisible = false;
           }

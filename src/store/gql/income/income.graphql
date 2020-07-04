@@ -1,0 +1,90 @@
+query incomesFiltered($customer_name:String, $number:Int){
+    incomesFiltered:allIncomes(
+        customer_Name_Icontains:$customer_name,
+        number:$number
+    ) {
+        edges {
+            node {
+                id
+                number
+                amount
+                owner{
+                    id
+                    lastName
+                }
+                customer{
+                    id
+                    name
+                }
+                type{
+                    id
+                    title
+                }
+            }
+        }
+    }
+}
+
+query incomeRowByIncomeId($income_id:ID){
+    incomeRowByIncomeId:allIncomeRows(income: $income_id) {
+        edges {
+            node {
+                id
+                income{
+                    id
+                    number
+                    amount
+                }
+                proforma{
+                    id
+                    number
+                }
+                amount
+            }
+        }
+    }
+}
+
+mutation createIncome($income_input:IncomeModelFormMutationInput!){
+    createIncome:incomeMutation(input:$income_input) {
+        clientMutationId
+        income{
+            id
+            number
+            customer{
+                id
+                name
+            }
+        }
+        errors{
+            field
+            messages
+        }
+    }
+}
+
+mutation assingIncomeRowMutation($incomeRowInput:IncomeRowModelFormMutationInput!){
+    assingIncomeRowMutation:incomeRowMutation(input:$incomeRowInput) {
+        clientMutationId
+        incomeRow{
+            id
+            amount
+            summary
+            income{
+                id
+                customer{
+                    id
+                    name
+                }
+            }
+            proforma{
+                id
+                number
+            }
+        }
+        errors{
+            field
+            messages
+        }
+    }
+}

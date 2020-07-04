@@ -5,12 +5,12 @@
         <v-col cols="4">
           <v-text-field
           label="مشتری"
-          v-model="customerName"></v-text-field>
+          v-model="incomeFilterForm.customerName"></v-text-field>
         </v-col>
         <v-col cols="2">
           <v-text-field
             label="شماره واریزی"
-            v-model="incomeNumber"
+            v-model="incomeFilterForm.number"
             type="number"
           ></v-text-field>
         </v-col>
@@ -24,9 +24,9 @@
             <v-card-text>
               <v-data-table
                 :headers="incomeHeaders"
-                :items="incomes"
+                :items="filteredIncomes"
                 :expanded="incomeRowExpanded"
-                :loading="$apollo.queries.incomesFiltered.loading"
+                :loading="loadingFilteredIncomes"
                 show-expand
                 single-expand
                 @item-expanded="incomeExpanded">
@@ -57,8 +57,8 @@
                     <v-data-table
                       dense
                       :headers="assignmentHeaders"
-                      :loading="$apollo.queries.incomeRowByIncomeId.loading"
-                      :items="assignments">
+                      :loading="loadingIncomeRows"
+                      :items="incomeRows">
                       <template v-slot:item.proforma="{item}">
                         {{checkMe('prof', item.proforma)}}
                       </template>
@@ -106,9 +106,15 @@
   import PermitIncomes from "./PermitIncomes";
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
-  import {incomesFiltered, incomeRowByIncomeId} from "../../grahpql/queries/income/income";
   import {deleteIncome} from "../../grahpql/queries/income/mutation/deletion";
   import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
+  import {mapGetters, mapActions} from 'vuex'
+  import {
+    ACTION_UPDATE_FILTERED_INCOMES, ACTION_UPDATE_INCOME_ROWS,
+    FILTERED_INCOMES, INCOME_FILTER_FORM, INCOME_ROWS,
+    LOADING_FILTERED_INCOMES, LOADING_INCOME_ROWS
+  } from "../../store/types/income";
+  import debounce from 'debounce'
 
   export default {
     data(){
@@ -164,6 +170,10 @@
       }
     },
     methods: {
+      ...mapActions({
+        updateFilteredIncomes: ACTION_UPDATE_FILTERED_INCOMES,
+        updateIncomeRows: ACTION_UPDATE_INCOME_ROWS,
+      }),
       resetFilters(){
         this.customerName = "";
         this.incomeNumber = null;
@@ -198,11 +208,13 @@
       },
       incomeExpanded(value){
         this.incomeToFindRows = value.item;
+
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
           this.incomeRowExpanded = [];
           this.incomeRowExpanded.push(value.item);
+          this.updateIncomeRows(this.incomeToFindRows.id)
         }
       },
       editIncome(income){
@@ -230,6 +242,12 @@
         this.incomeInstance= income;
       },
     },
+    created() {
+      this.updateFilteredIncomes = debounce(this.updateFilteredIncomes, 1000)
+    },
+    mounted() {
+      this.updateFilteredIncomes()
+    },
     components: {
       PermitIncomes,
       IncomeForm,
@@ -239,47 +257,23 @@
     mixins: [
       baseFunctions
     ],
-    // computed: {
-    //   assignments(){
-    //     if (typeof  this.incomeRowByIncomeId !== "undefined"){
-    //       return this.noNode(this.incomeRowByIncomeId);
-    //     }else { return  []}
-    //   }
-    // },
-    apollo: {
-      incomesFiltered: {
-        query: incomesFiltered,
-        debounce: 1000,
-        variables(){
-          return {
-            "customer_name": this.customerName,
-            "number": this.incomeNumber
-          }
+    computed: {
+      ...mapGetters({
+        filteredIncomes: FILTERED_INCOMES,
+        loadingFilteredIncomes: LOADING_FILTERED_INCOMES,
+        incomeFilterForm: INCOME_FILTER_FORM,
+        incomeRows: INCOME_ROWS,
+        loadingIncomeRows: LOADING_INCOME_ROWS
+      })
+    },
+    watch: {
+      incomeFilterForm: {
+        handler(){
+          this.updateFilteredIncomes()
         },
-        result(result){
-          this.incomes = this.noNode(result.data.incomesFiltered)
-        }
-      },
-      incomeRowByIncomeId: {
-        query: incomeRowByIncomeId,
-        skip(){
-          let x = typeof this.incomeToFindRows.number !== "undefined";
-          return !x
-        },
-        variables(){
-          return {
-            "income_id": this.incomeToFindRows.id
-          }
-        },
-        result({data}){
-          console.log(data)
-          let result = data.incomeRowByIncomeId;
-          this.assignments = this.noNode(result)
-          console.log('assign: ', this.assignments)
-        },
-        fetchPolicy:"cache-and-network"
+        deep: true
       }
-    }
+    },
   }
 </script>
 

@@ -187,3 +187,14 @@ export const customerUnpaidProformas = gql`
         }
     }
 `
+
+export const customerByIncomeId = gql`
+    query customerByIncomeId($income_id:ID!){
+        income(id:$income_id){
+            id
+            customer{
+                id
+                name
+            }
+        }
+    }`

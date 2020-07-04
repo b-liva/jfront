@@ -45,8 +45,9 @@
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {allPaymentTypes, incomeById} from "../../grahpql/queries/income/income";
-  import {createIncome} from "../../grahpql/queries/income/mutation/mutation";
   import {customersMinimal} from "../../grahpql/queries/customer/customer";
+  import {mapGetters, mapActions} from 'vuex'
+  import {ACTION_UPSERT_INCOME, INCOME_ID} from "../../store/types/income";
 
   export default {
     data() {
@@ -66,6 +67,9 @@
       }
     },
     methods: {
+      ...mapActions({
+        upsertIncome: ACTION_UPSERT_INCOME
+      }),
       showDueDatePicker(){
         let temp = this.types.filter(e => {
           return e.id === this.incomeForm.typeId
@@ -88,23 +92,17 @@
         if (this.incomeId){
           incomeVariables.income_input.id = this.incomeId
         }
-        this.$apollo.mutate({
-          mutation: createIncome,
-          variables: incomeVariables
-        }).then( response => {
-            this.$emit('incomeCreated', response.data.createIncome.income)
-          },error => {
-            console.log(error)
-          }
-        )
+        this.upsertIncome(incomeVariables)
       },
       cancelIncome() {
         console.log('method.');
       },
     },
-    props: [
-      'incomeId'
-    ],
+    computed: {
+      ...mapGetters({
+        incomeId: INCOME_ID
+      })
+    },
     mixins: [
       baseFunctions
     ],
@@ -123,18 +121,18 @@
           }
         },
         result({data}){
-          let results = data.incomeById
-          this.incomeForm.number = results.number
-          this.incomeForm.amount = results.amount
-          this.incomeForm.summary = results.summary
-          this.incomeForm.customerId = results.customer.id
-          this.incomeForm.typeId = results.type.id
+          let results = data.incomeById;
+          this.incomeForm.number = results.number;
+          this.incomeForm.amount = results.amount;
+          this.incomeForm.summary = results.summary;
+          this.incomeForm.customerId = results.customer.id;
+          this.incomeForm.typeId = results.type.id;
         }
       },
       allCustomers: {
         query: customersMinimal,
         result({data}){
-          this.customers = this.noNode(data.allCustomers)
+          this.customers = this.noNode(data.allCustomers);
         }
       },
       allPaymentTypes: {

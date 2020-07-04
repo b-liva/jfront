@@ -28,15 +28,12 @@
           :editable="editable">تخصیص دریافتی</v-stepper-step>
       </v-stepper-header>
       <v-stepper-items>
-        <v-stepper-content step="1">
-          <income-form v-on:incomeCreated="incomeCreated"/>
+        <v-stepper-content :step="1">
+          <income-form/>
         </v-stepper-content>
-        <v-stepper-content step="2">
+        <v-stepper-content :step="2">
           <income-assignment-form
             v-if="incomeAssignmentFormIsActive"
-            :income-id="incomeId"
-            :income="income"
-            :income-assignment-row-id="incomeAssignmentId"
           />
           <p v-else>دریافتی ثبت نشده است.</p>
         </v-stepper-content>
@@ -48,31 +45,31 @@
 <script>
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
+  import {mapGetters} from 'vuex'
+  import {
+    INCOME_HOLDER_FORM_STEP,
+    INCOME_ROW_FORM_IS_ACTIVE,
+    INSERTED_INCOME,
+  } from "../../store/types/income";
 
   export default {
     data(){
       return {
         name: "IncomeCreationHolderFrom",
-        e1: 1,
         editable: true,
-        incomeId: '',
-        income: '',
-        incomeAssignmentId: '',
-        incomeAssignmentFormIsActive: false,
       }
+    },
+    computed: {
+      ...mapGetters({
+        incomeAssignmentFormIsActive: INCOME_ROW_FORM_IS_ACTIVE,
+        income: INSERTED_INCOME,
+        e1: INCOME_HOLDER_FORM_STEP,
+      })
     },
     components: {
       IncomeAssignmentForm,
       IncomeForm
     },
-    methods: {
-      incomeCreated(income){
-        this.incomeId = income.id;
-        this.income = income;
-        this.incomeAssignmentFormIsActive = true;
-        this.e1 = 2
-      },
-    }
   }
 </script>
 

@@ -6,12 +6,6 @@
         color="transparent">
         <v-toolbar-title>تخصیص واریزی</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn
-          icon
-          @click="cancelIncomeAssignment(income)"
-        >
-          <v-icon class="red--text">mdi-close-circle</v-icon>
-        </v-btn>
       </v-toolbar>
     </v-card>
     <v-card>
@@ -42,14 +36,17 @@
               </v-form>
             </v-col>
             <v-col cols="6">
-              پیش فاکتور های دارای مانده
-              <ol v-if="customerStatus">
-                <li
-                  v-for="proforma in customerStatus.unpaidProformas"
-                  :key="proforma.key"
-                  @click="setProforma(proforma)"
-                >{{proforma.number}} - {{proforma.unpaidTotal}}</li>
-              </ol>
+              <template v-if="typeof (customerStatus.unpaidProformas) !=='undefined' && customerStatus.unpaidProformas.length > 0">
+                پیش فاکتور های دارای مانده
+                <ol>
+                  <li
+                    v-for="proforma in customerStatus.unpaidProformas"
+                    :key="proforma.key"
+                    @click="setProforma(proforma)"
+                  >{{proforma.number}} - {{proforma.unpaidTotal}}</li>
+                </ol>
+              </template>
+              <p v-else>پیش فاکتور دارای مانده ندارد.</p>
             </v-col>
           </v-row>
         </v-container>
@@ -69,9 +66,13 @@
   import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
   import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
   import {incomeRowById} from "../../../grahpql/queries/income/incomeAssignment";
-  import {assingIncomeRowMutation} from "../../../grahpql/queries/income/row/mutation/mutation";
   import {proformaIdByNumber} from "../../../grahpql/queries/proforma/proforma";
-  import {customerUnpaidProformas} from "../../../grahpql/queries/customer/customer";
+  import {mapActions, mapGetters} from "vuex"
+  import {
+    ACTION_UPSERT_INCOME_ROW,
+    CUSTOMER_UNPAID_PROFORMAS,
+    INSERTED_INCOME,
+  } from "../../../store/types/income";
 
   export default {
     data(){
@@ -105,15 +106,16 @@
           amount: '',
           summary: ''
         },
-        customerStatus: {}
       }
     },
     props: [
       "incomeAssignmentRowId",
-      "income",
       "refetchAssignments"
     ],
     methods: {
+      ...mapActions({
+        upsertIncomeRow: ACTION_UPSERT_INCOME_ROW
+      }),
       setProforma(proforma){
         this.proforma = proforma
       },
@@ -131,21 +133,18 @@
         if (this.incomeRow){
           incomeRowVariables.incomeRowInput.id = this.incomeRow.id
         }
-        this.$apollo.mutate({
-          mutation: assingIncomeRowMutation,
-          variables: incomeRowVariables
-        }).then((response) => {
-          this.loading = true;
-          this.incomeRow = response.data.assingIncomeRowMutation.incomeRow
-          this.$apollo.queries.customerUnpaidProformas.refetch();
-        }, error => {
-          console.log(error)
-        });
+        this.upsertIncomeRow(incomeRowVariables)
       },
       cancelIncomeAssignment(item){
         console.log(item)
         this.refetchAssignments(this.income.id)
       },
+    },
+    computed: {
+      ...mapGetters({
+        income: INSERTED_INCOME,
+        customerStatus: CUSTOMER_UNPAID_PROFORMAS
+      })
     },
     components: {
       PersianDatePicker: VuePersianDatetimePicker
@@ -165,10 +164,10 @@
           }
         },
         result({data}){
-          let result = data.incomeRowById
-          this.statusOk = true
+          let result = data.incomeRowById;
+          this.statusOk = true;
           this.incomeRow = result;
-          this.incomeAssignmentForm.amount = this.incomeRow.amount
+          this.incomeAssignmentForm.amount = this.incomeRow.amount;
           this.proforma = this.incomeRow.proforma
         }
       },
@@ -201,26 +200,7 @@
         error(){
           this.statusOk = false;
         },
-        watchLoading (isLoading){
-          this.loading = isLoading;
-        }
       },
-      customerUnpaidProformas: {
-        query: customerUnpaidProformas,
-        variables(){
-          this.customerId = this.incomeRow ? this.incomeRow.income.customer.id : this.income.customer.id;
-          return {
-            "customer_id": this.customerId,
-          }
-        },
-        skip(){
-          return !(this.income || this.incomeRow);
-        },
-        result(result){
-          this.customerStatus = result.data.customerUnpaidProformas
-          this.loading = false;
-        }
-      }
     }
   }
 </script>

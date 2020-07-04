@@ -3,14 +3,14 @@ import {store} from "../../../store/store";
 import {apolloClient} from "../../../index";
 import * as types from '../../types/income'
 import * as incomeGql from '../../gql/income/income.graphql'
-import {MUTATE_FILTERED_INCOMES} from "../../types/income";
-import {MUTATE_INCOME_ROWS} from "../../types/income";
 import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
-import {MUTATE_LOADING_FILTERED_INCOME} from "../../types/income";
 
 // STATE
 let state = {
   expandedIncomeId: '',
+  incomeId: '',
+  insertedIncome: {},
+  upsertedIncomeRow: {},
   incomeFilterForm: {
     customerName: '',
     number: '',
@@ -20,9 +20,18 @@ let state = {
   incomeRows: [],
   loadingIncomeRows: false,
   assignmentFormIsActive: false,
+  incomeHolderFormStep: 1,
+  customerUnpaidProformas: [],
 };
+
 // GETTERS
 let getters = {
+  [types.INCOME_ID]: state => {
+    return state.incomeId;
+  },
+  [types.INSERTED_INCOME]: state => {
+    return state.insertedIncome;
+  },
   [types.EXPANDED_INCOME_ID]: state => {
     return state.expandedIncomeId;
   },
@@ -41,12 +50,28 @@ let getters = {
   [types.LOADING_INCOME_ROWS]: state => {
     return state.loadingIncomeRows;
   },
-  [types.ASSIGNMENT_FORM_IS_ACTIVE]: state => {
+  [types.INCOME_ROW_FORM_IS_ACTIVE]: state => {
     return state.assignmentFormIsActive;
+  },
+  [types.INCOME_HOLDER_FORM_STEP]: state => {
+    return state.incomeHolderFormStep;
+  },
+  [types.CUSTOMER_UNPAID_PROFORMAS]: state => {
+    return state.customerUnpaidProformas;
+  },
+  [types.UPSERTED_INCOME_ROW]: state => {
+    return state.upsertedIncomeRow;
   }
 };
+
 // MUTATIONS
 let mutations = {
+  [types.MUTATE_INCOME_ID]: (state, incomeId) => {
+    state.incomeId = incomeId
+  },
+  [types.MUTATE_INSERTED_INCOME]: (state, income) => {
+    state.insertedIncome = income
+  },
   [types.MUTATE_EXPANDED_INCOME_ID]: (state, incomeId) => {
     state.expandedIncomeId = incomeId;
   },
@@ -67,6 +92,15 @@ let mutations = {
   },
   [types.MUTATE_ASSIGNMENT_FORM_IS_ACTIVE]: (state, isActive) => {
     state.assignmentFormIsActive = isActive;
+  },
+  [types.MUTATE_INCOME_HOLDER_FORM_STEP]: (state, step) => {
+    state.incomeHolderFormStep = step;
+  },
+  [types.MUTATE_CUSTOMER_UNPAID_PROFORMAS]: (state, proformas) => {
+    state.customerUnpaidProformas = proformas
+  },
+  [types.MUTATE_UPSERTED_INCOME_ROW]: (state, incomeRow) => {
+    state.upsertedIncomeRow = incomeRow
   }
 };
 // ACTIONS
@@ -78,29 +112,31 @@ let actions = {
       variables: payload
     }).then(({data}) => {
       console.log(data)
-      //  update incomes(filtered).
+      let income = data.createIncome.income;
+      commit(types.MUTATE_INSERTED_INCOME, income);
+      commit(types.MUTATE_ASSIGNMENT_FORM_IS_ACTIVE, true);
+      commit(types.MUTATE_INCOME_HOLDER_FORM_STEP, 2)
+      store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]();
+      store._actions[types.ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS][0](income.customer.id);
       //  MUTATE INSERTED INCOME
-      console.log(commit)
     }, error => {
       console.log(error)
     })
   },
   [types.ACTION_UPSERT_INCOME_ROW]: ({commit}, payload) => {
-  //  insert new row
     apolloClient.mutate({
       mutation: incomeGql.assingIncomeRowMutation,
       variables: payload
     }).then(({data}) => {
-      //  update income rows
-      console.log(data)
-      console.log(commit)
+      let incomeRow = data.assingIncomeRowMutation.incomeRow;
+      commit(types.MUTATE_UPSERTED_INCOME_ROW, incomeRow);
+      store._actions[types.ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS][0](incomeRow.income.customer.id);
     }, error => {
       console.log(error)
     })
   },
   [types.ACTION_UPDATE_FILTERED_INCOMES]: ({commit}) => {
-  //  update filtered incomes
-    commit(MUTATE_LOADING_FILTERED_INCOME, true);
+    commit(types.MUTATE_LOADING_FILTERED_INCOME, true);
     let form = store.getters[types.INCOME_FILTER_FORM];
     let variables = {
       'customer_name': form.customerName !== "" ? form.customerName : null,
@@ -108,19 +144,17 @@ let actions = {
     }
     apolloClient.query({
       query: incomeGql.incomesFiltered,
-      variables: variables
+      variables: variables,
+      fetchPolicy: "network-only"
     }).then(({data}) => {
-      console.log(data)
-      let incomes = baseFunctions.methods.noNode(data.incomesFiltered)
-      //  commit filtered incomes
-      commit(MUTATE_LOADING_FILTERED_INCOME, false)
-      commit(MUTATE_FILTERED_INCOMES, incomes)
+      let incomes = baseFunctions.methods.noNode(data.incomesFiltered);
+      commit(types.MUTATE_LOADING_FILTERED_INCOME, false);
+      commit(types.MUTATE_FILTERED_INCOMES, incomes)
     }, error => {
       console.log(error)
     })
   },
   [types.ACTION_UPDATE_INCOME_ROWS]: ({commit}, incomeId) => {
-  //  update income rows
     let variable = {
       'income_id': incomeId,
     };
@@ -128,14 +162,24 @@ let actions = {
       query: incomeGql.incomeRowByIncomeId,
       variables: variable
     }).then(({data}) => {
-      console.log(data)
-
       let incomeRows = baseFunctions.methods.noNode(data.incomeRowByIncomeId)
-      console.log('store rows: ', incomeRows)
-      //  commit updated rows.
-      commit(MUTATE_INCOME_ROWS, incomeRows)
+      commit(types.MUTATE_INCOME_ROWS, incomeRows)
     }, error => {
       console.log(error)
+    })
+  },
+  [types.ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS]: ({commit}, customerId) => {
+    let variables = {
+      'customer_id': customerId
+    };
+    apolloClient.query({
+      query: incomeGql.customerUnpaidProformas,
+      variables: variables,
+      fetchPolicy: "network-only",
+    }).then(({data}) => {
+      commit(types.MUTATE_CUSTOMER_UNPAID_PROFORMAS, data.customerUnpaidProformas)
+    }, error => {
+      console.log(error);
     })
   }
 };

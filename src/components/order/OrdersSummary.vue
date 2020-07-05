@@ -133,7 +133,7 @@
     ACTION_FILTERED_ORDERS, MUTATE_ORDER_SPECS,
     FILTERED_ORDERS, LOADING_FILTERED_ORDERS, MUTATE_SELECTED_ORDER_ID, MUTATE_SPEC_FORM_IS_ACTIVE,
     ORDER_FILTER_FORM, SELECTED_ORDER_ID, LOADING_ORDER_SPECS
-  } from "../../store/types";
+  } from "../../store/types/order";
   import debounce from 'debounce'
 
   export default {

@@ -1,7 +1,7 @@
-import * as types from '../types'
-import {apolloClient} from "../../index";
-import * as orderGql from '../gql/order/order.graphql'
-import {store} from "../store";
+import * as types from '../../types/order'
+import {apolloClient} from "../../../index";
+import * as orderGql from '../../gql/order/order.graphql'
+import {store} from "../../store";
 
 const state = {
   lastOrders: [],

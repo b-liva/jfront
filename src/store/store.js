@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex';
-import order from "./modules/order";
+import order from "./modules/order/order";
 import proforma from "./modules/proforma/proforma";
 import income from './modules/income/income'
 

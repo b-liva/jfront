@@ -114,7 +114,7 @@
     INSERTED_ORDER,
     ORDER_SPECS,
     SELECTED_ORDER_ID
-  } from "../../../store/types";
+  } from "../../../store/types/order";
 
   export default {
     data(){

@@ -81,7 +81,7 @@
   import {
     ACTION_LAST_ORDERS,
     ACTION_INSERT_ORDER, SELECTED_ORDER_ID
-  } from "../../store/types";
+  } from "../../store/types/order";
 
   export default {
     data(){

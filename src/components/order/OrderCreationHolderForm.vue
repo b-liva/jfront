@@ -65,7 +65,7 @@
   import OrderPreview from "./OrderPreview";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
   import {mapGetters, mapMutations} from 'vuex'
-  import {ORDER_SPECS, MUTATE_SPEC_FORM_IS_ACTIVE, ORDER_SPEC_FORM_IS_ACTIVE} from "../../store/types";
+  import {ORDER_SPECS, MUTATE_SPEC_FORM_IS_ACTIVE, ORDER_SPEC_FORM_IS_ACTIVE} from "../../store/types/order";
 
   export default {
     data(){

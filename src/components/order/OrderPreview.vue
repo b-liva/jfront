@@ -18,7 +18,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import {ORDER_SPECS} from "../../store/types";
+  import {ORDER_SPECS} from "../../store/types/order";
   export default {
     data(){
       return {

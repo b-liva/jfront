@@ -61,7 +61,7 @@
         },
         result({data}){
           console.log(data)
-          this.customer = data.customer;
+          this.customer = data.customerById;
         }
       }
     }

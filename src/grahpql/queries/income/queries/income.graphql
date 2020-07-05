@@ -1,0 +1,16 @@
+query incomeById($income_id:ID!){
+    incomeById: income(id:$income_id) {
+        id
+        amount
+        customer {
+            id
+            name
+        }
+        number
+        type {
+            id
+            title
+        }
+        summary
+    }
+}

@@ -9,7 +9,7 @@
           <v-card>
             <v-card-title>واریزی شماره {{income.number}}</v-card-title>
             <v-card-text>
-              {{income.date}}
+              {{income.type.title}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -25,8 +25,11 @@
           <v-data-table
           :items="incomeAssignments"
           :headers="incomeAssignmentHeader">
+            <template v-slot:item.proforma="{item}">
+              <router-link :to="{name: 'ProformaDetails', params: {id: item.proforma.id}}">{{item.proforma.number}}</router-link>
+            </template>
             <template v-slot:item.action="{item}">
-              <v-icon @click="editIncomeAssignment(item.id)" small class="mr-2">mdi-pencil</v-icon>
+              <v-icon @click="editIncomeAssignment(item)" small class="mr-2">mdi-pencil</v-icon>
               <v-icon @click="deleteIncomeAssignment(item.id)" small class="mr-2">mdi-delete</v-icon>
             </template>
           </v-data-table>
@@ -38,6 +41,12 @@
       <v-dialog v-model="incomeAssignmentFormDialog" max-width="800px">
         <income-assignment-form :income-assignment-row-id="incomeAssignment"/>
       </v-dialog>
+      <v-dialog persistent v-model="incomeCreationHolder" max-width="1000px">
+        <income-creation-holder-from
+          v-on:closeIncomeCreationHolder="incomeCreationHolder = false"
+          v-if="incomeCreationHolder"
+        />
+      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -46,37 +55,54 @@
   import IncomeForm from "../../components/income/IncomeForm";
   import IncomeAssignmentForm from "../../components/income/assignment/IncomeAssignmentForm";
   import CustomerCard from "../../components/customer/CustomerCard";
+  import IncomeCreationHolderFrom from "../../components/income/IncomeCreationHolderFrom";
+  import {mapGetters, mapActions} from 'vuex';
+  import * as incomeStoreTypes from '../../store/types/income';
+  import * as incomeGql from '../../grahpql/queries/income/queries/income.graphql';
+
+  // import {
+  //   MUTATE_INCOME_ID,
+  //   MUTATE_INCOME_ROW_FORM_IS_ACTIVE,
+  //   MUTATE_UPSERTED_INCOME_ROW
+  // } from "../../store/types/income";
 
   export default {
     data(){
       return {
         name: "IncomeDetails",
         income: {
-          id: this.$route.params.id,
-          number: this.$route.params.number,
+          id: '',
           customer: {
-            id: 1,
-            name: "هوایار"
+            id: '',
+            name: '',
           },
-          data: "1399-01-17",
-          amount: 98520000,
+          type: {
+            id: '',
+            title: ''
+          }
         },
         incomeAssignment: '',
         incomeFormDialog: false,
         incomeAssignmentFormDialog: false,
+        incomeCreationHolder: false,
         incomeAssignmentHeader: [
-          {value: "number", text: "شماره"},
+          {value: "proforma", text: "شماره"},
           {value: "date", text: "تاریخ"},
           {value: "amount", text: "مبلغ"},
           {value: "action", text: ""},
         ],
-        incomeAssignments: [
-          {id: 1, number: 238, date: "1398-01-02", amount: 16510000},
-          {id: 2, number: 1651, date: "1398-05-20", amount: 151315000},
-        ]
       }
     },
+    mounted() {
+      this.updateIncomeRows(this.$route.params.id)
+    },
+    updated() {
+      console.log(this.incomeAssignments)
+    },
     methods: {
+      ...mapActions({
+        updateIncomeRows: incomeStoreTypes.ACTION_UPDATE_INCOME_ROWS
+      }),
       editIncome(){
         console.log('method.')
         this.incomeFormDialog = true;
@@ -85,18 +111,45 @@
         console.log('method.')
       },
       editIncomeAssignment(item){
+        // this.incomeAssignment = item;
+        // this.incomeAssignmentFormDialog = true;
         console.log('edit', item)
-        this.incomeAssignment = item;
-        this.incomeAssignmentFormDialog = true;
+        // this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, item)
+        // this.$store.commit(MUTATE_INCOME_ID, item.income.id)
+        // this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
+        // this.updateUnpaidProformas(item.income.customer.id)
+        this.incomeCreationHolder = true;
       },
       deleteIncomeAssignment(item){
         console.log('delete', item)
       },
     },
+    computed: {
+      ...mapGetters({
+        incomeAssignments: incomeStoreTypes.INCOME_ROWS
+      })
+    },
     components: {
       IncomeForm,
       IncomeAssignmentForm,
-      CustomerCard
+      CustomerCard,
+      IncomeCreationHolderFrom
+    },
+    apollo: {
+      incomeById: {
+        query: incomeGql.incomeById,
+        skip(){
+          return !this.$route.params.id;
+        },
+        variables(){
+          return {
+            'income_id': this.$route.params.id,
+          }
+        },
+        result({data}){
+          this.income = data.incomeById;
+        }
+      }
     }
   }
 </script>

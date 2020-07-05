@@ -1,0 +1,15 @@
+query customerById($customer_id:ID!){
+    customerById: customer(id: $customer_id){
+        id
+        name
+        type{
+            id
+            name
+        }
+        phone
+        website
+        fax
+        addr
+        email
+    }
+}

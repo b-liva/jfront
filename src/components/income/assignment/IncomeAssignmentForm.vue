@@ -10,7 +10,11 @@
     </v-card>
     <v-card>
       <v-card-title>
-        اختصاص مبلغ از واریزی {{income.id}} به پیش فاکتور شماره: <span>{{proforma.number}}</span>
+         اختصاص مبلغ
+         <span class="green--text text--darken-2 px-2">{{incomeAssignmentForm.amount}}</span>
+        ریال از واریزی شماره
+        <span class="green--text text--darken-2 px-2">{{income.number}}</span> به پیش فاکتور شماره:
+        <span class="green--text text--darken-2 px-2">{{proforma.number}}</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -71,7 +75,7 @@
   import {
     ACTION_UPSERT_INCOME_ROW,
     CUSTOMER_UNPAID_PROFORMAS,
-    INSERTED_INCOME,
+    INSERTED_INCOME, UPSERTED_INCOME_ROW,
   } from "../../../store/types/income";
 
   export default {
@@ -109,19 +113,18 @@
       }
     },
     props: [
-      "incomeAssignmentRowId",
       "refetchAssignments"
     ],
     methods: {
       ...mapActions({
-        upsertIncomeRow: ACTION_UPSERT_INCOME_ROW
+        upsertIncomeRow: ACTION_UPSERT_INCOME_ROW,
       }),
       setProforma(proforma){
         this.proforma = proforma
       },
       submitIncomeAssignment(){
         let incomeRowVariables = {
-          incomeRowInput: {
+          "incomeRowInput": {
             "owner": "",
             "income": this.income.id,
             "dateFa": this.incomeAssignmentForm.date,
@@ -143,7 +146,8 @@
     computed: {
       ...mapGetters({
         income: INSERTED_INCOME,
-        customerStatus: CUSTOMER_UNPAID_PROFORMAS
+        customerStatus: CUSTOMER_UNPAID_PROFORMAS,
+        incomeAssignmentRow: UPSERTED_INCOME_ROW
       })
     },
     components: {
@@ -156,11 +160,11 @@
       incomeRowById: {
         query: incomeRowById,
         skip(){
-          return !this.incomeAssignmentRowId
+          return !this.incomeAssignmentRow.id
         },
         variables(){
           return {
-            "incomeRowId": this.incomeAssignmentRowId
+            "incomeRowId": this.incomeAssignmentRow.id
           }
         },
         result({data}){

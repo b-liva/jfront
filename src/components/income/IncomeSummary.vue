@@ -88,7 +88,6 @@
       <income-assignment-form
         v-if="incomeAssignmentDialog"
         :income="incomeInstance"
-        :income-assignment-row-id="selectedIncomeAssignmentId"
         :refetchAssignments="incomeAssignmentDone"
       />
     </v-dialog>
@@ -109,10 +108,19 @@
   import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
   import {mapGetters, mapActions} from 'vuex'
   import {
-    ACTION_DELETE_INCOME, ACTION_DELETE_INCOME_ROW,
-    ACTION_UPDATE_FILTERED_INCOMES, ACTION_UPDATE_INCOME_ROWS,
-    FILTERED_INCOMES, INCOME_FILTER_FORM, INCOME_ROWS,
-    LOADING_FILTERED_INCOMES, LOADING_INCOME_ROWS
+    ACTION_DELETE_INCOME,
+    ACTION_DELETE_INCOME_ROW,
+    ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS,
+    ACTION_UPDATE_FILTERED_INCOMES,
+    ACTION_UPDATE_INCOME_ROWS,
+    FILTERED_INCOMES,
+    INCOME_FILTER_FORM,
+    INCOME_ROWS,
+    LOADING_FILTERED_INCOMES,
+    LOADING_INCOME_ROWS, MUTATE_CUSTOMER_UNPAID_PROFORMAS,
+    MUTATE_INCOME_ID,
+    MUTATE_INCOME_ROW_FORM_IS_ACTIVE, MUTATE_INSERTED_INCOME,
+    MUTATE_UPSERTED_INCOME_ROW
   } from "../../store/types/income";
   import debounce from 'debounce'
 
@@ -175,19 +183,20 @@
         updateIncomeRows: ACTION_UPDATE_INCOME_ROWS,
         deleteIncome: ACTION_DELETE_INCOME,
         deleteIncomeRow: ACTION_DELETE_INCOME_ROW,
+        updateUnpaidProformas: ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS,
       }),
       resetFilters(){
         this.customerName = "";
         this.incomeNumber = null;
       },
       editIncomeAssignment(incomeRow){
-        console.log('irr: ', incomeRow)
-        this.selectedIncomeAssignmentId = incomeRow.id;
-        this.incomeInstance = incomeRow.income
-        this.incomeAssignmentDialog = true;
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, incomeRow)
+        this.$store.commit(MUTATE_INCOME_ID, incomeRow.income.id)
+        this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
+        this.updateUnpaidProformas(incomeRow.income.customer.id)
+        this.incomeCreationHolder = true;
       },
       delIncomeAssignment(incomeRow){
-        console.log('rr: ', incomeRow)
         let confirmed = confirm('مورد تأیید است؟')
         if (confirmed){
           this.deleteIncomeRow(incomeRow)
@@ -195,6 +204,10 @@
       },
       openIncomeForm(){
         this.incomeCreationHolder = true;
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, {})
+        this.$store.commit(MUTATE_INSERTED_INCOME, {})
+        this.$store.commit(MUTATE_INCOME_ID, '')
+        this.$store.commit(MUTATE_CUSTOMER_UNPAID_PROFORMAS, [])
       },
       checkMe(type, data){
         if (typeof data !== "undefined" && typeof data.number !== "undefined"){
@@ -213,18 +226,22 @@
       },
       incomeExpanded(value){
         this.incomeToFindRows = value.item;
-
+        console.log('value: ', value)
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
           this.incomeRowExpanded = [];
           this.incomeRowExpanded.push(value.item);
-          this.updateIncomeRows(this.incomeToFindRows.id)
+          this.updateIncomeRows(value.item.id)
         }
       },
       editIncome(income){
         this.incomeInstance = income;
-        this.incomeFormDialog = true;
+        this.incomeCreationHolder = true;
+        this.$store.commit(MUTATE_INCOME_ID, income.id)
+        this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
+        this.updateUnpaidProformas(income.customer.id)
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, {})
       },
       delIncome(income){
         console.log('ii: ', income)
@@ -234,9 +251,11 @@
         }
       },
       assignIncomeToPermit(income){
-        this.selectedIncomeAssignmentId = null;
-        this.incomeAssignmentDialog = true;
-        this.incomeInstance= income;
+        this.incomeCreationHolder = true;
+        this.$store.commit(MUTATE_INCOME_ID, income.id)
+        this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
+        this.updateUnpaidProformas(income.customer.id)
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, {})
       },
     },
     created() {

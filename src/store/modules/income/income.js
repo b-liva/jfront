@@ -90,7 +90,7 @@ let mutations = {
   [types.MUTATE_LOADING_INCOME_ROWS]: (state, loadingStatus) => {
     state.loadingIncomeRows = loadingStatus;
   },
-  [types.MUTATE_ASSIGNMENT_FORM_IS_ACTIVE]: (state, isActive) => {
+  [types.MUTATE_INCOME_ROW_FORM_IS_ACTIVE]: (state, isActive) => {
     state.assignmentFormIsActive = isActive;
   },
   [types.MUTATE_INCOME_HOLDER_FORM_STEP]: (state, step) => {
@@ -114,7 +114,7 @@ let actions = {
       console.log(data)
       let income = data.createIncome.income;
       commit(types.MUTATE_INSERTED_INCOME, income);
-      commit(types.MUTATE_ASSIGNMENT_FORM_IS_ACTIVE, true);
+      commit(types.MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true);
       commit(types.MUTATE_INCOME_HOLDER_FORM_STEP, 2)
       store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]();
       store._actions[types.ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS][0](income.customer.id);
@@ -124,12 +124,14 @@ let actions = {
     })
   },
   [types.ACTION_UPSERT_INCOME_ROW]: ({commit}, payload) => {
+    console.log('payload: ', payload)
     apolloClient.mutate({
       mutation: incomeGql.assingIncomeRowMutation,
       variables: payload
     }).then(({data}) => {
       let incomeRow = data.assingIncomeRowMutation.incomeRow;
       commit(types.MUTATE_UPSERTED_INCOME_ROW, incomeRow);
+      store._actions[types.ACTION_UPDATE_INCOME_ROWS][0](incomeRow.income.id);
       store._actions[types.ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS][0](incomeRow.income.customer.id);
     }, error => {
       console.log(error)

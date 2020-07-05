@@ -47,7 +47,7 @@
   import {allPaymentTypes, incomeById} from "../../grahpql/queries/income/income";
   import {customersMinimal} from "../../grahpql/queries/customer/customer";
   import {mapGetters, mapActions} from 'vuex'
-  import {ACTION_UPSERT_INCOME, INCOME_ID} from "../../store/types/income";
+  import {ACTION_UPSERT_INCOME, INCOME_ID, MUTATE_INSERTED_INCOME} from "../../store/types/income";
 
   export default {
     data() {
@@ -127,6 +127,7 @@
           this.incomeForm.summary = results.summary;
           this.incomeForm.customerId = results.customer.id;
           this.incomeForm.typeId = results.type.id;
+          this.$store.commit(MUTATE_INSERTED_INCOME, results)
         }
       },
       allCustomers: {

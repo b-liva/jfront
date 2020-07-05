@@ -201,7 +201,7 @@ let actions = {
       store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]()
     })
   },
-  [types.ACTION_DELETE_INCOME_ROW]: ({commit}, incomeRow) => {
+  [types.ACTION_DELETE_INCOME_ROW]: (context, incomeRow) => {
   //  delete income row
     let variables = {
       'input': {
@@ -212,7 +212,6 @@ let actions = {
       mutation: incomeGql.deleteIncomeRow,
       variables: variables,
     }).then(() => {
-      console.log(commit)
       store._actions[types.ACTION_UPDATE_INCOME_ROWS][0](incomeRow.income.id)
       //  update income rows.
     })

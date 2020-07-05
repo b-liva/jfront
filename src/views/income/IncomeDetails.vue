@@ -31,7 +31,7 @@
             </template>
             <template v-slot:item.action="{item}">
               <v-icon @click="editIncomeAssignment(item)" small class="mr-2">mdi-pencil</v-icon>
-              <v-icon @click="deleteIncomeAssignment(item.id)" small class="mr-2">mdi-delete</v-icon>
+              <v-icon @click="deleteIncomeAssignment(item)" small class="mr-2">mdi-delete</v-icon>
             </template>
           </v-data-table>
         </v-col>
@@ -61,11 +61,13 @@
   import * as incomeStoreTypes from '../../store/types/income';
   import * as incomeGql from '../../grahpql/queries/income/queries/income.graphql';
 
-  // import {
-  //   MUTATE_INCOME_ID,
-  //   MUTATE_INCOME_ROW_FORM_IS_ACTIVE,
-  //   MUTATE_UPSERTED_INCOME_ROW
-  // } from "../../store/types/income";
+  import {
+    MUTATE_INCOME_ID,
+    MUTATE_INCOME_ROW_FORM_IS_ACTIVE,
+    MUTATE_UPSERTED_INCOME_ROW
+  } from "../../store/types/income";
+  import {ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS} from "../../store/types/income";
+  import {ACTION_DELETE_INCOME_ROW} from "../../store/types/income";
 
   export default {
     data(){
@@ -102,7 +104,9 @@
     },
     methods: {
       ...mapActions({
-        updateIncomeRows: incomeStoreTypes.ACTION_UPDATE_INCOME_ROWS
+        updateIncomeRows: incomeStoreTypes.ACTION_UPDATE_INCOME_ROWS,
+        updateUnpaidProformas: ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS,
+        deleteIncomeRow: ACTION_DELETE_INCOME_ROW,
       }),
       editIncome(){
         console.log('method.')
@@ -112,17 +116,17 @@
         console.log('method.')
       },
       editIncomeAssignment(item){
-        // this.incomeAssignment = item;
-        // this.incomeAssignmentFormDialog = true;
-        console.log('edit', item)
-        // this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, item)
-        // this.$store.commit(MUTATE_INCOME_ID, item.income.id)
-        // this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
-        // this.updateUnpaidProformas(item.income.customer.id)
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, item)
+        this.$store.commit(MUTATE_INCOME_ID, item.income.id)
+        this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true)
+        this.updateUnpaidProformas(item.income.customer.id)
         this.incomeCreationHolder = true;
       },
       deleteIncomeAssignment(item){
-        console.log('delete', item)
+        let confirmed = confirm('مورد تأیید است؟')
+        if (confirmed){
+          this.deleteIncomeRow(item)
+        }
       },
     },
     computed: {

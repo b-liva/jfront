@@ -3,32 +3,32 @@
   <v-container>
     <v-layout>
       <v-flex xs12>
-        <v-tabs>
-          <v-tab>
+        <v-tabs v-model="selectedTab">
+          <v-tab key="home">
             نخست
           </v-tab>
           <v-tab-item>
             <dashboard-statistics/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="users">
             کاربر
           </v-tab>
           <v-tab-item>
             <user-statistics/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="orders">
             درخواست
           </v-tab>
           <v-tab-item>
             <orders-summary/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="proformas">
             پیش فاکتور
           </v-tab>
           <v-tab-item>
             <proforma-summary/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="perms">
             مجوز
           </v-tab>
           <v-tab-item>
@@ -36,13 +36,13 @@
             <permit-summary-by-expert v-if="permitsByExpert"/>
             <dashboard-permits v-else/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="incomes">
             واریزی
           </v-tab>
           <v-tab-item>
             <income-summary/>
           </v-tab-item>
-          <v-tab>
+          <v-tab key="test">
             test
           </v-tab>
           <v-tab-item>
@@ -69,8 +69,21 @@
     data(){
       return {
         name: "Dashboard",
+        selectedTab: '',
+        tabs: [
+          {id: 1, name: 'users'},
+          {id: 2, name: 'orders'},
+          {id: 3, name: 'proformas'},
+          {id: 4, name: 'perms'},
+          {id: 5, name: 'incomes'},
+          {id: 6, name: 'test'},
+        ],
         permitsByExpert: false,
       }
+    },
+    created() {
+      let item = this.tabs.find(e => e.name === this.$route.params.tabName);
+      this.selectedTab = item.id;
     },
     methods: {
       byExpertState(){

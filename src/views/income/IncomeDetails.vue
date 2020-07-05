@@ -16,8 +16,8 @@
       </v-row>
       <v-row justify="center">
         <v-col cols="10" md="8">
-          <v-icon @click="editIncome(income.id)" small class="mr-2">mdi-pencil</v-icon>
-          <v-icon @click="deleteIncome(income.id)" small class="mr-2">mdi-delete</v-icon>
+          <v-icon @click="editIncome" small class="mr-2">mdi-pencil</v-icon>
+          <v-icon @click="delIncome" small class="mr-2">mdi-delete</v-icon>
         </v-col>
       </v-row>
       <v-row justify="center">
@@ -68,6 +68,7 @@
   } from "../../store/types/income";
   import {ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS} from "../../store/types/income";
   import {ACTION_DELETE_INCOME_ROW} from "../../store/types/income";
+  import {ACTION_DELETE_INCOME} from "../../store/types/income";
 
   export default {
     data(){
@@ -106,14 +107,21 @@
       ...mapActions({
         updateIncomeRows: incomeStoreTypes.ACTION_UPDATE_INCOME_ROWS,
         updateUnpaidProformas: ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS,
+        deleteIncome: ACTION_DELETE_INCOME,
         deleteIncomeRow: ACTION_DELETE_INCOME_ROW,
       }),
       editIncome(){
-        console.log('method.')
-        this.incomeFormDialog = true;
+        this.incomeCreationHolder = true;
+        this.$store.commit(MUTATE_INCOME_ID, this.income.id);
+        this.$store.commit(MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true);
+        this.updateUnpaidProformas(this.income.customer.id);
+        this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, {});
       },
-      deleteIncome(){
-        console.log('method.')
+      delIncome(){
+        let confirmed = confirm('مورد تأیید است؟');
+        if (confirmed){
+          this.deleteIncome(this.income);
+        }
       },
       editIncomeAssignment(item){
         this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, item)

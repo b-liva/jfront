@@ -4,6 +4,7 @@ import {apolloClient} from "../../../index";
 import * as types from '../../types/income'
 import * as incomeGql from '../../gql/income/income.graphql'
 import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
+import router from '../../../router/router'
 
 // STATE
 let state = {
@@ -199,6 +200,10 @@ let actions = {
       //  update filtered incomes.
       console.log(commit)
       store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]()
+      router.push({
+        name: 'DashboardHome',
+        params: {tabName: "incomes"}
+      })
     })
   },
   [types.ACTION_DELETE_INCOME_ROW]: (context, incomeRow) => {

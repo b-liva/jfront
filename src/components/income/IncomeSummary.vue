@@ -49,7 +49,7 @@
                 </template>
                 <template v-slot:item.action="{item}">
                   <v-icon @click="editIncome(item)" small class="mr-2">mdi-pencil</v-icon>
-                  <v-icon @click="deleteIncome(item)" small class="mr-2">mdi-delete</v-icon>
+                  <v-icon @click="delIncome(item)" small class="mr-2">mdi-delete</v-icon>
                   <v-icon @click="assignIncomeToPermit(item)" small class="mr-2">mdi-arrow-left-bold</v-icon>
                 </template>
                 <template v-slot:expanded-item="{headers}">
@@ -67,7 +67,7 @@
                       </template>
                       <template v-slot:item.action="{item}">
                         <v-icon @click="editIncomeAssignment(item)" small class="mr-2">mdi-pencil</v-icon>
-                        <v-icon @click="deleteIncomeAssignment(item)" small class="mr-2">mdi-delete</v-icon>
+                        <v-icon @click="delIncomeAssignment(item)" small class="mr-2">mdi-delete</v-icon>
                       </template>
                     </v-data-table>
                   </td>
@@ -106,10 +106,10 @@
   import PermitIncomes from "./PermitIncomes";
   import IncomeForm from "./IncomeForm";
   import IncomeAssignmentForm from "./assignment/IncomeAssignmentForm";
-  import {deleteIncome} from "../../grahpql/queries/income/mutation/deletion";
   import IncomeCreationHolderFrom from "./IncomeCreationHolderFrom";
   import {mapGetters, mapActions} from 'vuex'
   import {
+    ACTION_DELETE_INCOME, ACTION_DELETE_INCOME_ROW,
     ACTION_UPDATE_FILTERED_INCOMES, ACTION_UPDATE_INCOME_ROWS,
     FILTERED_INCOMES, INCOME_FILTER_FORM, INCOME_ROWS,
     LOADING_FILTERED_INCOMES, LOADING_INCOME_ROWS
@@ -173,6 +173,8 @@
       ...mapActions({
         updateFilteredIncomes: ACTION_UPDATE_FILTERED_INCOMES,
         updateIncomeRows: ACTION_UPDATE_INCOME_ROWS,
+        deleteIncome: ACTION_DELETE_INCOME,
+        deleteIncomeRow: ACTION_DELETE_INCOME_ROW,
       }),
       resetFilters(){
         this.customerName = "";
@@ -184,9 +186,12 @@
         this.incomeInstance = incomeRow.income
         this.incomeAssignmentDialog = true;
       },
-      deleteIncomeAssignment(incomeRow){
-        this.selectedIncomeAssignmentId = incomeRow.id;
-        this.incomeAssignmentDialog = true;
+      delIncomeAssignment(incomeRow){
+        console.log('rr: ', incomeRow)
+        let confirmed = confirm('مورد تأیید است؟')
+        if (confirmed){
+          this.deleteIncomeRow(incomeRow)
+        }
       },
       openIncomeForm(){
         this.incomeCreationHolder = true;
@@ -221,19 +226,11 @@
         this.incomeInstance = income;
         this.incomeFormDialog = true;
       },
-      deleteIncome(income){
-        let confirmed = confirm("مورد تأیید است؟ ");
-        if (confirmed) {
-          this.$apollo.mutate({
-            mutation: deleteIncome,
-            variables: {
-              "income_id": income.id
-            }
-          }).then(() => {
-            this.$apollo.queries.incomesFiltered.refetch()
-          }, error => {
-            console.error(error)
-          })
+      delIncome(income){
+        console.log('ii: ', income)
+        let confirmed = confirm('مورد تأیید است؟')
+        if (confirmed){
+          this.deleteIncome(income)
         }
       },
       assignIncomeToPermit(income){

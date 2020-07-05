@@ -160,7 +160,8 @@ let actions = {
     };
     apolloClient.query({
       query: incomeGql.incomeRowByIncomeId,
-      variables: variable
+      variables: variable,
+      fetchPolicy: "network-only"
     }).then(({data}) => {
       let incomeRows = baseFunctions.methods.noNode(data.incomeRowByIncomeId)
       commit(types.MUTATE_INCOME_ROWS, incomeRows)
@@ -180,6 +181,38 @@ let actions = {
       commit(types.MUTATE_CUSTOMER_UNPAID_PROFORMAS, data.customerUnpaidProformas)
     }, error => {
       console.log(error);
+    })
+  },
+  [types.ACTION_DELETE_INCOME]: ({commit}, income) => {
+  //  delete income
+    let variables = {
+      'input': {
+        'id': income.id
+      }
+    };
+    apolloClient.mutate({
+      mutation: incomeGql.deleteIncome,
+      variables: variables
+    }).then(() => {
+      //  update filtered incomes.
+      console.log(commit)
+      store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]()
+    })
+  },
+  [types.ACTION_DELETE_INCOME_ROW]: ({commit}, incomeRow) => {
+  //  delete income row
+    let variables = {
+      'input': {
+        'id': incomeRow.id,
+      }
+    };
+    apolloClient.mutate({
+      mutation: incomeGql.deleteIncomeRow,
+      variables: variables,
+    }).then(() => {
+      console.log(commit)
+      store._actions[types.ACTION_UPDATE_INCOME_ROWS][0](incomeRow.income.id)
+      //  update income rows.
     })
   }
 };

@@ -107,3 +107,18 @@ query customerUnpaidProformas($customer_id:ID!){
     }
 }
 
+mutation deleteIncome($input: DeleteIncomeInput!){
+    deleteIncome(input: $input) {
+        msg
+        number
+        clientMutationId
+    }
+}
+
+mutation deleteIncomeRow($input: DeleteIncomeRowInput!){
+    deleteIncomeRow(input: $input){
+        msg
+        number
+    }
+}
+

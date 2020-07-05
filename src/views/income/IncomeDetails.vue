@@ -20,9 +20,10 @@
           <v-icon @click="deleteIncome(income.id)" small class="mr-2">mdi-delete</v-icon>
         </v-col>
       </v-row>
-      <v-row>
-        <v-col>
+      <v-row justify="center">
+        <v-col cols="6">
           <v-data-table
+            dense
           :items="incomeAssignments"
           :headers="incomeAssignmentHeader">
             <template v-slot:item.proforma="{item}">

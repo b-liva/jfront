@@ -166,7 +166,7 @@
   // import {allRequests} from "../../grahpql/queries/order/order";
   // import {order} from "../../grahpql/queries/order/order";
   import {mapGetters, mapActions} from 'vuex'
-  import {ACTION_FILTERED_ORDERS, FILTERED_ORDERS, LOADING_FILTERED_ORDERS, ORDER_FILTER_FORM} from "../../store/types/order";
+  import {ACTION_FILTER_ORDERS, FILTERED_ORDERS, LOADING_FILTERED_ORDERS, ORDER_FILTER_FORM} from "../../store/types/order";
   import debounce from "debounce";
 
   export default {
@@ -256,7 +256,7 @@
     },
     methods: {
       ...mapActions({
-        updateFilteredOrders: ACTION_FILTERED_ORDERS
+        updateFilteredOrders: ACTION_FILTER_ORDERS
       }),
       getSpecs(){
         if (typeof this.order !== "undefined" && this.order !== null){

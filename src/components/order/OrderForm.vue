@@ -80,7 +80,7 @@
   import {mapActions, mapGetters} from 'vuex'
   import {
     ACTION_LAST_ORDERS,
-    ACTION_INSERT_ORDER, SELECTED_ORDER_ID
+    ACTION_UPSERT_ORDER, SELECTED_ORDER_ID
   } from "../../store/types/order";
 
   export default {
@@ -120,7 +120,7 @@
     methods: {
       ...mapActions({
         updateOrdersAsync: ACTION_LAST_ORDERS,
-        insertOrder: ACTION_INSERT_ORDER,
+        insertOrder: ACTION_UPSERT_ORDER,
       }),
       submit(){
         this.OrderMutationVariables = {

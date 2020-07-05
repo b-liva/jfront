@@ -15,7 +15,6 @@ const state = {
     no_proforma: false,
   },
   customerId: null,
-  noProforma: null,
   orderSpecFormIsActive: false,
   orderSpecs: [],
   expandedOrderId: null,
@@ -26,7 +25,7 @@ const getters = {
   [types.LAST_ORDERS]: state => {
     return state.lastOrders
   },
-  [types.INSERTED_ORDER]: state => {
+  [types.UPSERTED_ORDER]: state => {
     return state.insertedOrder;
   },
   [types.FILTERED_ORDERS]: state => {
@@ -34,9 +33,6 @@ const getters = {
   },
   [types.CUSTOMER_ID]: state => {
     return state.customerId
-  },
-  [types.NO_PROFORMA]: state => {
-    return state.noProforma
   },
   [types.ORDER_SPEC_FORM_IS_ACTIVE]: state => {
     return state.orderSpecFormIsActive;
@@ -62,7 +58,7 @@ const mutations = {
     state.lastOrders = lastOrders.edges.map(e => e = e.node)
     console.log('mutation')
   },
-  [types.MUTATE_INSERTED_ORDER]: (state, insertedOrder) => {
+  [types.MUTATE_UPSERTED_ORDER]: (state, insertedOrder) => {
     state.insertedOrder = insertedOrder
   },
   [types.MUTATE_FILTERED_ORDER]: (state, filteredOrders) => {
@@ -70,9 +66,6 @@ const mutations = {
   },
   [types.MUTATE_CUSTOMER_ID]: (state, customerId) => {
     state.customerId = customerId
-  },
-  [types.MUTATE_HAS_PROFORMA]: (state, noProforma) => {
-    state.noProforma = noProforma
   },
   [types.MUTATE_SPEC_FORM_IS_ACTIVE]: (state, formStatus) => {
     state.orderSpecFormIsActive = formStatus
@@ -99,14 +92,14 @@ const mutations = {
   }
 }
 const actions = {
-  [types.ACTION_INSERT_ORDER]: ({commit}, payload) => {
+  [types.ACTION_UPSERT_ORDER]: ({commit}, payload) => {
     apolloClient.mutate({
       mutation: orderGql.OrderMutation,
       variables: payload,
     }).then((response) => {
       let results = response.data.OrderMutation;
       if (results.requests !== null){
-        commit(types.MUTATE_INSERTED_ORDER, results.requests)
+        commit(types.MUTATE_UPSERTED_ORDER, results.requests)
         commit(types.MUTATE_SPEC_FORM_IS_ACTIVE, true)
         commit(types.MUTATE_SELECTED_ORDER_ID, results.requests.id)
         // Update last orders.
@@ -130,7 +123,7 @@ const actions = {
       console.log(error)
     })
   },
-  [types.ACTION_FILTERED_ORDERS]: ({commit}) => {
+  [types.ACTION_FILTER_ORDERS]: ({commit}) => {
   //  get filtered orders from server
     let form = store.getters[types.ORDER_FILTER_FORM]
     let variabels = {
@@ -153,7 +146,7 @@ const actions = {
       commit(types.MUTATE_FILTERED_ORDER, filtOrders)
     })
   },
-  [types.ACTION_INSERT_SPEC]: (context, payload) => {
+  [types.ACTION_UPSERT_SPEC]: (context, payload) => {
     apolloClient.mutate({
       mutation: orderGql.specMutation,
       variables: payload
@@ -179,14 +172,10 @@ const actions = {
       variables: variabels
     }).then(() => {
       commit(types.MUTATE_DELETED_ORDER, payload)
-      store._actions[types.ACTION_FILTERED_ORDERS][0]()
+      store._actions[types.ACTION_FILTER_ORDERS][0]()
     }, error => {
       console.error(error)
     })
-  },
-  [types.ACTION_ORDER_FILTER_FORM]: ({commit}, payload) => {
-    commit(types.ACTION_ORDER_FILTER_FORM, payload)
-    store._actions[types.ACTION_FILTERED_ORDERS][0]()
   },
   [types.ACTION_ORDER_SPECS]: (context, payload) => {
     //find order specs

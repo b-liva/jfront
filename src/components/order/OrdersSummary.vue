@@ -130,7 +130,7 @@
   import {mapGetters, mapMutations, mapActions} from 'vuex'
   import {
     ACTION_DELETE_ORDER,
-    ACTION_FILTERED_ORDERS, MUTATE_ORDER_SPECS,
+    ACTION_FILTER_ORDERS, MUTATE_ORDER_SPECS,
     FILTERED_ORDERS, LOADING_FILTERED_ORDERS, MUTATE_SELECTED_ORDER_ID, MUTATE_SPEC_FORM_IS_ACTIVE,
     ORDER_FILTER_FORM, SELECTED_ORDER_ID, LOADING_ORDER_SPECS
   } from "../../store/types/order";
@@ -189,7 +189,7 @@
       ]),
       ...mapActions({
         deleteOrder: ACTION_DELETE_ORDER,
-        updateFilteredOrders: ACTION_FILTERED_ORDERS,
+        updateFilteredOrders: ACTION_FILTER_ORDERS,
         // updateOrderSpecs: ACTION_ORDER_SPECS,
       }),
       newOrder(){

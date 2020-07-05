@@ -110,8 +110,8 @@
   import cloneDeep from 'lodash/cloneDeep'
   import {mapGetters, mapActions} from 'vuex'
   import {
-    ACTION_INSERT_SPEC, ACTION_ORDER_SPECS,
-    INSERTED_ORDER,
+    ACTION_UPSERT_SPEC, ACTION_ORDER_SPECS,
+    UPSERTED_ORDER,
     ORDER_SPECS,
     SELECTED_ORDER_ID
   } from "../../../store/types/order";
@@ -172,14 +172,14 @@
     },
     computed: {
       ...mapGetters({
-        insertedOrder: INSERTED_ORDER,
+        insertedOrder: UPSERTED_ORDER,
         orderSpecs: ORDER_SPECS,
         selectedOrderId: SELECTED_ORDER_ID,
       })
     },
     methods: {
       ...mapActions({
-        insertSpec: ACTION_INSERT_SPEC,
+        upsertSpec: ACTION_UPSERT_SPEC,
         updateOrderSpecs: ACTION_ORDER_SPECS,
       }),
       editSpec: function(item){
@@ -230,7 +230,7 @@
         if (this.assignForm.id !== ""){
           this.specMutationVariables.reqspec_input.id = this.assignForm.id
         }
-        this.insertSpec(this.specMutationVariables)
+        this.upsertSpec(this.specMutationVariables)
       },
     },
     props: [

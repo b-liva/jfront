@@ -12,14 +12,14 @@
             <v-card-text>
               <v-row>
                 <v-col cols="6">
-                  <div class="rightDetails">{{customer.address}}</div>
+                  <div class="rightDetails">{{customer.addr}}</div>
                 </v-col>
                 <v-col cols="6">
                   <div class="leftDetails bordered">
-                    <div><v-icon small class="mr-2">mdi-phone</v-icon>{{customer.tel}}</div>
+                    <div><v-icon small class="mr-2">mdi-phone</v-icon>{{customer.phone}}</div>
                     <div><v-icon small class="mr-2">mdi-fax</v-icon>{{customer.fax}}</div>
                     <div><v-icon small class="mr-2">mdi-email</v-icon>{{customer.email}}</div>
-                    <div><a :href="customer.website" target="_blank">Website</a></div>
+                    <div><a :href="customer.website" target="_blank">{{customer.website}}</a></div>
                   </div>
                 </v-col>
                 <v-col>
@@ -36,30 +36,34 @@
 </template>
 
 <script>
+  import * as customerGql from '../../grahpql/queries/customer/customer.graphql'
+
   export default {
     data() {
       return {
         name: "card",
-        customer: '',
+        customer: {},
       }
     },
     props: [
       'customerId',
     ],
-    methods: {
-      getCustomerById() {
-        return {
-          name: 'پتروشیمی مارون',
-          address: 'ماهشهر - خوزستان - ماهشهر - منطقه ویژه اقتصادی - سایت ',
-          tel: '52295000-061',
-          fax: '52295027-061',
-          website: 'https://www.mpc.ir/',
-          email: 'CEO@MPC.IR',
+    apollo: {
+      customerById: {
+        query: customerGql.customerById,
+        skip(){
+          return !this.customerId
+        },
+        variables(){
+          return {
+            'customer_id': this.customerId
+          }
+        },
+        result({data}){
+          console.log(data)
+          this.customer = data.customer;
         }
       }
-    },
-    created() {
-      this.customer = this.getCustomerById();
     }
   }
 </script>

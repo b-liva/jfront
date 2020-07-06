@@ -1,10 +1,8 @@
 import gql from "graphql-tag"
 
 export const deleteProforma = gql`
-    mutation deleteProforma($proforma_id:ID){
-        deleteProforma(input:{
-            proformaId:$proforma_id
-        }) {
+    mutation deleteProforma($input:DeleteProformaInput!){
+        deleteProforma(input:$input) {
             msg
             number
         }

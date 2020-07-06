@@ -108,6 +108,7 @@
         proformaFormDialog: false,
         specProformasDialog: false,
         selectedProformaId: null,
+        selectedSpecIdEq: '',
         proformasHeader: [
           {value: "number", text: "پیش فاکتور"},
           {value: "customerName", text: "مشتری"},
@@ -156,9 +157,9 @@
         }
       },
       proformaExpanded(value){
-        this.proformaSpecs = {
-          prefspecSet: {edges: []}
-        };
+        // this.proformaSpecs = {
+        //   prefspecSet: {edges: []}
+        // };
         this.selectedProformaId = value.item.id;
         if(this.proformaRowExpanded.includes(value.item)){
           this.proformaRowExpanded.pop(value.item);
@@ -186,15 +187,18 @@
         this.selectedProformaId = item.id;
       },
       deleteProforma(item){
-        let a = confirm("مورد تأیید است؟")
-        if (a){
+        console.log(item)
+        let confirmed = confirm("مورد تأیید است؟")
+        if (confirmed){
           this.$apollo.mutate({
             mutation: deleteProforma,
             variables: {
-              "proforma_id": item.id
+              "input": {
+                "id": item.id
+              }
             }
           }).then(() => {
-            this.$apollo.queries.proformaFiltered.refetch()
+            this.filterProformas()
           }, error => {
             console.error(error)
           });

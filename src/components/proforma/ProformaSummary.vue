@@ -224,6 +224,9 @@
     apollo: {
       proformaSpecs: {
         query: proformaSpecs,
+        skip(){
+          return !this.selectedProformaId
+        },
         variables(){
           return {
             proforma_id: this.selectedProformaId

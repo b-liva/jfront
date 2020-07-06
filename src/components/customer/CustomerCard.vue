@@ -7,7 +7,7 @@
             class="mx-auto customer-card"
             outlined>
             <v-card-title>
-              {{customer.name}}
+              <router-link :to="{name: 'CustomerDetails', params: {id: customerId}}">{{customer.name}}</router-link>
             </v-card-title>
             <v-card-text>
               <v-row>

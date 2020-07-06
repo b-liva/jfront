@@ -64,11 +64,19 @@ mutation createProforma($proforma_input:ProformaModelFormMutationInput!){
         xpref{
             id
             number
+            customerName
+            numberTd
+            permNumber
+            perm
+            summary
             reqId{
                 id
                 number
+                customer{
+                    id
+                    name
+                }
             }
-            customerName
         }
         errors{
             field
@@ -129,6 +137,28 @@ query proformaDetails($proforma_id:ID!){
         reqId{
             id
             number
+            customer{
+                id
+                name
+            }
+        }
+    }
+}
+
+query proformaFiltered($customer_name:String, $proforma_number:Int){
+    proformaFiltered:allProformas(
+        reqId_Customer_Name_Icontains:$customer_name,
+        number:$proforma_number
+    ) {
+        edges {
+            node {
+                id
+                customerName
+                number
+                owner{
+                    lastName
+                }
+            }
         }
     }
 }

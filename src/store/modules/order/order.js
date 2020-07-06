@@ -189,6 +189,7 @@ const actions = {
     }).then(({data}) => {
       console.log('updated: ', data.order.reqspecSet)
       let specs = data.order.reqspecSet.edges.map(e => e = e.node)
+      console.log('find specs: ', specs)
       context.commit(types.MUTATE_ORDER_SPECS, specs)
       context.commit(types.MUTATE_LOADING_ORDER_SPECS, false)
     }, (error) => {

@@ -44,7 +44,7 @@
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="1">
-          <order-form :order-id="selectedOrderId" v-on:orderCreated="orderCreated"/>
+          <order-form :order-id="selectedOrderId"/>
         </v-stepper-content>
         <v-stepper-content step="2">
           <order-spec-form v-if="orderSpecFormIsActive"/>
@@ -110,12 +110,6 @@
       ...mapMutations([
         MUTATE_SPEC_FORM_IS_ACTIVE
       ]),
-      orderCreated(orderId){
-        this.selectedOrderId = orderId;
-        // this.orderSpecFormIsActive = true;
-        this.e1 = 2;
-        this.$emit('updateOrders')
-      },
     },
   }
 </script>

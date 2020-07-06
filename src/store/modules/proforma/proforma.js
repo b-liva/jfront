@@ -4,6 +4,7 @@ import {apolloClient} from "../../../index";
 import {store} from "../../store";
 import {createPrefSpecsBulk} from "../../../grahpql/queries/order/spec/mutation/mutation";
 import {MUTATE_PROFORMA} from "../../types/proforma";
+import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
 
 // STATE
 let state = {
@@ -12,12 +13,24 @@ let state = {
     id: '',
     customerName: '',
     number: '',
-    order: {
+    reqNumber: '',
+    numberTd: null,
+    date: '',
+    expiry_date: '',
+    perm: false,
+    permNumber: '',
+    permDate: '',
+    dueDate: '',
+    summary: '',
+  },
+  proformaOrder: {
+    id: '',
+    number: '',
+    customer: {
       id: '',
-      number: ''
+      name: ''
     }
   },
-  proformaId: null,
   proformaOrderSpecs: [],
   proformaSpecs: [],
   proformaFormSpecs: [],
@@ -25,15 +38,18 @@ let state = {
   proformaSpecPreviewFormIsActive: false,
   snackbar: false,
   snackbarMsg: '',
+  filteredProformas: [],
+  filterProformaForm: {
+    customerName: '',
+    number: '',
+  },
+  filterLoading: false
 }
 
 // GETTERS
 let getters = {
-  [types.PROFORMA_ORDER_ID]: state => {
-    return state.proformaOrderId;
-  },
-  [types.PROFORMA_ID]: state => {
-    return state.proforma.id;
+  [types.PROFORMA_ORDER]: state => {
+    return state.proformaOrder;
   },
   [types.PROFORMA_SPECS]: state => {
     return state.proformaSpecs;
@@ -58,16 +74,23 @@ let getters = {
   },
   [types.SNACKBAR_MSG]: state => {
     return state.snackbarMsg;
-  }
+  },
+  [types.FILTERED_PROFORMAS]: state => {
+    return state.filteredProformas;
+  },
+  [types.FILTER_PROFORMA_FORM]: state => {
+    return state.filterProformaForm;
+  },
+  [types.PROFORMA_FILTER_LOADING]: state => {
+    return state.filterLoading;
+  },
 }
 
 // MUTATIONS
 let mutations = {
-  [types.MUTATE_PROFORMA_ORDER_ID]: (state, proformaOrderId) => {
-    state.proformaOrderId = proformaOrderId;
-  },
-  [types.MUTATE_PROFORMA_ID]: (state, proformaId) => {
-    state.proforma.id = proformaId;
+  [types.MUTATE_PROFORMA_ORDER]: (state, order) => {
+    console.log('updating order: ', order)
+    state.proformaOrder = order;
   },
   [types.MUTATE_PROFORMA_SPECS]: (state, proformaSpecs) => {
     state.proformaSpecs = proformaSpecs;
@@ -76,7 +99,7 @@ let mutations = {
     state.proformaOrderSpecs = proformaOrderSpecs;
   },
   [types.MUTATE_PROFORMA_FORM_SPECS]: (state, reset) => {
-    if (reset){
+    if (reset) {
       state.proformaFormSpecs = []
       return
     }
@@ -116,29 +139,53 @@ let mutations = {
     state.proformaSpecPreviewFormIsActive = status
   },
   [types.MUTATE_PROFORMA]: (state, proforma) => {
+    console.log('updating proforma: ', proforma)
     state.proforma = proforma
   },
   [types.MUTATE_RESET_PROFORMA_FORMS]: (state) => {
     state.proforma = {
       id: '',
-        customerName: '',
-        number: ''
+      customerName: '',
+      number: ''
+    };
+    state.proformaOrder = {
+      id: '',
+      number: '',
+      customer: {
+        id: '',
+        name: ''
+      }
     };
     state.proformaSpecs = [];
     state.proformaOrderSpecs = [];
+    state.proformaSpecFormIsActive = false;
   },
   [types.MUTATE_SNACKBAR]: (state, status) => {
-    state.snackbar= status
+    state.snackbar = status
   },
   [types.MUTATE_SNACKBAR_MSG]: (state, msg) => {
     state.snackbarMsg = msg
+  },
+  [types.MUTATE_FILTERED_PROFORMAS]: (state, filteredProformas) => {
+    state.filteredProformas = filteredProformas
+  },
+  [types.MUTATE_FILTER_PROFORMA_FORM]: (state, form) => {
+    state.filterProformaForm = form
+  },
+  [types.MUTATE_PROFORMA_FILTER_LOADING]: (state, status) => {
+    console.log('status: ', status)
+    state.filterLoading = status
+  },
+  [types.MUTATE_INSERTED_ROFORMA_NUMBER]: (state, proforma) => {
+    state.proforma.id = proforma.id;
+    state.proforma.number = proforma.number;
   },
 
 };
 
 // ACTIONS
 let actions = {
-  [types.ACTION_INSERT_PROFORMA]: ({commit}, payload) => {
+  [types.ACTION_UPSERT_PROFORMA]: ({commit}, payload) => {
     // do async insertion
     console.log(payload)
     apolloClient.mutate({
@@ -146,9 +193,10 @@ let actions = {
       variables: payload
     }).then(({data}) => {
       let proforma = data.proformaMutation.xpref
-      console.log('actual id: ', proforma.id)
-      commit(types.MUTATE_PROFORMA_ID, proforma.id)
-      commit(types.MUTATE_PROFORMA, proforma)
+      console.log('actual id: ', proforma)
+      // commit(types.MUTATE_PROFORMA_ID, proforma.id)
+      // commit(types.MUTATE_PROFORMA, proforma)
+      commit(types.MUTATE_INSERTED_ROFORMA_NUMBER, proforma)
       store._actions[types.ACTION_UPDATE_PROFORMA_SPECS][0](proforma.id)
       store._actions[types.ACTION_UPDATE_PROFORMA_ORDER_SPECS][0](proforma.id)
 
@@ -165,7 +213,8 @@ let actions = {
       query: proformaGql.proformaDetails,
       variables: {
         'proforma_id': proformaId
-      }
+      },
+      fetchPolicy: "network-only",
     }).then(({data}) => {
       let proforma = {};
       proforma.id = data.proforma.id;
@@ -176,8 +225,17 @@ let actions = {
       proforma.perm = data.proforma.perm;
       proforma.permNumber = data.proforma.permNumber;
       proforma.summary = data.proforma.summary;
-      console.log('prof to update: ', proforma)
+
+      let order = {
+        id: data.proforma.reqId.id,
+        number: data.proforma.reqId.number,
+        customer: {
+          id: data.proforma.reqId.customer.id,
+          name: data.proforma.reqId.customer.name,
+        }
+      };
       commit(MUTATE_PROFORMA, proforma)
+      commit(types.MUTATE_PROFORMA_ORDER, order)
     }, error => {
       console.log(error)
     })
@@ -236,7 +294,29 @@ let actions = {
       console.error('error occurred.', error)
     })
     console.log(payload)
-}
+  },
+  [types.ACTION_FILTER_PROFORMAS]: ({commit}) => {
+    commit(types.MUTATE_PROFORMA_FILTER_LOADING, true)
+    let form = store.getters[types.FILTER_PROFORMA_FORM]
+    console.log('the form: ', form)
+    let variabels = {
+      "proforma_number": form.number !== "" ? form.number : null,
+      "customer_name": form.customerName !== "" ? form.customerName : null,
+    }
+    // do async
+    apolloClient.mutate({
+      mutation: proformaGql.proformaFiltered,
+      variables: variabels,
+    }).then(({data}) => {
+      //update pforoma specs
+      console.log('proforma filtered: ', data)
+      commit(types.MUTATE_FILTERED_PROFORMAS, baseFunctions.methods.noNode(data.proformaFiltered))
+      commit(types.MUTATE_PROFORMA_FILTER_LOADING, false)
+    }, error => {
+      console.error('error occurred.', error)
+      commit(types.MUTATE_PROFORMA_FILTER_LOADING, false)
+    })
+  }
 }
 
 export default {

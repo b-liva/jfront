@@ -5,12 +5,12 @@
         <v-col cols="4">
           <v-text-field
             label="مشتری"
-            v-model="customerName"></v-text-field>
+            v-model="findSpecProformasCom.customerName"></v-text-field>
         </v-col>
         <v-col cols="2">
           <v-text-field
             label="شماره پیش فاکتور"
-            v-model="proformaNumber"
+            v-model="findSpecProformasCom.number"
             type="number"
           ></v-text-field>
         </v-col>
@@ -25,11 +25,11 @@
             <v-card-text>
               <v-data-table
                 :headers="proformasHeader"
-                :items="getProformas()"
+                :items="proformas"
                 :expanded="proformaRowExpanded"
-                :loading="$apollo.queries.proformaFiltered.loading"
                 show-expand
                 single-expand
+                :loading="loadingProformas"
                 @item-expanded="proformaExpanded">
                 <template v-slot:top>
                   <v-toolbar>
@@ -84,26 +84,27 @@
   import SpecProformas from "./SpecProformas";
   import ProformaCreationHolderForm from "./ProformaCreationHolderForm";
   import {baseFunctions} from "../../mixins/graphql/baseFunctions";
-  import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
+  // import {proformaFiltered} from "../../grahpql/queries/proforma/proforma";
   import {proformaSpecs} from "../../grahpql/queries/proforma/specs/proformaSpecs";
   import {deleteProforma} from "../../grahpql/queries/proforma/mutation/deletion";
-  import {mapActions} from "vuex"
+  import {mapGetters, mapActions} from "vuex"
   import {
     MUTATE_PROFORMA_FORM_SPECS,
     MUTATE_RESET_PROFORMA_FORMS,
     ACTION_UPDATE_PROFORMA_ORDER_SPECS,
     ACTION_UPDATE_PROFORMA_SPECS,
-    MUTATE_PROFORMA_ID,
-    MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE
+    MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE,
+    FILTER_PROFORMA_FORM,
+    ACTION_FILTER_PROFORMAS,
+    FILTERED_PROFORMAS, PROFORMA_FILTER_LOADING, MUTATE_FILTER_PROFORMA_FORM, ACTION_UPDATE_PROFORMA
   } from "../../store/types/proforma";
+  import debounce from 'debounce'
 
   export default {
     data(){
       return {
         name: "ProformaSummary",
         proformaRowExpanded: [],
-        customerName: "",
-        proformaNumber: null,
         proformaFormDialog: false,
         specProformasDialog: false,
         selectedProformaId: null,
@@ -123,18 +124,25 @@
         ],
       }
     },
+    created() {
+      this.filterProformas = debounce(this.filterProformas, 1000)
+    },
+    mounted() {
+      this.filterProformas()
+    },
     methods: {
       ...mapActions({
+        fillProformaForm: ACTION_UPDATE_PROFORMA,
         updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,
-        updateProformaSpecs: ACTION_UPDATE_PROFORMA_SPECS
+        updateProformaSpecs: ACTION_UPDATE_PROFORMA_SPECS,
+        filterProformas: ACTION_FILTER_PROFORMAS
       }),
       click(){
         console.log('click')
         this.$store.commit(MUTATE_PROFORMA_FORM_SPECS)
       },
       resetFilters(){
-        this.proformaNumber = null;
-        this.customerName = "";
+        this.$store.commit(MUTATE_FILTER_PROFORMA_FORM, {})
       },
       newProforma(){
         this.proformaFormDialog = true;
@@ -163,15 +171,15 @@
         this.selectedSpecIdEq = spec.reqspecEq.id;
         this.specProformasDialog = true;
       },
-      getProformas(){
-        if (typeof this.proformaFiltered !== 'undefined' && this.proformaFiltered !== null){
-          return this.noNode(this.proformaFiltered)
-        }
-      },
+      // getProformas(){
+      //   if (typeof this.proformaFiltered !== 'undefined' && this.proformaFiltered !== null){
+      //     return this.noNode(this.proformaFiltered)
+      //   }
+      // },
       editProforma(item){
         console.log(item)
         this.proformaFormDialog = true;
-        this.$store.commit(MUTATE_PROFORMA_ID, item.id)
+        this.fillProformaForm(item.id)
         this.$store.commit(MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE, true)
         this.updateProformaOrderSpecs(item.id)
         this.updateProformaSpecs(item.id)
@@ -197,20 +205,25 @@
       SpecProformas,
       ProformaCreationHolderForm,
     },
+    computed: {
+      ...mapGetters({
+        findSpecProformasCom: FILTER_PROFORMA_FORM,
+        proformas: FILTERED_PROFORMAS,
+        loadingProformas: PROFORMA_FILTER_LOADING
+      })
+    },
     mixins: [
       baseFunctions
     ],
+    watch: {
+      findSpecProformasCom: {
+        handler(){
+          this.filterProformas()
+        },
+        deep: true,
+      }
+    },
     apollo: {
-      proformaFiltered: {
-        query: proformaFiltered,
-        debounce: 1000,
-        variables(){
-          return {
-            "customer_name": this.customerName,
-            "proforma_number": this.proformaNumber
-          }
-        }
-      },
       proformaSpecs: {
         query: proformaSpecs,
         variables(){

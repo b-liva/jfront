@@ -87,7 +87,7 @@
                       :headers="specHeaders"
                       :items="orderSpecs"
                       :loading="$apollo.queries.order.loading"
-                      @click:row="findProformas">
+                      @click:row="findSpecProformas">
                       <template v-slot:no-data>
                         {{error}}
                       </template>
@@ -113,9 +113,11 @@
       <order-creation-holder-form
         v-if="orderFormHolderDialog"
         :order-id="selectedOrderId"
-        v-on:updateOrders="updateOrders"
         v-on:closeOrderFormHolder="orderFormHolderDialog = false"
       />
+    </v-dialog>
+    <v-dialog v-model="proformaFormDialog" width="800">
+      <proforma-creation-holder-form v-if="proformaFormDialog" v-on:close-event="proformaFormDialog = false"/>
     </v-dialog>
   </div>
 </template>
@@ -127,6 +129,7 @@
   import ProformaList from "../../views/proforma/ProformaList";
   import OrderCreationHolderForm from "./OrderCreationHolderForm";
   import SpecProformas from "../proforma/SpecProformas";
+  import ProformaCreationHolderForm from "../proforma/ProformaCreationHolderForm";
   import {mapGetters, mapMutations, mapActions} from 'vuex'
   import {
     ACTION_DELETE_ORDER,
@@ -135,13 +138,13 @@
     ORDER_FILTER_FORM, SELECTED_ORDER_ID, LOADING_ORDER_SPECS
   } from "../../store/types/order";
   import debounce from 'debounce'
+  import {MUTATE_PROFORMA_ORDER, MUTATE_RESET_PROFORMA_FORMS} from "../../store/types/proforma";
 
   export default {
     data() {
       return {
         name: "OrdersSummary",
         error: null,
-        order: null,
         orderSpecs: [],
         assignDialog: false,
         proformaListDialog: false,
@@ -190,33 +193,21 @@
       ...mapActions({
         deleteOrder: ACTION_DELETE_ORDER,
         updateFilteredOrders: ACTION_FILTER_ORDERS,
-        // updateOrderSpecs: ACTION_ORDER_SPECS,
       }),
       newOrder(){
         this.orderFormHolderDialog = true;
-        // this.selectedOrderId = null;
         this.$store.commit(MUTATE_SELECTED_ORDER_ID, null)
         this.$store.commit(MUTATE_SPEC_FORM_IS_ACTIVE, false)
         this.orderRowExpanded = [];
       },
       orderExpanded(value) {
-        // this.orderSpecs = []
         this.error = null
-        this.order = {
-          reqspecSet: {edges: []}
-        }
         if (this.orderRowExpanded.includes(value.item)) {
-          console.log('to pop')
-          // this.expandedOrderId = '';
           this.$store.commit(MUTATE_SELECTED_ORDER_ID, '')
           this.orderRowExpanded.pop(value.item);
         } else {
-          // this.expandedOrderId = value.item.id;
-          console.log('to add')
           this.orderRowExpanded = [];
-          // this.$store.dispatch(MUTATE_SELECTED_ORDER_ID, value.item.id)
           this.$store.commit(MUTATE_SELECTED_ORDER_ID, value.item.id)
-          // this.updateOrderSpecs(value.item.id)
           this.$apollo.queries.order.refetch()
           if (!this.orderSpecs.length){
             console.log('we should find specs.')
@@ -224,48 +215,37 @@
           this.orderRowExpanded.push(value.item);
         }
       },
-      findProformas(spec) {
+      findSpecProformas(spec) {
         this.selectedSpecId = spec.id;
         this.specProformasDialog = true;
       },
       editItem(item){
-        // this.selectedOrderId = item.id;
-        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id);
         this.orderFormHolderDialog = true;
-        // this.orderFormDialog = true;
         this.orderRowExpanded = [];
-        // this.updateOrderSpecs(item.id)
-        this.$apollo.queries.order.refetch()
       },
       deleteItem(item){
-        // this.selectedOrderId = item.id;
-        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
-        let a = confirm("مورد تأیید است؟")
-        if (a){
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id);
+        let confirmed = confirm("مورد تأیید است؟");
+        if (confirmed){
           this.deleteOrder(item.id)
         }
       },
       assignSpecToOrder(item){
-        // this.selectedOrderId = item.id;
-        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
-        this.$store.commit(MUTATE_ORDER_SPECS, [])
-        // this.updateOrderSpecs(item.id)
-        this.$apollo.queries.order.refetch()
+        this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id);
         this.assignDialog = true;
       },
       listRelatedProformas(item){
-        // this.selectedOrderId = item.id;
         this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.proformaListDialog = true;
       },
       addProforma(item){
-        // this.selectedOrderId = item.id;
+        console.log(item)
         this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.proformaFormDialog = true;
+        this.$store.commit(MUTATE_RESET_PROFORMA_FORMS)
+        this.$store.commit(MUTATE_PROFORMA_ORDER, item)
       },
-      updateOrders(){
-        this.$apollo.queries.filteredOrders.refetch()
-      }
     },
     computed: {
       ...mapGetters({
@@ -273,7 +253,6 @@
         orders: FILTERED_ORDERS,
         loadingFilteredOrders: LOADING_FILTERED_ORDERS,
         selectedOrderId: SELECTED_ORDER_ID,
-        // orderSpecs: ORDER_SPECS,
         loadingOrderSpecs: LOADING_ORDER_SPECS,
       })
     },
@@ -281,7 +260,8 @@
       SpecProformas,
       OrderSpecForm,
       ProformaList,
-      OrderCreationHolderForm
+      OrderCreationHolderForm,
+      ProformaCreationHolderForm
     },
     watch: {
       orderFilterFormCom: {

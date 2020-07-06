@@ -1,14 +1,11 @@
 <template>
   <div>
     <v-card>
-      <p>ORDER ID:{{orderId}}</p>
-      <p>proforma id: {{proformaInstance}}</p>
-      <v-card-title v-if="orderId || true"> پیش فاکتور
-        <v-spacer/>
+      <v-card-title>
         <div>
           <v-card-subtitle v-if="proformaFormIsVisible || true">
-            <div>شماره درخواست:  <span class="green--text">{{orderData.number}}</span></div>
-            <div>مشتری:  <span class="green--text">{{proformaInstance.customerName}}</span></div>
+            <div>شماره درخواست:  <span class="green--text">{{proformaOrder.number}}</span></div>
+            <div>مشتری:  <span class="green--text">{{proformaOrder.customer.name}}</span></div>
             <div>شماره پیش فاکتور:  <span class="green--text">{{proformaInstance.number}}</span></div>
           </v-card-subtitle>
         </div>
@@ -19,7 +16,7 @@
             <v-col cols="6">
               <v-text-field
                 dense
-                v-model="orderData.number"
+                v-model="proformaOrder.number"
                 label="شماره درخواست"
                 v-if="reqNumActive"
               ></v-text-field>
@@ -33,7 +30,7 @@
                   <v-text-field
                     dense
                     type="number"
-                    v-model="proformaForm.numberTd"
+                    v-model="proformaInstance.numberTd"
                     label="شماره تدوین"
                   ></v-text-field>
                 </v-col>
@@ -47,10 +44,10 @@
                   </v-btn>
                 </v-col>
                 <v-col cols="6">
-                  <span v-if="proformaForm.date">{{proformaForm.date}}</span>
+                  <span v-if="proformaInstance.date">{{proformaInstance.date}}</span>
                   <span v-else>انتخاب کنید</span>
                   <PersianDatePicker
-                    v-model="proformaForm.date"
+                    v-model="proformaInstance.date"
                     format="jYYYY-jMM-jDD"
                     element="proforma-date"
                     :show="date.issue"
@@ -67,10 +64,10 @@
                   </v-btn>
                 </v-col>
                 <v-col cols="6">
-                  <span v-if="proformaForm.expiry_date">{{proformaForm.expiry_date}}</span>
+                  <span v-if="proformaInstance.expiry_date">{{proformaInstance.expiry_date}}</span>
                   <span v-else>انتخاب کنید</span>
                   <PersianDatePicker
-                    v-model="proformaForm.expiry_date"
+                    v-model="proformaInstance.expiry_date"
                     element="proforma-exp-date"
                     format="jYYYY-jMM-jDD"
                     :show="date.expiry"
@@ -85,13 +82,13 @@
                 <v-col cols="4">
                   <v-checkbox
                     label="مجوز"
-                    v-model="proformaForm.perm"/>
+                    v-model="proformaInstance.perm"/>
                 </v-col>
-                <template v-if="proformaForm.perm">
+                <template v-if="proformaInstance.perm">
                   <v-col cols="8">
                     <v-text-field
                       label="شماره مجوز"
-                      v-model="proformaForm.permNumber"/>
+                      v-model="proformaInstance.permNumber"/>
                   </v-col>
                   <v-col cols="6">
                     <v-btn
@@ -103,10 +100,10 @@
                     </v-btn>
                   </v-col>
                   <v-col cols="6">
-                    <span v-if="proformaForm.permDate">{{proformaForm.permDate}}</span>
+                    <span v-if="proformaInstance.permDate">{{proformaInstance.permDate}}</span>
                     <span v-else>انتخاب کنید</span>
                     <PersianDatePicker
-                      v-model="proformaForm.permDate"
+                      v-model="proformaInstance.permDate"
                       format="jYYYY-jMM-jDD"
                       element="perm-date"
                       :show="date.perm"
@@ -123,10 +120,10 @@
                     </v-btn>
                   </v-col>
                   <v-col cols="6">
-                    <span v-if="proformaForm.dueDate">{{proformaForm.dueDate}}</span>
+                    <span v-if="proformaInstance.dueDate">{{proformaInstance.dueDate}}</span>
                     <span v-else>انتخاب کنید</span>
                     <PersianDatePicker
-                      v-model="proformaForm.dueDate"
+                      v-model="proformaInstance.dueDate"
                       element="due-date"
                       format="jYYYY-jMM-jDD"
                       :show="date.dueDate"
@@ -140,7 +137,7 @@
           <v-row v-if="proformaFormIsVisible">
             <v-col cols="12">
               <v-textarea
-                v-model="proformaForm.summary"
+                v-model="proformaInstance.summary"
                 label="توضیحات"
               ></v-textarea>
             </v-col>
@@ -166,11 +163,11 @@
   // import {createProforma} from "../../grahpql/queries/proforma/mutation/mutation";
   import {mapGetters, mapActions} from 'vuex'
   import {
-    ACTION_INSERT_PROFORMA,
+    ACTION_UPSERT_PROFORMA,
     ACTION_UPDATE_PROFORMA_ORDER_SPECS,
     ACTION_UPDATE_PROFORMA,
-    MUTATE_PROFORMA_ORDER_ID, PROFORMA,
-    PROFORMA_ORDER_ID, PROFORMA_ID
+    PROFORMA,
+    PROFORMA_ORDER, MUTATE_PROFORMA_ORDER
   } from "../../store/types/proforma";
 
   export default {
@@ -218,58 +215,57 @@
       baseFunctions
     ],
     created() {
-      // if(this.orderId){
-      //   this.orderID = this.orderId;
-      // }
-      if (!this.proformaInstance.id) {
+      if (!this.proformaInstance.id){
         this.proforma = cloneDeep(this.proformaFormDefault);
       }
-      if (this.proformaId){
-        this.updateProforma(this.proformaId)
-      }
-      // this.orderNumberIsActive = !(this.proformaID || this.orderID)
+      // if (this.proformaId){
+      //   this.updateProforma(this.proformaId)
+      // }
     },
     watch: {
-      proformaInstance: function () {
-        if (this.orderData.id === ""){
-          this.orderData.id = this.proformaInstance.order.id;
-          this.orderData.number = this.proformaInstance.order.number;
-          this.orderData.customerName = this.proformaInstance.customerName;
-          console.log('p data: ', this.proformaInstance);
-          this.proformaForm.numberTd = this.proformaInstance.numberTd;
-          this.proformaForm.perm = this.proformaInstance.perm;
-          this.proformaForm.permNumber = this.proformaInstance.permNumber;
-          this.proformaForm.summary = this.proformaInstance.summary;
-          this.reqNumActive = false
-        }
-      }
+      // proformaInstance: function () {
+      //   // let s = true
+      //   console.log(this.proformaInstance)
+      //   console.log(this.proformaInstance.id !== "")
+      //   if (this.proformaInstance.id !== ""){
+      //     this.orderData.id = this.proformaOrder.id;
+      //     this.orderData.number = this.proformaOrder.number;
+      //     this.orderData.customerName = this.proformaInstance.customerName;
+      //
+      //     this.proformaForm.numberTd = this.proformaInstance.numberTd;
+      //     this.proformaForm.perm = this.proformaInstance.perm;
+      //     this.proformaForm.permNumber = this.proformaInstance.permNumber;
+      //     this.proformaForm.summary = this.proformaInstance.summary;
+      //     this.reqNumActive = false
+      //   }
+      // }
     },
     methods: {
       ...mapActions({
         updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,
-        insertProforma: ACTION_INSERT_PROFORMA,
+        upsertProforma: ACTION_UPSERT_PROFORMA,
         updateProforma: ACTION_UPDATE_PROFORMA
       }),
       submitProforma() {
         this.createProformaVariables = {
           proforma_input: {
-            reqId: this.orderId,
+            reqId: this.proformaInstance.id || this.proformaOrder.id,
             owner: "",
             number: 0,
-            dateFa: this.proformaForm.date,
-            numberTd: this.proformaForm.numberTd,
-            expDateFa: this.proformaForm.expiry_date,
-            permNumber: this.proformaForm.permNumber,
-            permDate: this.proformaForm.permDate,
-            dueDate: this.proformaForm.dueDate,
-            summary: this.proformaForm.summary,
+            dateFa: this.proformaInstance.date,
+            numberTd: this.proformaInstance.numberTd,
+            expDateFa: this.proformaInstance.expiry_date,
+            permNumber: this.proformaInstance.permNumber,
+            permDate: this.proformaInstance.permDate,
+            dueDate: this.proformaInstance.dueDate,
+            summary: this.proformaInstance.summary,
             perm: true
           }
         }
-        if (this.proformaId){
+        if (this.proformaInstance.id){
           this.createProformaVariables.proforma_input.id = this.proformaInstance.id
         }
-        this.insertProforma(this.createProformaVariables)
+        this.upsertProforma(this.createProformaVariables)
       },
       cancel() {
         this.close()
@@ -280,8 +276,8 @@
     },
     computed: {
       ...mapGetters({
-        orderId: PROFORMA_ORDER_ID,
-        proformaId: PROFORMA_ID,
+        proformaOrder: PROFORMA_ORDER,
+        // proformaId: PROFORMA_ID,
         proformaInstance: PROFORMA,
       })
     },
@@ -293,19 +289,18 @@
         query: orderByNumber,
         debounce: 700,
         skip(){
-          return !this.orderData.number;
+          return !this.proformaOrder.number;
         },
         variables(){
           return {
-            'number': this.orderData.number
+            'number': this.proformaOrder.number
           }
         },
         result(result){
           let data = result.data.orderByNumber;
           if (data.edges.length > 0){
             this.proformaFormIsVisible = true;
-            this.$store.commit(MUTATE_PROFORMA_ORDER_ID, this.noNode(data)[0].id)
-            // this.orderID = this.noNode(data)[0].id;
+            this.$store.commit(MUTATE_PROFORMA_ORDER, this.noNode(data)[0])
           }else {
             this.proformaFormIsVisible = false;
           }

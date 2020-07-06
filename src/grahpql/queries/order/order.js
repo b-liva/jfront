@@ -29,6 +29,10 @@ export const orderByNumber = gql`
                 node{
                     id
                     number
+                    customer{
+                        id
+                        name
+                    }
                 }
             }
         }

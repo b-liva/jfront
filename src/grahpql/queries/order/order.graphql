@@ -1,0 +1,37 @@
+query order($order_id:ID!){
+    order: request(id: $order_id) {
+        id
+        customer {
+            id
+            name
+        }
+        number
+        reqspecSet(isActive: true) {
+            edges {
+                node {
+                    id
+                    qty
+                    kw
+                    voltage
+                    rpm
+                    rpmNew {
+                        id
+                        rpm
+                    }
+                    im {
+                        id
+                        title
+                    }
+                    ic {
+                        id
+                        title
+                    }
+                    ip {
+                        id
+                        title
+                    }
+                }
+            }
+        }
+    }
+},

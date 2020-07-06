@@ -12,7 +12,6 @@
                 <v-card>
                   <v-card-title>درخواست شماره {{order.number}}</v-card-title>
                   <v-card-text>
-                    {{order.customer.name}} - {{order.date}}
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -72,6 +71,8 @@
   import OrderSpecForm from "../../components/order/spec/OrderSpecForm";
   import OrderTree from "../../components/charts/timeline/OrderTree";
   import CustomerCard from "../../components/customer/CustomerCard";
+  import * as orderGql from '../../grahpql/queries/order/order.graphql'
+  import {baseFunctions} from "../../mixins/graphql/baseFunctions";
 
   export default {
     data(){
@@ -86,47 +87,7 @@
           {value: "voltage", text: "ولتاژ"},
           {value: "action", text: ""},
         ],
-        specs: [
-          {
-            id: 2,
-            orderId: 1,
-            qty: 6,
-            kw: 132,
-            rpm: 3000,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-01",
-            summary: 'some summary'
-          },
-          {
-            id: 3,
-            orderId: 2,
-            qty: 9,
-            kw: 160,
-            rpm: 1500,
-            voltage: 380,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-12",
-            summary: 'some summary'
-          },
-          {
-            id: 4,
-            orderId: 2,
-            qty: 1,
-            kw: 75,
-            rpm: 1000,
-            voltage: 690,
-            IPID: 1,
-            ICID: 1,
-            IMID: 1,
-            date: "1398-12-10",
-            summary: 'some summary'
-          },
-        ],
+        specs: [],
         orderDialog: false,
         orderSpecDialog: false,
         proformaListDialog: false,
@@ -158,8 +119,8 @@
         ]
       }
     },
-    props: [
-      "orderNumber"
+    mixins: [
+      baseFunctions
     ],
     methods: {
       editOrder(orderId){
@@ -168,17 +129,6 @@
       },
       deleteOrder(orderId){
         console.log(orderId)
-      },
-      getOrderDetails(){
-        this.order = {
-          id: this.$route.params.id,
-          number: this.$route.params.number,
-          date: "1398-12-02",
-          customer: {
-            id: 5,
-            name: "پتروشیمی مارون"
-          }
-        }
       },
       editSpec(item){
         this.specId = item;
@@ -196,9 +146,6 @@
         this.incomeListDialog = true;
       }
     },
-    created() {
-      this.getOrderDetails()
-    },
     components: {
       OrderForm,
       ProformaList,
@@ -206,6 +153,24 @@
       OrderSpecForm,
       OrderTree,
       CustomerCard
+    },
+    apollo: {
+      order: {
+        query: orderGql.order,
+        skip(){
+          return !this.$route.params.id
+        },
+        variables(){
+          return {
+            'order_id': this.$route.params.id
+          }
+        },
+        result({data}) {
+          console.log(data)
+          this.order = data.order;
+          this.specs = this.noNode(data.order.reqspecSet);
+        }
+      }
     }
   }
 </script>

@@ -162,3 +162,10 @@ query proformaFiltered($customer_name:String, $proforma_number:Int){
         }
     }
 }
+
+mutation deleteProforma($input:DeleteProformaInput!){
+    deleteProforma(input:$input) {
+        msg
+        number
+    }
+}

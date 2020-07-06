@@ -5,6 +5,7 @@ import {store} from "../../store";
 import {createPrefSpecsBulk} from "../../../grahpql/queries/order/spec/mutation/mutation";
 import {MUTATE_PROFORMA} from "../../types/proforma";
 import {baseFunctions} from "../../../mixins/graphql/baseFunctions";
+import router from '../../../router/router';
 
 // STATE
 let state = {
@@ -231,6 +232,7 @@ let actions = {
       };
       commit(MUTATE_PROFORMA, proforma)
       commit(types.MUTATE_PROFORMA_ORDER, order)
+      store._actions[types.ACTION_UPDATE_PROFORMA_SPECS][0](proformaId)
     }, error => {
       console.log(error)
     })
@@ -304,6 +306,25 @@ let actions = {
     }, error => {
       console.error('error occurred.', error)
       commit(types.MUTATE_PROFORMA_FILTER_LOADING, false)
+    })
+  },
+  [types.ACTION_DELETE_PROFORMA]: (context, proformaId) => {
+    let variables = {
+      input: {
+        'id': proformaId
+      }
+    };
+    apolloClient.mutate({
+      mutation: proformaGql.deleteProforma,
+      variables: variables
+    }).then(() => {
+      store._actions[types.ACTION_FILTER_PROFORMAS][0]()
+      router.push({
+        name: 'DashboardHome',
+        params: {tabName: 'proformas'}
+      })
+    }, error => {
+      console.log(error)
     })
   }
 }

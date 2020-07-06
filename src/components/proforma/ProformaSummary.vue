@@ -21,7 +21,6 @@
       <v-row>
         <v-col cols="12" md="12">
           <v-card>
-            <v-card-title>پیش فاکتور</v-card-title>
             <v-card-text>
               <v-data-table
                 :headers="proformasHeader"

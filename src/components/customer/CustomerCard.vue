@@ -60,7 +60,6 @@
           }
         },
         result({data}){
-          console.log(data)
           this.customer = data.customerById;
         }
       }

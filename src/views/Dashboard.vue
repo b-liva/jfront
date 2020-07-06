@@ -83,7 +83,7 @@
     },
     created() {
       let item = this.tabs.find(e => e.name === this.$route.params.tabName);
-      this.selectedTab = item.id;
+      this.selectedTab = item ? item.id : 0;
     },
     methods: {
       byExpertState(){

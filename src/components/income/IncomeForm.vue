@@ -95,7 +95,6 @@
         this.upsertIncome(incomeVariables)
       },
       cancelIncome() {
-        console.log('method.');
       },
     },
     computed: {

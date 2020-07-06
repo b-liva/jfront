@@ -66,15 +66,12 @@
             }
           ))
         }
-        console.log(this.resultList)
         return this.resultList
       }
     },
     beforeCreate() {
     },
     created() {
-      console.log(this.proformaIdToFindIncomes)
-      console.log(this.permitIdToFindIncomes)
     },
     mounted(){
     },

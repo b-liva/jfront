@@ -105,16 +105,13 @@
         this.proformaEditDialog = true;
       },
       deleteProforma(){
-        console.log('method.')
       },
       findRelatedIncomes(){
         this.incomeListDialog = true;
       },
       editSpec(){
-        console.log('method')
       },
       deleteSpec(){
-        console.log('method')
       },
       setCost(){
         this.setCostDialog = true;

@@ -222,24 +222,6 @@
       //   this.updateProforma(this.proformaId)
       // }
     },
-    watch: {
-      // proformaInstance: function () {
-      //   // let s = true
-      //   console.log(this.proformaInstance)
-      //   console.log(this.proformaInstance.id !== "")
-      //   if (this.proformaInstance.id !== ""){
-      //     this.orderData.id = this.proformaOrder.id;
-      //     this.orderData.number = this.proformaOrder.number;
-      //     this.orderData.customerName = this.proformaInstance.customerName;
-      //
-      //     this.proformaForm.numberTd = this.proformaInstance.numberTd;
-      //     this.proformaForm.perm = this.proformaInstance.perm;
-      //     this.proformaForm.permNumber = this.proformaInstance.permNumber;
-      //     this.proformaForm.summary = this.proformaInstance.summary;
-      //     this.reqNumActive = false
-      //   }
-      // }
-    },
     methods: {
       ...mapActions({
         updateProformaOrderSpecs: ACTION_UPDATE_PROFORMA_ORDER_SPECS,

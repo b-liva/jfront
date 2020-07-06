@@ -136,7 +136,6 @@
         };
         if (this.orderId){
           this.OrderMutationVariables.request_input.id = this.orderId;
-          console.log('editing else...........', this.OrderMutationVariables)
         }
         this.insertOrder(this.OrderMutationVariables)
       },
@@ -169,7 +168,6 @@
         },
         result({data}){
           this.colleagues = []
-          console.log("order only: ", data.orderOnly.colleagues.edges)
           this.order_form = data.orderOnly
           this.order_form.customerId = data.orderOnly.customer.id;
           let colleagues = this.noNode(data.orderOnly.colleagues)
@@ -187,7 +185,6 @@
           }
         },
         result({data}){
-          console.log("order: ", data)
           this.orderSpecs = this.noNode(data.order.reqspecSet)
         }
       },

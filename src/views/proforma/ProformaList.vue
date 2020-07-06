@@ -125,40 +125,14 @@
     ],
     methods: {
       getRelatedProformas(){
-        // console.log('getting proformas for: ', this.order);
         if (typeof this.proformasByOrderId != "undefined" && this.proformasByOrderId != null){
           return this.noNode(this.proformasByOrderId.xprefSet)
         }
-        // return [
-        //   {
-        //     id: 1, number: 9820365, orderNumber: 980204, customer: {id: 5, name: 'تهران بوستون'}, date: "1398-12-26",
-        //     pspecs: [{qty: 2, kw: 132, rpm: 1500, voltage: 380, price: 25000000, editingPSpec: false}, {
-        //       qty: 3,
-        //       kw: 160,
-        //       rpm: 1500,
-        //       voltage: 380,
-        //       price: 25000000,
-        //       editingPSpec: false
-        //     }]
-        //   },
-        //   {
-        //     id: 2, number: 9830562, orderNumber: 981235, customer: {id: 1, name: 'پارس تهران'}, date: "1398-12-26",
-        //     pspecs: [{qty: 2, kw: 315, rpm: 3000, voltage: 380, price: 25000000, editingPSpec: false}, {
-        //       qty: 3,
-        //       kw: 160,
-        //       rpm: 1500,
-        //       voltage: 380,
-        //       price: 25000000,
-        //       editingPSpec: false
-        //     }]
-        //   },
-        // ]
       },
       proformaClicked(proforma) {
         console.log('proforma clicked.', proforma)
       },
       getProformaSpecs(item){
-        console.log(item)
         this.selectedProformaId = item.id;
         if (typeof this.proformaSpecs !== "undefined" && this.proformaSpecs !== null){
           return this.noNode(this.proformaSpecs.prefspecSet);
@@ -169,19 +143,6 @@
       },
       deleteItem(item) {
         console.log('deleting Item: ', item);
-      },
-      editPspec: function (item) {
-        item.editingPSpec = true;
-        console.log('editing Item: ', item);
-
-      },
-      savingChanes: function (row) {
-        row.editingPSpec = false;
-        console.log('saving', row)
-      },
-      cancelChanges: function (row) {
-        row.editingPSpec = false;
-        console.log('canceling', row)
       },
       addProforma(){
         this.proformaFormDialog = true

@@ -131,12 +131,6 @@
     computed:{
 
     },
-    methods: {
-      clicked(){
-        console.log(this.ordersNoProforma);
-        console.log(this.$apollo.queries.ordersNoProforma)
-      },
-    },
     apollo: {
       automationOrders: automationOrders,
       ordersNoProforma: ordersNoProforma,

@@ -262,7 +262,6 @@
         this.clear()
       },
       editItem(item) {
-        console.log(item)
         this.editedIndex = this.incomes.indexOf(item);
         this.income_form = Object.assign({}, item);
         this.incomeDialog = true;
@@ -272,13 +271,11 @@
         confirm('از حذف این ردیف اطمینان دارید؟') && this.incomes.splice(index, 1)
       },
       assignToMe(item) {
-        console.log(item.number, item.customer.name)
         this.assignDialog = true;
         this.toBeAssignedRowInfo.customer = item.customer;
         this.toBeAssignedRowInfo.number = item.number
       },
       submitAssignment() {
-        console.log('submitting assignment')
         if (this.editedIncomeRowIndex > -1) {
           Object.assign(this.incomeRows[this.editedIncomeRowIndex], this.assignForm)
         } else {
@@ -290,11 +287,9 @@
         this.assignDialog = false
       },
       cancelAssignment() {
-        console.log('cancelling assignment')
         this.assignDialog = false
       },
       incomeClicked(value) {
-        console.log(value.item.id, this.expanded)
         if (this.expanded.includes(value.item)) {
           this.expanded.pop(value.item)
         } else {
@@ -309,7 +304,6 @@
           .filter(index => index !== -1);
       },
       editIncomeRow(rowItem) {
-        console.log(rowItem);
         this.editedIncomeRowIndex = this.incomeRows.indexOf(rowItem)
         this.assignForm = Object.assign({}, rowItem)
         this.assignDialog = true;
@@ -323,7 +317,6 @@
         let title = null;
         this.types.forEach(function (e) {
           if (e.id === id) {
-            console.log(e.title)
             title = e.title;
           }
         })
@@ -374,8 +367,6 @@
       let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
       let yyyy = today.getFullYear();
       this.income_form.date = yyyy + '-' + mm + '-' + dd
-      console.log(today);
-      console.log(this.income_form.date)
     }
   }
 </script>

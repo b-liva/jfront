@@ -159,12 +159,10 @@
             qty: e.qty
           }
         });
-        console.log('specpaylaod: *: ', specPayLoad)
         let variables = {
           "proforma_id": this.proformaInstance.id,
             "spec_list": specPayLoad
         }
-        console.log(variables)
         this.insertProformaSpecsBulk(variables)
       },
       cancel() {

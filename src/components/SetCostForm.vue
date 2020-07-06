@@ -54,7 +54,6 @@
         }
       },
       submit(){
-        console.log('submit')
         this.$emit('closeSetExpense')
       }
     }

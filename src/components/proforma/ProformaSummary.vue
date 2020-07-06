@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <v-row><v-btn @click="click">click</v-btn>
+      <v-row>
         <v-col cols="4">
           <v-text-field
             label="مشتری"
@@ -138,10 +138,6 @@
         updateProformaSpecs: ACTION_UPDATE_PROFORMA_SPECS,
         filterProformas: ACTION_FILTER_PROFORMAS
       }),
-      click(){
-        console.log('click')
-        this.$store.commit(MUTATE_PROFORMA_FORM_SPECS)
-      },
       resetFilters(){
         this.$store.commit(MUTATE_FILTER_PROFORMA_FORM, {})
       },
@@ -178,7 +174,6 @@
       //   }
       // },
       editProforma(item){
-        console.log(item)
         this.proformaFormDialog = true;
         this.fillProformaForm(item.id)
         this.$store.commit(MUTATE_PROFORMA_SPEC_FORM_IS_ACTIVE, true)
@@ -187,7 +182,6 @@
         this.selectedProformaId = item.id;
       },
       deleteProforma(item){
-        console.log(item)
         let confirmed = confirm("مورد تأیید است؟")
         if (confirmed){
           this.$apollo.mutate({

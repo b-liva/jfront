@@ -47,7 +47,6 @@
             "password": this.password
           }
         }).then((res) => {
-          console.log(res)
           this.token = res.data.login.token;
           onLogin(this.$apollo.provider.defaultClient, this.token)
           this.$router.push('/dashboard')

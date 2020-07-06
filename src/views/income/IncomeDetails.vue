@@ -100,9 +100,6 @@
     mounted() {
       this.updateIncomeRows(this.$route.params.id)
     },
-    updated() {
-      console.log(this.incomeAssignments)
-    },
     methods: {
       ...mapActions({
         updateIncomeRows: incomeStoreTypes.ACTION_UPDATE_INCOME_ROWS,

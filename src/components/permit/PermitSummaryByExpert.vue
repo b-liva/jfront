@@ -62,14 +62,12 @@
     },
     methods: {
       ownerRowExpanded(value){
-        console.log(value.item, this.ownerExpanded.includes(value.item))
         if(this.ownerExpanded.includes(value.item)){
           this.ownerExpanded.pop(value.item);
         }else {
           this.ownerExpanded = [];
           this.ownerExpanded.push(value.item);
         }
-        console.log('now: ', this.ownerExpanded.includes(value.item))
       },
     },
     components: {

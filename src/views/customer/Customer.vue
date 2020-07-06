@@ -152,9 +152,6 @@
         return d;
       },
     },
-    mounted() {
-      console.log(this)
-    }
   }
 </script>
 

@@ -283,7 +283,6 @@
         this.clear()
       },
       editItem(item) {
-        console.log(item)
         this.editedIndex = this.incomes.indexOf(item);
         this.income_form = Object.assign({}, item);
         this.incomeDialog = true;
@@ -298,7 +297,6 @@
         this.toBeAssignedRowInfo.number = item.number
       },
       submitAssignment() {
-        console.log('submitting assignment')
         if (this.editedIncomeRowIndex > -1) {
           Object.assign(this.incomeRows[this.editedIncomeRowIndex], this.assignForm)
         } else {
@@ -310,11 +308,9 @@
         this.assignDialog = false
       },
       cancelAssignment() {
-        console.log('cancelling assignment')
         this.assignDialog = false
       },
       incomeClicked(value) {
-        console.log(value.item.id, this.expanded)
         if (this.expanded.includes(value.item)) {
           this.expanded.pop(value.item)
         } else {
@@ -329,7 +325,6 @@
           .filter(index => index !== -1);
       },
       editIncomeRow(rowItem) {
-        console.log(rowItem);
         this.editedIncomeRowIndex = this.incomeRows.indexOf(rowItem)
         this.assignForm = Object.assign({}, rowItem)
         this.assignDialog = true;
@@ -343,7 +338,6 @@
         let title = null;
         this.types.forEach(function (e) {
           if (e.id === id) {
-            console.log(e.title)
             title = e.title;
           }
         })
@@ -358,7 +352,6 @@
       db.collection('income').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
-          console.log(doc, doc.id)
           let income = doc.data()
           income.id = doc.id
           let cus = db.collection('customer').doc(income.customer.id)

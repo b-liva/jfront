@@ -112,7 +112,6 @@ let actions = {
       mutation: incomeGql.createIncome,
       variables: payload
     }).then(({data}) => {
-      console.log(data)
       let income = data.createIncome.income;
       commit(types.MUTATE_INSERTED_INCOME, income);
       commit(types.MUTATE_INCOME_ROW_FORM_IS_ACTIVE, true);
@@ -125,7 +124,6 @@ let actions = {
     })
   },
   [types.ACTION_UPSERT_INCOME_ROW]: ({commit}, payload) => {
-    console.log('payload: ', payload)
     apolloClient.mutate({
       mutation: incomeGql.assingIncomeRowMutation,
       variables: payload
@@ -186,7 +184,7 @@ let actions = {
       console.log(error);
     })
   },
-  [types.ACTION_DELETE_INCOME]: ({commit}, income) => {
+  [types.ACTION_DELETE_INCOME]: (context, income) => {
   //  delete income
     let variables = {
       'input': {
@@ -198,7 +196,6 @@ let actions = {
       variables: variables
     }).then(() => {
       //  update filtered incomes.
-      console.log(commit)
       store._actions[types.ACTION_UPDATE_FILTERED_INCOMES][0]()
       router.push({
         name: 'DashboardHome',

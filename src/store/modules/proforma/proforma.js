@@ -89,7 +89,6 @@ let getters = {
 // MUTATIONS
 let mutations = {
   [types.MUTATE_PROFORMA_ORDER]: (state, order) => {
-    console.log('updating order: ', order)
     state.proformaOrder = order;
   },
   [types.MUTATE_PROFORMA_SPECS]: (state, proformaSpecs) => {
@@ -139,7 +138,6 @@ let mutations = {
     state.proformaSpecPreviewFormIsActive = status
   },
   [types.MUTATE_PROFORMA]: (state, proforma) => {
-    console.log('updating proforma: ', proforma)
     state.proforma = proforma
   },
   [types.MUTATE_RESET_PROFORMA_FORMS]: (state) => {
@@ -173,7 +171,6 @@ let mutations = {
     state.filterProformaForm = form
   },
   [types.MUTATE_PROFORMA_FILTER_LOADING]: (state, status) => {
-    console.log('status: ', status)
     state.filterLoading = status
   },
   [types.MUTATE_INSERTED_ROFORMA_NUMBER]: (state, proforma) => {
@@ -187,13 +184,11 @@ let mutations = {
 let actions = {
   [types.ACTION_UPSERT_PROFORMA]: ({commit}, payload) => {
     // do async insertion
-    console.log(payload)
     apolloClient.mutate({
       mutation: proformaGql.createProforma,
       variables: payload
     }).then(({data}) => {
       let proforma = data.proformaMutation.xpref
-      console.log('actual id: ', proforma)
       // commit(types.MUTATE_PROFORMA_ID, proforma.id)
       // commit(types.MUTATE_PROFORMA, proforma)
       commit(types.MUTATE_INSERTED_ROFORMA_NUMBER, proforma)
@@ -278,27 +273,22 @@ let actions = {
       console.log(error)
     })
   },
-  [types.ACTION_INSERT_PROFORMA_SPEC_BULK]: ({commit}, payload) => {
+  [types.ACTION_INSERT_PROFORMA_SPEC_BULK]: (context, payload) => {
     // do async
-    console.log('this is payload: ', payload)
     apolloClient.mutate({
       mutation: createPrefSpecsBulk,
       variables: payload,
-    }).then(response => {
+    }).then(() => {
       //update pforoma specs
-      console.log('proforma added: ', response)
       store._actions[types.ACTION_UPDATE_PROFORMA_SPECS][0](payload.proforma_id)
       store._actions[types.ACTION_UPDATE_PROFORMA_ORDER_SPECS][0](payload.proforma_id)
-      console.log(commit)
     }, error => {
       console.error('error occurred.', error)
     })
-    console.log(payload)
   },
   [types.ACTION_FILTER_PROFORMAS]: ({commit}) => {
     commit(types.MUTATE_PROFORMA_FILTER_LOADING, true)
     let form = store.getters[types.FILTER_PROFORMA_FORM]
-    console.log('the form: ', form)
     let variabels = {
       "proforma_number": form.number !== "" ? form.number : null,
       "customer_name": form.customerName !== "" ? form.customerName : null,
@@ -309,7 +299,6 @@ let actions = {
       variables: variabels,
     }).then(({data}) => {
       //update pforoma specs
-      console.log('proforma filtered: ', data)
       commit(types.MUTATE_FILTERED_PROFORMAS, baseFunctions.methods.noNode(data.proformaFiltered))
       commit(types.MUTATE_PROFORMA_FILTER_LOADING, false)
     }, error => {

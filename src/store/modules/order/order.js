@@ -56,7 +56,6 @@ const getters = {
 const mutations = {
   [types.MUTATE_LAST_ORDERS]: (state, lastOrders) => {
     state.lastOrders = lastOrders.edges.map(e => e = e.node)
-    console.log('mutation')
   },
   [types.MUTATE_UPSERTED_ORDER]: (state, insertedOrder) => {
     state.insertedOrder = insertedOrder
@@ -71,9 +70,7 @@ const mutations = {
     state.orderSpecFormIsActive = formStatus
   },
   [types.MUTATE_ORDER_SPECS]: (state, orderSpecs) => {
-    console.log('specs: ', orderSpecs)
     state.orderSpecs = orderSpecs
-    // state.orderSpecs.push(orderSpecs)
   },
   [types.MUTATE_DELETED_ORDER]: (state, deleteOrder) => {
     state.deleteOrder = deleteOrder
@@ -151,7 +148,6 @@ const actions = {
       mutation: orderGql.specMutation,
       variables: payload
     }).then(({data}) => {
-      console.log('new spec: ', data)
       // commit(types.MUTATE_ORDER_SPECS, data.specMutation.reqSpec)
       store._actions[types.ACTION_ORDER_SPECS][0](data.specMutation.reqSpec.reqId.id)
     }, error => {
@@ -159,8 +155,6 @@ const actions = {
     });
   },
   [types.ACTION_DELETE_ORDER]: ({commit}, payload) => {
-    console.log(payload)
-    console.log(store.getters[types.ORDER_FILTER_FORM])
 
     let variabels = {
       "delete_input": {

@@ -54,7 +54,6 @@
     },
     methods: {
       getProformas(){
-        console.log(this.proformasBySpec)
         if (typeof this.proformasBySpec !== 'undefined' && this.proformasBySpec !== null){
           return this.noNode(this.proformasBySpec)
         }
@@ -67,7 +66,6 @@
         this.type = this.config.type;
         this.specProformaHeaders[index].text = this.config.type;
       }
-      console.log('ss: ', this.spec_id)
     },
     props: [
       "spec_id",

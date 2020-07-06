@@ -240,7 +240,6 @@
         this.proformaListDialog = true;
       },
       addProforma(item){
-        console.log(item)
         this.$store.commit(MUTATE_SELECTED_ORDER_ID, item.id)
         this.proformaFormDialog = true;
         this.$store.commit(MUTATE_RESET_PROFORMA_FORMS)

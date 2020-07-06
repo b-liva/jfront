@@ -6,7 +6,6 @@ export const financialFunctions = {
     profitPercent(sale, expense) {
       let profitPercentage = 100 * (sale - expense) / expense;
       profitPercentage = profitPercentage.toFixed(2);
-      console.log(profitPercentage);
       return profitPercentage;
     }
   }

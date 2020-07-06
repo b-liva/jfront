@@ -15,7 +15,7 @@
           ></v-text-field>
         </v-col>
         <v-col cols="2">
-          <v-btn @click="resetFilters" class="primary" small>ریست</v-btn>
+          <v-btn @click="resetFilters" class="error pa-2" x-small><v-icon>mdi-close</v-icon></v-btn>
         </v-col>
       </v-row>
       <v-row>
@@ -117,7 +117,7 @@
     INCOME_FILTER_FORM,
     INCOME_ROWS,
     LOADING_FILTERED_INCOMES,
-    LOADING_INCOME_ROWS, MUTATE_CUSTOMER_UNPAID_PROFORMAS,
+    LOADING_INCOME_ROWS, MUTATE_CUSTOMER_UNPAID_PROFORMAS, MUTATE_INCOME_FILTER_FORM,
     MUTATE_INCOME_ID,
     MUTATE_INCOME_ROW_FORM_IS_ACTIVE, MUTATE_INSERTED_INCOME,
     MUTATE_UPSERTED_INCOME_ROW
@@ -186,8 +186,7 @@
         updateUnpaidProformas: ACTION_UPDATE_CUSTOMER_UNPAID_PROFORMAS,
       }),
       resetFilters(){
-        this.customerName = "";
-        this.incomeNumber = null;
+        this.$store.commit(MUTATE_INCOME_FILTER_FORM, {})
       },
       editIncomeAssignment(incomeRow){
         this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, incomeRow)
@@ -226,7 +225,6 @@
       },
       incomeExpanded(value){
         this.incomeToFindRows = value.item;
-        console.log('value: ', value)
         if(this.incomeRowExpanded.includes(value.item)){
           this.incomeRowExpanded.pop(value.item);
         }else {
@@ -244,7 +242,6 @@
         this.$store.commit(MUTATE_UPSERTED_INCOME_ROW, {})
       },
       delIncome(income){
-        console.log('ii: ', income)
         let confirmed = confirm('مورد تأیید است؟')
         if (confirmed){
           this.deleteIncome(income)

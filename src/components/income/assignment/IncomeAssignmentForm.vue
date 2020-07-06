@@ -138,8 +138,7 @@
         }
         this.upsertIncomeRow(incomeRowVariables)
       },
-      cancelIncomeAssignment(item){
-        console.log(item)
+      cancelIncomeAssignment(){
         this.refetchAssignments(this.income.id)
       },
     },

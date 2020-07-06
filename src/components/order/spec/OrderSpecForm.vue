@@ -195,10 +195,8 @@
         this.assignForm = cloneDeep(item)
       },
       deleteSpec(){
-        console.log('method.');
       },
       submitAssignment(){
-        console.log('assignment');
       },
       cancelAssignment(){
         this.$emit('closeAssignDialog')

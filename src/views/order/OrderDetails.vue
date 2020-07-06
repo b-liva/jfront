@@ -181,7 +181,6 @@
         }
       },
       editSpec(item){
-        console.log(item)
         this.specId = item;
         this.orderSpecDialog = true;
       },
